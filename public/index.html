@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zelva Beauty">
+<title>Zelva Beauty</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --purple:#534AB7;--purple-light:#EEEDFE;--purple-mid:#7F77DD;--purple-dark:#3C3489;
+  --teal:#0F6E56;--teal-light:#E1F5EE;
+  --amber:#854F0B;--amber-light:#FAEEDA;
+  --coral:#993C1D;--coral-light:#FAECE7;
+  --gray-bg:#f7f7f4;--gray-card:#ffffff;--gray-border:#e4e2da;
+  --gray-surface:#f0efe9;--text:#1a1a18;--text-2:#5f5f58;--text-3:#9a9a92;
+  --danger-bg:#FCEBEB;--danger-text:#791F1F;--danger-border:#F09595;
+  --success-bg:#E1F5EE;--success-text:#085041;
+  --r:10px;--rlg:14px
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--gray-bg);color:var(--text);font-size:14px;min-height:100vh}
+.header{background:#fff;border-bottom:1px solid var(--gray-border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:15px;font-weight:700;color:var(--purple)}.logo span{color:var(--text);font-weight:400;font-size:13px;margin-left:6px}
+.dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;display:inline-block;margin-right:5px}
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--gray-border);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--text-2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:5px}
+.tab.active{color:var(--purple);border-bottom-color:var(--purple)}
+.panel{display:none;padding:14px;max-width:720px;margin:0 auto}.panel.active{display:block}
+.card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--rlg);padding:14px;margin-bottom:12px}
+.card-title{font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+label{font-size:12px;color:var(--text-2);display:block;margin-bottom:4px}
+input[type=text],input[type=number],select,textarea{width:100%;padding:9px 11px;border:1px solid var(--gray-border);border-radius:var(--r);font-size:14px;background:#fff;color:var(--text);outline:none;-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83,74,183,.1)}
+.field{margin-bottom:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.btn{width:100%;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{background:var(--purple-dark)}
+.btn-sm{font-size:12px;padding:5px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--gray-border);background:var(--gray-surface);color:var(--text);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.btn-icon{padding:5px 8px}
+.btn-danger{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-border)}
+.btn-outline{background:#fff;color:var(--purple);border:1px solid var(--purple);width:100%;padding:10px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+.metrics-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.metric{background:var(--gray-surface);border-radius:var(--r);padding:11px}
+.metric-label{font-size:11px;color:var(--text-2);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+.metric-value{font-size:19px;font-weight:700}
+.mv-purple{color:var(--purple)}.mv-teal{color:var(--teal)}.mv-amber{color:var(--amber)}.mv-coral{color:var(--coral)}
+.period-row{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.period-row::-webkit-scrollbar{display:none}
+.pbtn{font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid var(--gray-border);background:#fff;color:var(--text-2);white-space:nowrap;flex-shrink:0}
+.pbtn.active{background:var(--purple-light);color:var(--purple-dark);border-color:var(--purple-mid)}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap}
+.b-ef{background:#E1F5EE;color:#085041}
+.b-tr{background:#E6F1FB;color:#0C447C}
+.b-qr{background:#EEEDFE;color:#3C3489}
+.b-deb{background:#FAEEDA;color:#633806}
+.b-cred{background:#FAECE7;color:#712B13}
+.b-open{background:#F1EFE8;color:#444441}
+.b-online{background:#E1F5EE;color:#085041}
+.info-box{border-radius:var(--r);padding:10px 12px;font-size:13px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.info-amber{background:var(--amber-light);color:var(--amber)}
+.info-teal{background:var(--teal-light);color:var(--teal)}
+.info-purple{background:var(--purple-light);color:var(--purple-dark)}
+.msg{font-size:13px;text-align:center;margin-top:8px;min-height:18px;padding:7px;border-radius:var(--r);display:none}
+.msg.show{display:block}
+.msg.ok{background:var(--success-bg);color:var(--success-text)}
+.msg.err{background:var(--danger-bg);color:var(--danger-text)}
+.srv-picker{border:1px solid var(--gray-border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;max-height:320px;overflow-y:auto}
+.cat-header{padding:8px 12px;background:var(--gray-surface);font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.cat-body{display:none}.cat-body.open{display:block}
+.srv-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-top:1px solid var(--gray-border);cursor:pointer;transition:background .1s}
+.srv-item:hover{background:var(--gray-surface)}
+.srv-item.selected{background:var(--purple-light)}
+.srv-item-name{font-size:13px;flex:1}
+.srv-item-prices{font-size:12px;color:var(--text-2);text-align:right;margin-left:10px}
+.selected-srvs{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.selected-srv{background:var(--purple-light);border-radius:var(--r);padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.selected-srv-name{font-size:13px;color:var(--purple-dark);flex:1}
+.selected-srv-price{font-size:13px;font-weight:600;color:var(--purple);white-space:nowrap}
+.total-preview{background:var(--gray-surface);border-radius:var(--r);padding:12px;margin-bottom:10px}
+.total-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:4px}
+.total-row:last-child{margin-bottom:0;font-weight:700;font-size:15px;padding-top:6px;border-top:1px solid var(--gray-border);margin-top:4px}
+.sena-box{background:var(--gray-surface);border-radius:var(--r);padding:12px;margin-bottom:10px}
+.sena-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:0}
+.sena-toggle input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--purple);flex-shrink:0}
+.sena-toggle span{font-size:14px;font-weight:500}
+.sena-input{margin-top:10px;display:none}
+.sena-input.show{display:block}
+.turno-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.turno-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--purple-light);color:var(--purple-dark);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.turno-srvs{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.srv-tag{background:var(--gray-surface);border-radius:6px;padding:3px 8px;font-size:12px;color:var(--text-2)}
+.turno-footer{display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--gray-border);flex-wrap:wrap;gap:6px}
+.chica-com-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray-border)}
+.chica-com-row:last-child{border-bottom:none}
+.total-com-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;margin-top:2px;border-top:1px solid var(--gray-border);font-weight:700}
+.empty{text-align:center;padding:32px;color:var(--text-3);font-size:14px}
+.pago-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.pago-btn{padding:8px 6px;border:1px solid var(--gray-border);border-radius:var(--r);background:#fff;font-size:12px;font-weight:500;cursor:pointer;text-align:center;color:var(--text-2)}
+.pago-btn.active{border-color:var(--purple);background:var(--purple-light);color:var(--purple-dark)}
+.list-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-border);gap:8px}
+.list-item:last-child{border-bottom:none}
+.pago-desglose{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><i class="ti ti-sparkles"></i> Zelva Beauty <span id="fecha-display"></span></div>
+  <div style="font-size:12px;color:var(--text-3)"><span class="dot"></span>En línea</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('registro',this)"><i class="ti ti-plus"></i> Registrar</button>
+  <button class="tab" onclick="showTab('turnos',this)"><i class="ti ti-list"></i> Turnos</button>
+  <button class="tab" onclick="showTab('comisiones',this)"><i class="ti ti-wallet"></i> Comisiones</button>
+  <button class="tab" onclick="showTab('caja',this)"><i class="ti ti-chart-bar"></i> Caja</button>
+  <button class="tab" onclick="showTab('config',this)"><i class="ti ti-settings"></i> Config</button>
+</div>
+
+<!-- REGISTRAR -->
+<div id="panel-registro" class="panel active">
+  <div class="info-box info-amber"><i class="ti ti-info-circle" style="flex-shrink:0;font-size:16px"></i>La comisión (37%) se calcula siempre sobre el precio en efectivo, sin importar cómo pague la clienta.</div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-user"></i> Profesional y clienta</div>
+    <div class="g2">
+      <div class="field"><label>Profesional</label><select id="reg-chica"><option value="">Seleccionar...</option></select></div>
+      <div class="field"><label>Clienta</label><input type="text" id="reg-clienta" placeholder="Nombre de la clienta"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Fecha</label><input type="text" id="reg-fecha"></div>
+      <div class="field"><label>Origen del turno</label>
+        <select id="reg-origen">
+          <option value="presencial">Presencial</option>
+          <option value="online">Online / AgendaPro</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-scissors"></i> Servicios</div>
+    <div id="selected-srvs" class="selected-srvs" style="display:none"></div>
+    <div class="srv-picker" id="srv-picker"></div>
+    <div style="font-size:12px;color:var(--text-3);margin-top:6px">Podés seleccionar más de un servicio por turno</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><i class="ti ti-credit-card"></i> Medio de pago</div>
+    <div class="pago-grid" id="pago-grid">
+      <button class="pago-btn active" onclick="selectPago('efectivo',this)"><i class="ti ti-cash"></i><br>Efectivo</button>
+      <button class="pago-btn" onclick="selectPago('transferencia',this)"><i class="ti ti-arrows-exchange"></i><br>Transferencia</button>
+      <button class="pago-btn" onclick="selectPago('qr',this)"><i class="ti ti-qrcode"></i><br>QR</button>
+      <button class="pago-btn" onclick="selectPago('debito',this)"><i class="ti ti-credit-card"></i><br>Débito</button>
+      <button class="pago-btn" onclick="selectPago('credito',this)"><i class="ti ti-credit-card"></i><br>Crédito</button>
+      <button class="pago-btn" onclick="selectPago('openpay',this)"><i class="ti ti-device-mobile"></i><br>OpenPay</button>
+    </div>
+
+    <div class="sena-box">
+      <label class="sena-toggle">
+        <input type="checkbox" id="sena-check" onchange="toggleSena()">
+        <span>La clienta ya dejó una seña</span>
+      </label>
+      <div class="sena-input" id="sena-input">
+        <div class="field" style="margin-top:8px;margin-bottom:0">
+          <label>Monto de la seña ($)</label>
+          <input type="number" id="sena-monto" placeholder="0" oninput="updateTotal()">
+        </div>
+      </div>
+    </div>
+
+    <div class="total-preview" id="total-preview">
+      <div class="total-row"><span style="color:var(--text-2)">Subtotal servicios</span><span id="preview-subtotal">$0</span></div>
+      <div class="total-row" id="preview-sena-row" style="display:none"><span style="color:var(--teal)"><i class="ti ti-minus" style="font-size:12px"></i> Seña</span><span id="preview-sena" style="color:var(--teal)">-$0</span></div>
+      <div class="total-row"><span>Total a cobrar</span><span id="preview-total" class="mv-purple">$0</span></div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:6px" id="preview-com"></div>
+    </div>
+
+    <div class="field"><label>Observación (opcional)</label><input type="text" id="reg-obs" placeholder="Ej: descuento, combo, relleno..."></div>
+    <button class="btn" onclick="registrar()"><i class="ti ti-check"></i> Registrar turno</button>
+    <div class="msg" id="reg-msg"></div>
+  </div>
+</div>
+
+<!-- TURNOS -->
+<div id="panel-turnos" class="panel">
+  <div class="metrics" id="met-turnos"></div>
+  <div class="period-row">
+    <button class="pbtn active" onclick="setPeriod('turnos','hoy',this)">Hoy</button>
+    <button class="pbtn" onclick="setPeriod('turnos','semana',this)">Esta semana</button>
+    <button class="pbtn" onclick="setPeriod('turnos','mes',this)">Este mes</button>
+    <button class="pbtn" onclick="setPeriod('turnos','todos',this)">Todos</button>
+  </div>
+  <div id="lista-turnos"></div>
+</div>
+
+<!-- COMISIONES -->
+<div id="panel-comisiones" class="panel">
+  <div class="info-box info-purple"><i class="ti ti-calculator" style="flex-shrink:0;font-size:16px"></i>Base de cálculo: precio en efectivo × 37%. El medio de pago no afecta la comisión.</div>
+  <div class="period-row">
+    <button class="pbtn active" onclick="setPeriod('com','hoy',this)">Hoy</button>
+    <button class="pbtn" onclick="setPeriod('com','semana',this)">Esta semana</button>
+    <button class="pbtn" onclick="setPeriod('com','mes',this)">Este mes</button>
+    <button class="pbtn" onclick="setPeriod('com','todos',this)">Todos</button>
+  </div>
+  <div class="card" style="padding:0 14px"><div id="lista-com"></div></div>
+</div>
+
+<!-- CAJA -->
+<div id="panel-caja" class="panel">
+  <div class="period-row">
+    <button class="pbtn active" onclick="setPeriod('caja','hoy',this)">Hoy</button>
+    <button class="pbtn" onclick="setPeriod('caja','semana',this)">Esta semana</button>
+    <button class="pbtn" onclick="setPeriod('caja','mes',this)">Este mes</button>
+    <button class="pbtn" onclick="setPeriod('caja','todos',this)">Todos</button>
+  </div>
+  <div class="metrics-3" id="caja-top"></div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-cash"></i> Desglose por medio de pago</div>
+    <div class="pago-desglose" id="caja-pago"></div>
+  </div>
+  <div class="card" style="padding:0 14px">
+    <div id="caja-chicas"></div>
+  </div>
+  <button class="btn-outline" onclick="exportCSV()" style="margin-top:4px"><i class="ti ti-download"></i> Descargar Excel / CSV</button>
+</div>
+
+<!-- CONFIG -->
+<div id="panel-config" class="panel">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-users"></i> Profesionales</div>
+    <div id="cfg-chicas"></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <input type="text" id="inp-chica" placeholder="Nombre de la profesional" style="flex:1">
+      <button class="btn-sm" onclick="addChica()"><i class="ti ti-plus"></i> Agregar</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-scissors"></i> Servicios y precios</div>
+    <div id="cfg-servicios"></div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--gray-border)">
+      <div class="g2">
+        <div class="field"><label>Categoría</label><input type="text" id="inp-srv-cat" placeholder="Ej: Manos"></div>
+        <div class="field"><label>Nombre del servicio</label><input type="text" id="inp-srv-nom" placeholder="Ej: Gel color"></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label>Precio efectivo ($)</label><input type="number" id="inp-srv-ef" placeholder="0"></div>
+        <div class="field"><label>Precio lista ($)</label><input type="number" id="inp-srv-lista" placeholder="0"></div>
+      </div>
+      <button class="btn-sm" onclick="addServicio()"><i class="ti ti-plus"></i> Agregar servicio</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COM = 0.37;
+const fmt = n => '$' + Math.round(n).toLocaleString('es-AR');
+const today = () => { const d = new Date(); return [d.getDate().toString().padStart(2,'0'),(d.getMonth()+1).toString().padStart(2,'0'),d.getFullYear()].join('/'); };
+const toISO = s => { const p = s.split('/'); return `${p[2]}-${p[1]}-${p[0]}`; };
+
+let periodos = { turnos:'hoy', com:'hoy', caja:'hoy' };
+let serviciosCache = [];
+let selectedSrvs = [];
+let pagoActual = 'efectivo';
+
+document.getElementById('fecha-display').textContent = today();
+document.getElementById('reg-fecha').value = today();
+
+function getRange(p) {
+  const d = new Date(); const pad = n => n.toString().padStart(2,'0');
+  const f = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  if (p==='hoy') { const s=f(d); return {desde:s,hasta:s}; }
+  if (p==='semana') { const m=new Date(d); m.setHours(0,0,0,0); const day=m.getDay(); m.setDate(m.getDate()-(day===0?6:day-1)); return {desde:f(m),hasta:f(d)}; }
+  if (p==='mes') { return {desde:`${d.getFullYear()}-${pad(d.getMonth()+1)}-01`,hasta:f(d)}; }
+  return {};
+}
+
+async function api(method, url, body) {
+  const opts = { method, headers:{'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts); return r.json();
+}
+
+function badgePago(p) {
+  const m = {efectivo:'b-ef',transferencia:'b-tr',qr:'b-qr',debito:'b-deb',credito:'b-cred',openpay:'b-open'};
+  const l = {efectivo:'Efectivo',transferencia:'Transferencia',qr:'QR',debito:'Débito',credito:'Crédito',openpay:'OpenPay'};
+  return `<span class="badge ${m[p]||'b-ef'}">${l[p]||p}</span>`;
+}
+
+function showTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  el.classList.add('active');
+  if (name==='registro') loadSelects();
+  if (name==='turnos') renderTurnos();
+  if (name==='comisiones') renderCom();
+  if (name==='caja') renderCaja();
+  if (name==='config') renderConfig();
+}
+
+function setPeriod(tab, p, el) {
+  periodos[tab] = p;
+  const panelId = tab==='com'?'comisiones':tab;
+  document.querySelectorAll(`#panel-${panelId} .pbtn`).forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  if (tab==='turnos') renderTurnos();
+  if (tab==='com') renderCom();
+  if (tab==='caja') renderCaja();
+}
+
+function selectPago(p, el) {
+  pagoActual = p;
+  document.querySelectorAll('.pago-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  updateTotal();
+}
+
+function toggleSena() {
+  const checked = document.getElementById('sena-check').checked;
+  document.getElementById('sena-input').classList.toggle('show', checked);
+  if (!checked) document.getElementById('sena-monto').value = '';
+  updateTotal();
+}
+
+function updateTotal() {
+  const isEf = pagoActual === 'efectivo';
+  const subtotal = selectedSrvs.reduce((s, x) => s + (isEf ? x.precio_ef : x.precio_lista), 0);
+  const sena = parseFloat(document.getElementById('sena-monto').value) || 0;
+  const total = Math.max(0, subtotal - sena);
+  const baseComision = selectedSrvs.reduce((s, x) => s + x.precio_ef, 0);
+
+  document.getElementById('preview-subtotal').textContent = fmt(subtotal);
+  document.getElementById('preview-total').textContent = fmt(total);
+  document.getElementById('preview-com').textContent = baseComision > 0 ? `Comisión a pagar: ${fmt(baseComision * COM)} (sobre ${fmt(baseComision)} en efectivo)` : '';
+
+  const senaRow = document.getElementById('preview-sena-row');
+  if (sena > 0) {
+    senaRow.style.display = 'flex';
+    document.getElementById('preview-sena').textContent = `-${fmt(sena)}`;
+  } else {
+    senaRow.style.display = 'none';
+  }
+}
+
+async function loadSelects() {
+  const [chicas, servicios] = await Promise.all([api('GET','/api/chicas'), api('GET','/api/servicios')]);
+  serviciosCache = servicios;
+  const sc = document.getElementById('reg-chica');
+  const vc = sc.value;
+  sc.innerHTML = '<option value="">Seleccionar...</option>' + chicas.map(c=>`<option>${c.nombre}</option>`).join('');
+  if (vc) sc.value = vc;
+  buildPicker(servicios);
+}
+
+function buildPicker(servicios) {
+  const cats = {};
+  servicios.forEach(s => { if (!cats[s.categoria]) cats[s.categoria]=[]; cats[s.categoria].push(s); });
+  const picker = document.getElementById('srv-picker');
+  picker.innerHTML = Object.entries(cats).map(([cat, srvs]) => `
+    <div class="cat-header" onclick="toggleCat(this)">
+      <span>${cat}</span><i class="ti ti-chevron-down" style="font-size:14px"></i>
+    </div>
+    <div class="cat-body">
+      ${srvs.map(s => `
+        <div class="srv-item" data-id="${s.id}" data-nombre="${s.nombre}" data-ef="${s.precio_ef}" data-lista="${s.precio_lista}" onclick="toggleSrv(this)">
+          <span class="srv-item-name">${s.nombre}</span>
+          <span class="srv-item-prices">Ef: ${fmt(s.precio_ef)}<br>Lista: ${fmt(s.precio_lista)}</span>
+        </div>`).join('')}
+    </div>`).join('');
+  refreshPickerSelection();
+}
+
+function toggleCat(el) {
+  const body = el.nextElementSibling;
+  body.classList.toggle('open');
+  el.querySelector('i').style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+}
+
+function toggleSrv(el) {
+  const id = parseInt(el.dataset.id);
+  const idx = selectedSrvs.findIndex(s => s.id === id);
+  if (idx >= 0) selectedSrvs.splice(idx, 1);
+  else selectedSrvs.push({ id, nombre: el.dataset.nombre, precio_ef: parseFloat(el.dataset.ef), precio_lista: parseFloat(el.dataset.lista) });
+  refreshPickerSelection();
+  renderSelectedSrvs();
+  updateTotal();
+}
+
+function refreshPickerSelection() {
+  document.querySelectorAll('.srv-item').forEach(el => {
+    const id = parseInt(el.dataset.id);
+    el.classList.toggle('selected', selectedSrvs.some(s => s.id === id));
+  });
+}
+
+function removeSrv(id) {
+  selectedSrvs = selectedSrvs.filter(s => s.id !== id);
+  refreshPickerSelection();
+  renderSelectedSrvs();
+  updateTotal();
+}
+
+function renderSelectedSrvs() {
+  const cont = document.getElementById('selected-srvs');
+  if (!selectedSrvs.length) { cont.style.display = 'none'; return; }
+  cont.style.display = 'flex';
+  const isEf = pagoActual === 'efectivo';
+  cont.innerHTML = selectedSrvs.map(s => `
+    <div class="selected-srv">
+      <span class="selected-srv-name">${s.nombre}</span>
+      <span class="selected-srv-price">${fmt(isEf ? s.precio_ef : s.precio_lista)}</span>
+      <button class="btn-sm btn-icon" onclick="removeSrv(${s.id})" style="padding:3px 6px"><i class="ti ti-x" style="font-size:13px"></i></button>
+    </div>`).join('');
+}
+
+async function registrar() {
+  const chica = document.getElementById('reg-chica').value;
+  const clienta = document.getElementById('reg-clienta').value.trim();
+  const fecha = toISO(document.getElementById('reg-fecha').value || today());
+  const origen = document.getElementById('reg-origen').value;
+  const obs = document.getElementById('reg-obs').value.trim();
+  const sena = parseFloat(document.getElementById('sena-monto').value) || 0;
+  const msg = document.getElementById('reg-msg');
+
+  if (!chica || !clienta || !selectedSrvs.length) {
+    msg.className = 'msg show err';
+    msg.textContent = 'Completá profesional, clienta y al menos un servicio.'; return;
+  }
+
+  const isEf = pagoActual === 'efectivo';
+  const subtotal = selectedSrvs.reduce((s, x) => s + (isEf ? x.precio_ef : x.precio_lista), 0);
+  const cobrado = Math.max(0, subtotal - sena);
+  const base_comision = selectedSrvs.reduce((s, x) => s + x.precio_ef, 0);
+
+  await api('POST', '/api/turnos', {
+    chica, clienta, pago: pagoActual, cobrado, base_comision, fecha, origen, obs,
+    sena_monto: sena,
+    servicios: selectedSrvs.map(s => ({ nombre: s.nombre, precio_ef: s.precio_ef, precio_lista: s.precio_lista }))
+  });
+
+  selectedSrvs = [];
+  refreshPickerSelection();
+  renderSelectedSrvs();
+  updateTotal();
+  document.getElementById('reg-clienta').value = '';
+  document.getElementById('reg-obs').value = '';
+  document.getElementById('sena-check').checked = false;
+  document.getElementById('sena-monto').value = '';
+  document.getElementById('sena-input').classList.remove('show');
+  pagoActual = 'efectivo';
+  document.querySelectorAll('.pago-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+
+  msg.className = 'msg show ok';
+  msg.textContent = `Turno de ${chica} registrado — cobrado ${fmt(cobrado)}${sena?` (seña ${fmt(sena)})`:''}`;
+  setTimeout(() => { msg.className='msg'; msg.textContent=''; }, 4000);
+}
+
+async function renderTurnos() {
+  const range = getRange(periodos.turnos);
+  const [res, turnos] = await Promise.all([
+    api('GET', `/api/resumen?${new URLSearchParams(range)}`),
+    api('GET', `/api/turnos?${new URLSearchParams(range)}`)
+  ]);
+  document.getElementById('met-turnos').innerHTML = `
+    <div class="metric"><div class="metric-label">Turnos</div><div class="metric-value">${res.turnos}</div></div>
+    <div class="metric"><div class="metric-label">Total cobrado</div><div class="metric-value mv-purple">${fmt(res.cobrado)}</div></div>
+    <div class="metric"><div class="metric-label">Efectivo</div><div class="metric-value mv-teal">${fmt(res.efectivo)}</div></div>
+    <div class="metric"><div class="metric-label">Digital</div><div class="metric-value mv-amber">${fmt(res.transferencia+res.tarjeta+res.qr+(res.debito||0)+(res.credito||0)+(res.openpay||0))}</div></div>`;
+  const lista = document.getElementById('lista-turnos');
+  if (!turnos.length) { lista.innerHTML = '<div class="empty">No hay turnos en este período</div>'; return; }
+  lista.innerHTML = turnos.map(t => `
+    <div class="turno-card">
+      <div class="turno-top">
+        <div style="display:flex;align-items:center;gap:8px;flex:1">
+          <div class="avatar">${t.chica.substring(0,2).toUpperCase()}</div>
+          <div><div style="font-weight:600">${t.clienta}</div><div style="font-size:12px;color:var(--text-2)">${t.chica} · ${t.fecha}</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          ${t.origen==='online'?'<span class="badge b-online">Online</span>':''}
+          <button class="btn-sm btn-danger btn-icon" onclick="delTurno(${t.id})"><i class="ti ti-trash" style="font-size:13px"></i></button>
+        </div>
+      </div>
+      <div class="turno-srvs">${(t.servicios||[]).map(s=>`<span class="srv-tag">${s.servicio}</span>`).join('')}</div>
+      <div class="turno-footer">
+        ${badgePago(t.pago)}
+        <div style="font-size:12px;color:var(--text-2)">Base com: ${fmt(t.base_comision)}</div>
+        <div style="font-weight:700;font-size:15px">${fmt(t.cobrado)}</div>
+      </div>
+      ${t.obs?`<div style="font-size:12px;color:var(--text-2);margin-top:6px;padding-top:6px;border-top:1px solid var(--gray-border)"><i class="ti ti-message-circle" style="font-size:12px"></i> ${t.obs}</div>`:''}
+    </div>`).join('');
+}
+
+async function delTurno(id) {
+  if (!confirm('¿Eliminar este turno?')) return;
+  await api('DELETE', `/api/turnos/${id}`); renderTurnos();
+}
+
+async function renderCom() {
+  const range = getRange(periodos.com);
+  const res = await api('GET', `/api/resumen?${new URLSearchParams(range)}`);
+  const lista = document.getElementById('lista-com');
+  if (!res.porChica?.length) { lista.innerHTML = '<div class="empty" style="padding:2rem">No hay turnos en este período</div>'; return; }
+  lista.innerHTML = res.porChica.map(c => `
+    <div class="chica-com-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="avatar" style="width:36px;height:36px;font-size:13px">${c.chica.substring(0,2).toUpperCase()}</div>
+        <div>
+          <div style="font-weight:600">${c.chica}</div>
+          <div style="font-size:12px;color:var(--text-2)">${c.turnos} turno${c.turnos!==1?'s':''} · cobrado ${fmt(c.cobrado)} · base ${fmt(c.base_ef)}</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:700;color:var(--purple)">${fmt(c.comision)}</div>
+        <div style="font-size:11px;color:var(--text-2)">a pagar</div>
+      </div>
+    </div>`).join('') +
+    `<div class="total-com-row"><span>Total a pagar</span><span style="font-size:18px;color:var(--purple)">${fmt(res.comisiones)}</span></div>`;
+}
+
+async function renderCaja() {
+  const range = getRange(periodos.caja);
+  const res = await api('GET', `/api/resumen?${new URLSearchParams(range)}`);
+  document.getElementById('caja-top').innerHTML = `
+    <div class="metric"><div class="metric-label">Total cobrado</div><div class="metric-value mv-purple">${fmt(res.cobrado)}</div></div>
+    <div class="metric"><div class="metric-label">Comisiones</div><div class="metric-value mv-amber">${fmt(res.comisiones)}</div></div>
+    <div class="metric"><div class="metric-label">Para el salón</div><div class="metric-value mv-teal">${fmt(res.salon)}</div></div>`;
+  const medios = [
+    {k:'efectivo',l:'Efectivo',cls:'b-ef'},
+    {k:'transferencia',l:'Transferencia',cls:'b-tr'},
+    {k:'qr',l:'QR',cls:'b-qr'},
+    {k:'debito',l:'Débito',cls:'b-deb'},
+    {k:'credito',l:'Crédito',cls:'b-cred'},
+    {k:'openpay',l:'OpenPay',cls:'b-open'},
+  ];
+  document.getElementById('caja-pago').innerHTML = medios.map(m => `
+    <div class="metric"><div class="metric-label">${m.l}</div><div class="metric-value" style="font-size:16px">${fmt(res[m.k]||0)}</div></div>`).join('');
+  document.getElementById('caja-chicas').innerHTML = !res.porChica?.length ? '<div class="empty">Sin datos</div>' :
+    res.porChica.map(c => `
+      <div class="list-item">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="avatar">${c.chica.substring(0,2).toUpperCase()}</div>
+          <div><div style="font-weight:600">${c.chica}</div><div style="font-size:12px;color:var(--text-2)">${c.turnos} turnos · cobrado ${fmt(c.cobrado)}</div></div>
+        </div>
+        <div style="text-align:right"><div style="font-weight:700;color:var(--purple)">${fmt(c.comision)}</div><div style="font-size:11px;color:var(--text-2)">comisión</div></div>
+      </div>`).join('');
+}
+
+async function renderConfig() {
+  const [chicas, servicios] = await Promise.all([api('GET','/api/chicas'), api('GET','/api/servicios')]);
+  document.getElementById('cfg-chicas').innerHTML = chicas.map(c => `
+    <div class="list-item">
+      <div style="display:flex;align-items:center;gap:8px"><div class="avatar">${c.nombre.substring(0,2).toUpperCase()}</div><span>${c.nombre}</span></div>
+      <button class="btn-sm btn-danger" onclick="delChica(${c.id})"><i class="ti ti-trash"></i></button>
+    </div>`).join('');
+  const cats = {};
+  servicios.forEach(s => { if (!cats[s.categoria]) cats[s.categoria]=[]; cats[s.categoria].push(s); });
+  document.getElementById('cfg-servicios').innerHTML = Object.entries(cats).map(([cat, srvs]) => `
+    <div style="margin-bottom:10px">
+      <div style="font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;padding:6px 0;border-bottom:1px solid var(--gray-border)">${cat}</div>
+      ${srvs.map(s => `
+        <div class="list-item">
+          <span style="font-size:13px;flex:1">${s.nombre}</span>
+          <span style="font-size:12px;color:var(--text-2);margin:0 10px">Ef: ${fmt(s.precio_ef)} / Lista: ${fmt(s.precio_lista)}</span>
+          <button class="btn-sm btn-danger" onclick="delServicio(${s.id})"><i class="ti ti-trash"></i></button>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+async function addChica() {
+  const v = document.getElementById('inp-chica').value.trim();
+  if (!v) return;
+  await api('POST','/api/chicas',{nombre:v});
+  document.getElementById('inp-chica').value='';
+  renderConfig();
+}
+
+async function delChica(id) {
+  if (!confirm('¿Eliminar profesional?')) return;
+  await api('DELETE',`/api/chicas/${id}`); renderConfig();
+}
+
+async function addServicio() {
+  const cat = document.getElementById('inp-srv-cat').value.trim() || 'Otros';
+  const n = document.getElementById('inp-srv-nom').value.trim();
+  const ef = parseFloat(document.getElementById('inp-srv-ef').value)||0;
+  const lista = parseFloat(document.getElementById('inp-srv-lista').value)||ef;
+  if (!n) return;
+  await api('POST','/api/servicios',{categoria:cat,nombre:n,precio_ef:ef,precio_lista:lista});
+  ['inp-srv-cat','inp-srv-nom','inp-srv-ef','inp-srv-lista'].forEach(id=>document.getElementById(id).value='');
+  renderConfig(); loadSelects();
+}
+
+async function delServicio(id) {
+  if (!confirm('¿Eliminar servicio?')) return;
+  await api('DELETE',`/api/servicios/${id}`); renderConfig(); loadSelects();
+}
+
+async function exportCSV() {
+  const turnos = await api('GET','/api/turnos');
+  const rows = [['Fecha','Profesional','Clienta','Servicios','Cobrado','Medio pago','Base comisión','Comisión (37%)','Para salón','Origen','Observación']];
+  turnos.forEach(t => {
+    const srvNombres = (t.servicios||[]).map(s=>s.servicio).join(' + ');
+    rows.push([t.fecha,t.chica,t.clienta,`"${srvNombres}"`,t.cobrado,t.pago,t.base_comision,Math.round(t.base_comision*0.37),Math.round(t.cobrado-t.base_comision*0.37),t.origen,t.obs||'']);
+  });
+  const csv = '\uFEFF' + rows.map(r=>r.join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href=url; a.download='zelva_beauty.csv'; a.click(); URL.revokeObjectURL(url);
+}
+
+loadSelects();
+</script>
+</body>
+</html>
