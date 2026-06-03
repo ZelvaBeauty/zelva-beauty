@@ -14,8 +14,8 @@ app.use(express.static(join(__dirname, 'public')));
 const adapter = new JSONFile(join(__dirname, 'zelva.json'));
 const defaultData = {
   chicas: [
-    {id:1,nombre:'Shan'},{id:2,nombre:'Valentina'},{id:3,nombre:'Lucía'},
-    {id:4,nombre:'Camila'},{id:5,nombre:'Micaela'}
+    {id:1,nombre:'Shan'},{id:2,nombre:'Mica'},{id:3,nombre:'Giuli'},
+    {id:4,nombre:'Yami'},{id:5,nombre:'Marla'},{id:6,nombre:'Martu'},{id:7,nombre:'Yessi'}
   ],
   servicios: [
     {id:1,categoria:'Manos',nombre:'Manicura sin esmaltar',precio_ef:18000,precio_lista:21600},
@@ -61,11 +61,16 @@ const defaultData = {
     {id:41,categoria:'Pestañas clásicas',nombre:'Clásicas PXP',precio_ef:36000,precio_lista:43200},
     {id:42,categoria:'Pestañas clásicas',nombre:'Volumen Brasilero',precio_ef:40000,precio_lista:48000},
     {id:43,categoria:'Pestañas clásicas',nombre:'Volumen ruso',precio_ef:45000,precio_lista:54000},
+    {id:44,categoria:'Service Pestañas clásicas',nombre:'Service Clásicas PXP',precio_ef:32400,precio_lista:38880},
+    {id:45,categoria:'Service Pestañas clásicas',nombre:'Service Volumen Brasilero',precio_ef:37000,precio_lista:44400},
+    {id:46,categoria:'Service Pestañas clásicas',nombre:'Service Volumen Ruso',precio_ef:40500,precio_lista:48600},
+    {id:47,categoria:'Service Pestañas tecnológicas',nombre:'Service 3D - Volumen light',precio_ef:31500,precio_lista:37800},
+    {id:48,categoria:'Service Pestañas tecnológicas',nombre:'Service 4D - Volumen medio',precio_ef:35100,precio_lista:42120},
+    {id:49,categoria:'Service Pestañas tecnológicas',nombre:'Service 5D - Mega volumen',precio_ef:39600,precio_lista:47520},
   ],
   turnos: [],
-  nextId: { chicas: 6, servicios: 44, turnos: 1 }
+  nextId: { chicas: 8, servicios: 50, turnos: 1 }
 };
-
 const db = new Low(adapter, defaultData);
 await db.read();
 if (!db.data.nextId) db.data.nextId = defaultData.nextId;
@@ -74,7 +79,7 @@ if (!db.data.servicios?.length) db.data.servicios = defaultData.servicios;
 if (!db.data.turnos) db.data.turnos = [];
 await db.write();
 
-const nextId = async (key) => { const id = db.data.nextId[key]++; await db.write(); return id; };
+const nextId = (key) => { const id = db.data.nextId[key]++; db.write(); return id; };
 const COM = 0.37;
 
 app.get('/api/chicas', (req, res) => res.json(db.data.chicas.sort((a,b)=>a.nombre.localeCompare(b.nombre))));
@@ -82,7 +87,7 @@ app.post('/api/chicas', async (req, res) => {
   const { nombre } = req.body;
   if (!nombre) return res.status(400).json({ error: 'Falta nombre' });
   if (db.data.chicas.find(c=>c.nombre===nombre)) return res.status(409).json({ error: 'Ya existe' });
-  const id = await nextId('chicas');
+  const id = nextId('chicas');
   db.data.chicas.push({ id, nombre });
   await db.write(); res.json({ id, nombre });
 });
@@ -95,7 +100,7 @@ app.get('/api/servicios', (req, res) => res.json(db.data.servicios.sort((a,b)=>a
 app.post('/api/servicios', async (req, res) => {
   const { categoria, nombre, precio_ef, precio_lista } = req.body;
   if (!nombre) return res.status(400).json({ error: 'Falta nombre' });
-  const id = await nextId('servicios');
+  const id = nextId('servicios');
   db.data.servicios.push({ id, categoria: categoria||'Otros', nombre, precio_ef: precio_ef||0, precio_lista: precio_lista||precio_ef||0 });
   await db.write(); res.json({ id });
 });
@@ -112,10 +117,10 @@ app.get('/api/turnos', (req, res) => {
   res.json([...turnos].sort((a,b)=>b.creado_at.localeCompare(a.creado_at)));
 });
 app.post('/api/turnos', async (req, res) => {
-  const { chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen, obs, sena_monto } = req.body;
+  const { chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen, obs, sena_monto, descuento_pct, descuento_motivo } = req.body;
   if (!chica||!clienta||!servicios?.length||!pago) return res.status(400).json({ error: 'Faltan campos' });
-  const id = await nextId('turnos');
-  db.data.turnos.push({ id, chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen: origen||'presencial', obs: obs||'', sena_monto: sena_monto||0, creado_at: new Date().toISOString() });
+  const id = nextId('turnos');
+  db.data.turnos.push({ id, chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_pct:descuento_pct||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
 app.delete('/api/turnos/:id', async (req, res) => {
