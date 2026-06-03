@@ -54,33 +54,22 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .pbtn{font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;border:1px solid var(--gray-border);background:#fff;color:var(--text-2);white-space:nowrap;flex-shrink:0}
 .pbtn.active{background:var(--purple-light);color:var(--purple-dark);border-color:var(--purple-mid)}
 .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap}
-.b-ef{background:#E1F5EE;color:#085041}
-.b-tr{background:#E6F1FB;color:#0C447C}
-.b-qr{background:#EEEDFE;color:#3C3489}
-.b-deb{background:#FAEEDA;color:#633806}
-.b-cred{background:#FAECE7;color:#712B13}
-.b-open{background:#F1EFE8;color:#444441}
+.b-ef{background:#E1F5EE;color:#085041}.b-tr{background:#E6F1FB;color:#0C447C}.b-qr{background:#EEEDFE;color:#3C3489}
+.b-deb{background:#FAEEDA;color:#633806}.b-cred{background:#FAECE7;color:#712B13}.b-open{background:#F1EFE8;color:#444441}
 .b-online{background:#E1F5EE;color:#085041}
 .info-box{border-radius:var(--r);padding:10px 12px;font-size:13px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
-.info-amber{background:var(--amber-light);color:var(--amber)}
-.info-teal{background:var(--teal-light);color:var(--teal)}
-.info-purple{background:var(--purple-light);color:var(--purple-dark)}
+.info-amber{background:var(--amber-light);color:var(--amber)}.info-purple{background:var(--purple-light);color:var(--purple-dark)}
 .msg{font-size:13px;text-align:center;margin-top:8px;min-height:18px;padding:7px;border-radius:var(--r);display:none}
-.msg.show{display:block}
-.msg.ok{background:var(--success-bg);color:var(--success-text)}
-.msg.err{background:var(--danger-bg);color:var(--danger-text)}
+.msg.show{display:block}.msg.ok{background:var(--success-bg);color:var(--success-text)}.msg.err{background:var(--danger-bg);color:var(--danger-text)}
 .srv-picker{border:1px solid var(--gray-border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;max-height:320px;overflow-y:auto}
 .cat-header{padding:8px 12px;background:var(--gray-surface);font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
 .cat-body{display:none}.cat-body.open{display:block}
 .srv-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-top:1px solid var(--gray-border);cursor:pointer;transition:background .1s}
-.srv-item:hover{background:var(--gray-surface)}
-.srv-item.selected{background:var(--purple-light)}
-.srv-item-name{font-size:13px;flex:1}
-.srv-item-prices{font-size:12px;color:var(--text-2);text-align:right;margin-left:10px}
+.srv-item:hover{background:var(--gray-surface)}.srv-item.selected{background:var(--purple-light)}
+.srv-item-name{font-size:13px;flex:1}.srv-item-prices{font-size:12px;color:var(--text-2);text-align:right;margin-left:10px}
 .selected-srvs{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .selected-srv{background:var(--purple-light);border-radius:var(--r);padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.selected-srv-name{font-size:13px;color:var(--purple-dark);flex:1}
-.selected-srv-price{font-size:13px;font-weight:600;color:var(--purple);white-space:nowrap}
+.selected-srv-name{font-size:13px;color:var(--purple-dark);flex:1}.selected-srv-price{font-size:13px;font-weight:600;color:var(--purple);white-space:nowrap}
 .total-preview{background:var(--gray-surface);border-radius:var(--r);padding:12px;margin-bottom:10px}
 .total-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;margin-bottom:4px}
 .total-row:last-child{margin-bottom:0;font-weight:700;font-size:15px;padding-top:6px;border-top:1px solid var(--gray-border);margin-top:4px}
@@ -88,8 +77,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .sena-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:0}
 .sena-toggle input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--purple);flex-shrink:0}
 .sena-toggle span{font-size:14px;font-weight:500}
-.sena-input{margin-top:10px;display:none}
-.sena-input.show{display:block}
+.sena-input{margin-top:10px;display:none}.sena-input.show{display:block}
 .turno-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--r);padding:12px;margin-bottom:8px}
 .turno-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px}
 .avatar{width:32px;height:32px;border-radius:50%;background:var(--purple-light);color:var(--purple-dark);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
@@ -123,10 +111,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <button class="tab" onclick="showTab('config',this)"><i class="ti ti-settings"></i> Config</button>
 </div>
 
-<!-- REGISTRAR -->
 <div id="panel-registro" class="panel active">
   <div class="info-box info-amber"><i class="ti ti-info-circle" style="flex-shrink:0;font-size:16px"></i>La comisión (37%) se calcula siempre sobre el precio en efectivo, sin importar cómo pague la clienta.</div>
-
   <div class="card">
     <div class="card-title"><i class="ti ti-user"></i> Profesional y clienta</div>
     <div class="g2">
@@ -136,24 +122,19 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     <div class="g2">
       <div class="field"><label>Fecha</label><input type="text" id="reg-fecha"></div>
       <div class="field"><label>Origen del turno</label>
-        <select id="reg-origen">
-          <option value="presencial">Presencial</option>
-          <option value="online">Online / AgendaPro</option>
-        </select>
+        <select id="reg-origen"><option value="presencial">Presencial</option><option value="online">Online / AgendaPro</option></select>
       </div>
     </div>
   </div>
-
   <div class="card">
     <div class="card-title"><i class="ti ti-scissors"></i> Servicios</div>
     <div id="selected-srvs" class="selected-srvs" style="display:none"></div>
     <div class="srv-picker" id="srv-picker"></div>
     <div style="font-size:12px;color:var(--text-3);margin-top:6px">Podés seleccionar más de un servicio por turno</div>
   </div>
-
   <div class="card">
     <div class="card-title"><i class="ti ti-credit-card"></i> Medio de pago</div>
-    <div class="pago-grid" id="pago-grid">
+    <div class="pago-grid">
       <button class="pago-btn active" onclick="selectPago('efectivo',this)"><i class="ti ti-cash"></i><br>Efectivo</button>
       <button class="pago-btn" onclick="selectPago('transferencia',this)"><i class="ti ti-arrows-exchange"></i><br>Transferencia</button>
       <button class="pago-btn" onclick="selectPago('qr',this)"><i class="ti ti-qrcode"></i><br>QR</button>
@@ -161,7 +142,6 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <button class="pago-btn" onclick="selectPago('credito',this)"><i class="ti ti-credit-card"></i><br>Crédito</button>
       <button class="pago-btn" onclick="selectPago('openpay',this)"><i class="ti ti-device-mobile"></i><br>OpenPay</button>
     </div>
-
     <div class="sena-box">
       <label class="sena-toggle">
         <input type="checkbox" id="sena-check" onchange="toggleSena()">
@@ -174,21 +154,31 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
         </div>
       </div>
     </div>
-
-    <div class="total-preview" id="total-preview">
+    <div class="sena-box" style="background:#FAECE7">
+      <label class="sena-toggle">
+        <input type="checkbox" id="desc-check" onchange="toggleDescuento()" style="accent-color:#993C1D">
+        <span style="color:#993C1D">Aplicar descuento especial</span>
+      </label>
+      <div class="sena-input" id="desc-input">
+        <div class="g2" style="margin-top:10px">
+          <div class="field" style="margin:0"><label>Descuento (%)</label><input type="number" id="desc-pct" placeholder="Ej: 15" min="1" max="100" oninput="updateTotal()"></div>
+          <div class="field" style="margin:0"><label>Motivo</label><input type="text" id="desc-motivo" placeholder="Tarjeta fidelidad, promo web..."></div>
+        </div>
+      </div>
+    </div>
+    <div class="total-preview">
       <div class="total-row"><span style="color:var(--text-2)">Subtotal servicios</span><span id="preview-subtotal">$0</span></div>
       <div class="total-row" id="preview-sena-row" style="display:none"><span style="color:var(--teal)"><i class="ti ti-minus" style="font-size:12px"></i> Seña</span><span id="preview-sena" style="color:var(--teal)">-$0</span></div>
+      <div class="total-row" id="preview-desc-row" style="display:none"><span style="color:var(--coral)"><i class="ti ti-discount" style="font-size:12px"></i> Descuento</span><span id="preview-desc" style="color:var(--coral)">-$0</span></div>
       <div class="total-row"><span>Total a cobrar</span><span id="preview-total" class="mv-purple">$0</span></div>
       <div style="font-size:11px;color:var(--text-3);margin-top:6px" id="preview-com"></div>
     </div>
-
-    <div class="field"><label>Observación (opcional)</label><input type="text" id="reg-obs" placeholder="Ej: descuento, combo, relleno..."></div>
+    <div class="field"><label>Observación (opcional)</label><input type="text" id="reg-obs" placeholder="Ej: combo, relleno..."></div>
     <button class="btn" onclick="registrar()"><i class="ti ti-check"></i> Registrar turno</button>
     <div class="msg" id="reg-msg"></div>
   </div>
 </div>
 
-<!-- TURNOS -->
 <div id="panel-turnos" class="panel">
   <div class="metrics" id="met-turnos"></div>
   <div class="period-row">
@@ -200,7 +190,6 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <div id="lista-turnos"></div>
 </div>
 
-<!-- COMISIONES -->
 <div id="panel-comisiones" class="panel">
   <div class="info-box info-purple"><i class="ti ti-calculator" style="flex-shrink:0;font-size:16px"></i>Base de cálculo: precio en efectivo × 37%. El medio de pago no afecta la comisión.</div>
   <div class="period-row">
@@ -212,7 +201,6 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <div class="card" style="padding:0 14px"><div id="lista-com"></div></div>
 </div>
 
-<!-- CAJA -->
 <div id="panel-caja" class="panel">
   <div class="period-row">
     <button class="pbtn active" onclick="setPeriod('caja','hoy',this)">Hoy</button>
@@ -225,13 +213,10 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     <div class="card-title"><i class="ti ti-cash"></i> Desglose por medio de pago</div>
     <div class="pago-desglose" id="caja-pago"></div>
   </div>
-  <div class="card" style="padding:0 14px">
-    <div id="caja-chicas"></div>
-  </div>
+  <div class="card" style="padding:0 14px"><div id="caja-chicas"></div></div>
   <button class="btn-outline" onclick="exportCSV()" style="margin-top:4px"><i class="ti ti-download"></i> Descargar Excel / CSV</button>
 </div>
 
-<!-- CONFIG -->
 <div id="panel-config" class="panel">
   <div class="card">
     <div class="card-title"><i class="ti ti-users"></i> Profesionales</div>
@@ -329,24 +314,33 @@ function toggleSena() {
   updateTotal();
 }
 
+function toggleDescuento() {
+  const checked = document.getElementById('desc-check').checked;
+  document.getElementById('desc-input').classList.toggle('show', checked);
+  if (!checked) { document.getElementById('desc-pct').value = ''; document.getElementById('desc-motivo').value = ''; }
+  updateTotal();
+}
+
 function updateTotal() {
   const isEf = pagoActual === 'efectivo';
   const subtotal = selectedSrvs.reduce((s, x) => s + (isEf ? x.precio_ef : x.precio_lista), 0);
   const sena = parseFloat(document.getElementById('sena-monto').value) || 0;
-  const total = Math.max(0, subtotal - sena);
-  const baseComision = selectedSrvs.reduce((s, x) => s + x.precio_ef, 0);
+  const descPct = parseFloat(document.getElementById('desc-pct').value) || 0;
+  const descMonto = Math.round(subtotal * descPct / 100);
+  const total = Math.max(0, subtotal - sena - descMonto);
+  const baseComision = Math.round(selectedSrvs.reduce((s, x) => s + x.precio_ef, 0) * (1 - descPct/100));
 
   document.getElementById('preview-subtotal').textContent = fmt(subtotal);
   document.getElementById('preview-total').textContent = fmt(total);
   document.getElementById('preview-com').textContent = baseComision > 0 ? `Comisión a pagar: ${fmt(baseComision * COM)} (sobre ${fmt(baseComision)} en efectivo)` : '';
 
   const senaRow = document.getElementById('preview-sena-row');
-  if (sena > 0) {
-    senaRow.style.display = 'flex';
-    document.getElementById('preview-sena').textContent = `-${fmt(sena)}`;
-  } else {
-    senaRow.style.display = 'none';
-  }
+  senaRow.style.display = sena > 0 ? 'flex' : 'none';
+  if (sena > 0) document.getElementById('preview-sena').textContent = `-${fmt(sena)}`;
+
+  const descRow = document.getElementById('preview-desc-row');
+  descRow.style.display = descMonto > 0 ? 'flex' : 'none';
+  if (descMonto > 0) document.getElementById('preview-desc').textContent = `-${fmt(descMonto)} (${descPct}%)`;
 }
 
 async function loadSelects() {
@@ -388,23 +382,18 @@ function toggleSrv(el) {
   const idx = selectedSrvs.findIndex(s => s.id === id);
   if (idx >= 0) selectedSrvs.splice(idx, 1);
   else selectedSrvs.push({ id, nombre: el.dataset.nombre, precio_ef: parseFloat(el.dataset.ef), precio_lista: parseFloat(el.dataset.lista) });
-  refreshPickerSelection();
-  renderSelectedSrvs();
-  updateTotal();
+  refreshPickerSelection(); renderSelectedSrvs(); updateTotal();
 }
 
 function refreshPickerSelection() {
   document.querySelectorAll('.srv-item').forEach(el => {
-    const id = parseInt(el.dataset.id);
-    el.classList.toggle('selected', selectedSrvs.some(s => s.id === id));
+    el.classList.toggle('selected', selectedSrvs.some(s => s.id === parseInt(el.dataset.id)));
   });
 }
 
 function removeSrv(id) {
   selectedSrvs = selectedSrvs.filter(s => s.id !== id);
-  refreshPickerSelection();
-  renderSelectedSrvs();
-  updateTotal();
+  refreshPickerSelection(); renderSelectedSrvs(); updateTotal();
 }
 
 function renderSelectedSrvs() {
@@ -427,6 +416,8 @@ async function registrar() {
   const origen = document.getElementById('reg-origen').value;
   const obs = document.getElementById('reg-obs').value.trim();
   const sena = parseFloat(document.getElementById('sena-monto').value) || 0;
+  const descPct = parseFloat(document.getElementById('desc-pct').value) || 0;
+  const descMotivo = document.getElementById('desc-motivo').value.trim();
   const msg = document.getElementById('reg-msg');
 
   if (!chica || !clienta || !selectedSrvs.length) {
@@ -436,29 +427,31 @@ async function registrar() {
 
   const isEf = pagoActual === 'efectivo';
   const subtotal = selectedSrvs.reduce((s, x) => s + (isEf ? x.precio_ef : x.precio_lista), 0);
-  const cobrado = Math.max(0, subtotal - sena);
-  const base_comision = selectedSrvs.reduce((s, x) => s + x.precio_ef, 0);
+  const descMonto = Math.round(subtotal * descPct / 100);
+  const cobrado = Math.max(0, subtotal - sena - descMonto);
+  const base_comision = Math.round(selectedSrvs.reduce((s, x) => s + x.precio_ef, 0) * (1 - descPct/100));
 
   await api('POST', '/api/turnos', {
     chica, clienta, pago: pagoActual, cobrado, base_comision, fecha, origen, obs,
-    sena_monto: sena,
+    sena_monto: sena, descuento_pct: descPct, descuento_motivo: descMotivo,
     servicios: selectedSrvs.map(s => ({ nombre: s.nombre, precio_ef: s.precio_ef, precio_lista: s.precio_lista }))
   });
 
-  selectedSrvs = [];
-  refreshPickerSelection();
-  renderSelectedSrvs();
-  updateTotal();
+  selectedSrvs = []; refreshPickerSelection(); renderSelectedSrvs(); updateTotal();
   document.getElementById('reg-clienta').value = '';
   document.getElementById('reg-obs').value = '';
   document.getElementById('sena-check').checked = false;
   document.getElementById('sena-monto').value = '';
   document.getElementById('sena-input').classList.remove('show');
+  document.getElementById('desc-check').checked = false;
+  document.getElementById('desc-pct').value = '';
+  document.getElementById('desc-motivo').value = '';
+  document.getElementById('desc-input').classList.remove('show');
   pagoActual = 'efectivo';
   document.querySelectorAll('.pago-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
 
   msg.className = 'msg show ok';
-  msg.textContent = `Turno de ${chica} registrado — cobrado ${fmt(cobrado)}${sena?` (seña ${fmt(sena)})`:''}`;
+  msg.textContent = `Turno de ${chica} registrado — cobrado ${fmt(cobrado)}${sena?` · seña ${fmt(sena)}`:''}${descPct?` · desc. ${descPct}%`:''}`;
   setTimeout(() => { msg.className='msg'; msg.textContent=''; }, 4000);
 }
 
@@ -472,7 +465,7 @@ async function renderTurnos() {
     <div class="metric"><div class="metric-label">Turnos</div><div class="metric-value">${res.turnos}</div></div>
     <div class="metric"><div class="metric-label">Total cobrado</div><div class="metric-value mv-purple">${fmt(res.cobrado)}</div></div>
     <div class="metric"><div class="metric-label">Efectivo</div><div class="metric-value mv-teal">${fmt(res.efectivo)}</div></div>
-    <div class="metric"><div class="metric-label">Digital</div><div class="metric-value mv-amber">${fmt(res.transferencia+res.tarjeta+res.qr+(res.debito||0)+(res.credito||0)+(res.openpay||0))}</div></div>`;
+    <div class="metric"><div class="metric-label">Digital</div><div class="metric-value mv-amber">${fmt((res.transferencia||0)+(res.tarjeta||0)+(res.qr||0)+(res.debito||0)+(res.credito||0)+(res.openpay||0))}</div></div>`;
   const lista = document.getElementById('lista-turnos');
   if (!turnos.length) { lista.innerHTML = '<div class="empty">No hay turnos en este período</div>'; return; }
   lista.innerHTML = turnos.map(t => `
@@ -487,13 +480,14 @@ async function renderTurnos() {
           <button class="btn-sm btn-danger btn-icon" onclick="delTurno(${t.id})"><i class="ti ti-trash" style="font-size:13px"></i></button>
         </div>
       </div>
-      <div class="turno-srvs">${(t.servicios||[]).map(s=>`<span class="srv-tag">${s.servicio}</span>`).join('')}</div>
+      <div class="turno-srvs">${(t.servicios||[]).map(s=>`<span class="srv-tag">${s.servicio||s.nombre}</span>`).join('')}</div>
       <div class="turno-footer">
         ${badgePago(t.pago)}
         <div style="font-size:12px;color:var(--text-2)">Base com: ${fmt(t.base_comision)}</div>
         <div style="font-weight:700;font-size:15px">${fmt(t.cobrado)}</div>
       </div>
-      ${t.obs?`<div style="font-size:12px;color:var(--text-2);margin-top:6px;padding-top:6px;border-top:1px solid var(--gray-border)"><i class="ti ti-message-circle" style="font-size:12px"></i> ${t.obs}</div>`:''}
+      ${t.descuento_pct?`<div style="font-size:12px;color:var(--coral);margin-top:4px"><i class="ti ti-discount" style="font-size:12px"></i> Desc. ${t.descuento_pct}%${t.descuento_motivo?' — '+t.descuento_motivo:''}</div>`:''}
+      ${t.obs?`<div style="font-size:12px;color:var(--text-2);margin-top:4px"><i class="ti ti-message-circle" style="font-size:12px"></i> ${t.obs}</div>`:''}
     </div>`).join('');
 }
 
@@ -511,10 +505,8 @@ async function renderCom() {
     <div class="chica-com-row">
       <div style="display:flex;align-items:center;gap:10px">
         <div class="avatar" style="width:36px;height:36px;font-size:13px">${c.chica.substring(0,2).toUpperCase()}</div>
-        <div>
-          <div style="font-weight:600">${c.chica}</div>
-          <div style="font-size:12px;color:var(--text-2)">${c.turnos} turno${c.turnos!==1?'s':''} · cobrado ${fmt(c.cobrado)} · base ${fmt(c.base_ef)}</div>
-        </div>
+        <div><div style="font-weight:600">${c.chica}</div>
+        <div style="font-size:12px;color:var(--text-2)">${c.turnos} turno${c.turnos!==1?'s':''} · cobrado ${fmt(c.cobrado)} · base ${fmt(c.base_ef)}</div></div>
       </div>
       <div style="text-align:right">
         <div style="font-size:20px;font-weight:700;color:var(--purple)">${fmt(c.comision)}</div>
@@ -531,14 +523,7 @@ async function renderCaja() {
     <div class="metric"><div class="metric-label">Total cobrado</div><div class="metric-value mv-purple">${fmt(res.cobrado)}</div></div>
     <div class="metric"><div class="metric-label">Comisiones</div><div class="metric-value mv-amber">${fmt(res.comisiones)}</div></div>
     <div class="metric"><div class="metric-label">Para el salón</div><div class="metric-value mv-teal">${fmt(res.salon)}</div></div>`;
-  const medios = [
-    {k:'efectivo',l:'Efectivo',cls:'b-ef'},
-    {k:'transferencia',l:'Transferencia',cls:'b-tr'},
-    {k:'qr',l:'QR',cls:'b-qr'},
-    {k:'debito',l:'Débito',cls:'b-deb'},
-    {k:'credito',l:'Crédito',cls:'b-cred'},
-    {k:'openpay',l:'OpenPay',cls:'b-open'},
-  ];
+  const medios = [{k:'efectivo',l:'Efectivo'},{k:'transferencia',l:'Transferencia'},{k:'qr',l:'QR'},{k:'debito',l:'Débito'},{k:'credito',l:'Crédito'},{k:'openpay',l:'OpenPay'}];
   document.getElementById('caja-pago').innerHTML = medios.map(m => `
     <div class="metric"><div class="metric-label">${m.l}</div><div class="metric-value" style="font-size:16px">${fmt(res[m.k]||0)}</div></div>`).join('');
   document.getElementById('caja-chicas').innerHTML = !res.porChica?.length ? '<div class="empty">Sin datos</div>' :
@@ -577,8 +562,7 @@ async function addChica() {
   const v = document.getElementById('inp-chica').value.trim();
   if (!v) return;
   await api('POST','/api/chicas',{nombre:v});
-  document.getElementById('inp-chica').value='';
-  renderConfig();
+  document.getElementById('inp-chica').value=''; renderConfig();
 }
 
 async function delChica(id) {
@@ -604,10 +588,10 @@ async function delServicio(id) {
 
 async function exportCSV() {
   const turnos = await api('GET','/api/turnos');
-  const rows = [['Fecha','Profesional','Clienta','Servicios','Cobrado','Medio pago','Base comisión','Comisión (37%)','Para salón','Origen','Observación']];
+  const rows = [['Fecha','Profesional','Clienta','Servicios','Cobrado','Medio pago','Base comisión','Comisión (37%)','Para salón','Descuento %','Motivo descuento','Seña','Origen','Observación']];
   turnos.forEach(t => {
-    const srvNombres = (t.servicios||[]).map(s=>s.servicio).join(' + ');
-    rows.push([t.fecha,t.chica,t.clienta,`"${srvNombres}"`,t.cobrado,t.pago,t.base_comision,Math.round(t.base_comision*0.37),Math.round(t.cobrado-t.base_comision*0.37),t.origen,t.obs||'']);
+    const srvNombres = (t.servicios||[]).map(s=>s.servicio||s.nombre).join(' + ');
+    rows.push([t.fecha,t.chica,t.clienta,`"${srvNombres}"`,t.cobrado,t.pago,t.base_comision,Math.round(t.base_comision*0.37),Math.round(t.cobrado-t.base_comision*0.37),t.descuento_pct||0,t.descuento_motivo||'',t.sena_monto||0,t.origen,t.obs||'']);
   });
   const csv = '\uFEFF' + rows.map(r=>r.join(',')).join('\n');
   const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
