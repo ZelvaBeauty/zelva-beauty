@@ -429,8 +429,7 @@ async function registrar() {
   const subtotal = selectedSrvs.reduce((s, x) => s + (isEf ? x.precio_ef : x.precio_lista), 0);
   const descMonto = Math.round(subtotal * descPct / 100);
   const cobrado = Math.max(0, subtotal - sena - descMonto);
-  const base_comision = Math.round(selectedSrvs.reduce((s, x) => s + x.precio_ef, 0) * (1 - descPct/100));
-
+const base_comision = selectedSrvs.reduce((s, x) => s + x.precio_ef, 0);
   await api('POST', '/api/turnos', {
     chica, clienta, pago: pagoActual, cobrado, base_comision, fecha, origen, obs,
     sena_monto: sena, descuento_pct: descPct, descuento_motivo: descMotivo,
