@@ -24,7 +24,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;display:inline-block;margin-right:5px}
 .tabs{display:flex;background:#fff;border-bottom:1px solid var(--gray-border);overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{padding:11px 14px;font-size:13px;font-weight:500;color:var(--text-2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:5px}
+.tab{padding:11px 13px;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:4px}
 .tab.active{color:var(--purple);border-bottom-color:var(--purple)}
 .panel{display:none;padding:14px;max-width:720px;margin:0 auto}.panel.active{display:block}
 .card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--rlg);padding:14px;margin-bottom:12px}
@@ -39,6 +39,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .btn-sm{font-size:12px;padding:5px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--gray-border);background:var(--gray-surface);color:var(--text);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
 .btn-danger{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-border)}
 .btn-edit{background:#E6F1FB;color:#0C447C;border-color:#A8C8F0}
+.btn-success{background:var(--success-bg);color:var(--success-text);border-color:#7ECFB3}
+.btn-purple{background:var(--purple);color:#fff;border-color:var(--purple)}
 .btn-outline{background:#fff;color:var(--purple);border:1px solid var(--purple);width:100%;padding:10px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 .metrics-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
@@ -53,7 +55,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap}
 .b-ef{background:#E1F5EE;color:#085041}.b-tr{background:#E6F1FB;color:#0C447C}.b-qr{background:#EEEDFE;color:#3C3489}
 .b-deb{background:#FAEEDA;color:#633806}.b-cred{background:#FAECE7;color:#712B13}.b-open{background:#F1EFE8;color:#444441}
-.b-online{background:#E1F5EE;color:#085041}
+.b-online{background:#E1F5EE;color:#085041}.b-pagada{background:#E1F5EE;color:#085041}.b-pendiente{background:#FAEEDA;color:#633806}
 .info-box{border-radius:var(--r);padding:10px 12px;font-size:13px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
 .info-amber{background:var(--amber-light);color:var(--amber)}.info-purple{background:var(--purple-light);color:var(--purple-dark)}
 .msg{font-size:13px;text-align:center;margin-top:8px;padding:7px;border-radius:var(--r);display:none}
@@ -94,20 +96,25 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .pago-desglose{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
 .edit-row{display:none;background:#F0F4FF;border-radius:var(--r);padding:10px;margin-top:6px;gap:8px;align-items:flex-end}
 .edit-row.open{display:flex}
+.rank-bar-bg{background:var(--gray-surface);border-radius:4px;height:6px;flex:1;margin:0 8px}
+.rank-bar{background:var(--purple);border-radius:4px;height:6px}
+.liq-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.adelanto-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--gray-border);font-size:13px}
+.adelanto-row:last-child{border-bottom:none}
 </style>
 </head>
 <body>
-
 <div class="header">
   <div class="logo"><i class="ti ti-sparkles"></i> Zelva Beauty</div>
   <div style="font-size:12px;color:var(--text-3)"><span class="dot"></span>En línea</div>
 </div>
-
 <div class="tabs">
   <button class="tab active" onclick="showTab('registro',this)"><i class="ti ti-plus"></i> Registrar</button>
   <button class="tab" onclick="showTab('turnos',this)"><i class="ti ti-list"></i> Turnos</button>
   <button class="tab" onclick="showTab('comisiones',this)"><i class="ti ti-wallet"></i> Comisiones</button>
+  <button class="tab" onclick="showTab('liquidaciones',this)"><i class="ti ti-receipt"></i> Liquidar</button>
   <button class="tab" onclick="showTab('caja',this)"><i class="ti ti-chart-bar"></i> Caja</button>
+  <button class="tab" onclick="showTab('ranking',this)"><i class="ti ti-trophy"></i> Ranking</button>
   <button class="tab" onclick="showTab('config',this)"><i class="ti ti-settings"></i> Config</button>
 </div>
 
@@ -143,22 +150,13 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <button class="pago-btn" onclick="selectPago('openpay',this)"><i class="ti ti-device-mobile"></i><br>OpenPay</button>
     </div>
     <div class="toggle-box" style="background:var(--gray-surface)">
-      <label class="toggle-lbl">
-        <input type="checkbox" id="sena-check" onchange="toggleBox('sena-check','sena-body')" style="accent-color:var(--purple)">
-        <span>La clienta ya dejó una seña</span>
-      </label>
+      <label class="toggle-lbl"><input type="checkbox" id="sena-check" onchange="toggleBox('sena-check','sena-body')" style="accent-color:var(--purple)"><span>La clienta ya dejó una seña</span></label>
       <div class="toggle-body" id="sena-body">
-        <div class="field" style="margin-top:10px;margin-bottom:0">
-          <label>Monto de la seña ($)</label>
-          <input type="number" id="sena-monto" placeholder="0" oninput="updateTotal()">
-        </div>
+        <div class="field" style="margin-top:10px;margin-bottom:0"><label>Monto de la seña ($)</label><input type="number" id="sena-monto" placeholder="0" oninput="updateTotal()"></div>
       </div>
     </div>
     <div class="toggle-box" style="background:#FAECE7">
-      <label class="toggle-lbl">
-        <input type="checkbox" id="desc-check" onchange="toggleBox('desc-check','desc-body')" style="accent-color:#993C1D">
-        <span style="color:#993C1D">Aplicar descuento especial</span>
-      </label>
+      <label class="toggle-lbl"><input type="checkbox" id="desc-check" onchange="toggleBox('desc-check','desc-body')" style="accent-color:#993C1D"><span style="color:#993C1D">Aplicar descuento especial</span></label>
       <div class="toggle-body" id="desc-body">
         <div class="g2" style="margin-top:10px">
           <div class="field" style="margin:0"><label>Monto del descuento ($)</label><input type="number" id="desc-monto" placeholder="Ej: 5000" oninput="updateTotal()"></div>
@@ -201,6 +199,44 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <div class="card" style="padding:0 14px"><div id="lista-com"></div></div>
 </div>
 
+<div id="panel-liquidaciones" class="panel">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-cash"></i> Registrar adelanto</div>
+    <div class="g2">
+      <div class="field"><label>Profesional</label><select id="adel-chica"><option value="">Seleccionar...</option></select></div>
+      <div class="field"><label>Monto del adelanto ($)</label><input type="number" id="adel-monto" placeholder="0"></div>
+    </div>
+    <div class="field"><label>Observación (opcional)</label><input type="text" id="adel-obs" placeholder="Ej: adelanto pedido por WhatsApp"></div>
+    <button class="btn-sm btn-purple" onclick="registrarAdelanto()" style="width:100%;justify-content:center;padding:10px"><i class="ti ti-plus"></i> Registrar adelanto</button>
+    <div class="msg" id="adel-msg"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-receipt"></i> Nueva liquidación mensual</div>
+    <div class="g2">
+      <div class="field"><label>Profesional</label><select id="liq-chica" onchange="calcularLiquidacion()"><option value="">Seleccionar...</option></select></div>
+      <div class="field"><label>Mes</label>
+        <select id="liq-mes" onchange="calcularLiquidacion()">
+          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+      </div>
+    </div>
+    <div id="liq-preview" style="display:none">
+      <div style="background:var(--gray-surface);border-radius:var(--r);padding:12px;margin-bottom:10px">
+        <div class="total-row"><span style="color:var(--text-2)">Comisiones del mes</span><span id="liq-comisiones" style="font-weight:600">$0</span></div>
+        <div class="total-row" id="liq-row-adel" style="display:none"><span style="color:var(--coral)">− Adelantos pendientes</span><span id="liq-adel-monto" style="color:var(--coral)">-$0</span></div>
+        <div class="total-row final"><span>Total a pagar</span><span id="liq-total" class="mv-purple">$0</span></div>
+      </div>
+      <div id="liq-adel-lista" style="margin-bottom:12px"></div>
+      <button class="btn" onclick="guardarLiquidacion()"><i class="ti ti-device-floppy"></i> Guardar liquidación</button>
+      <div class="msg" id="liq-msg"></div>
+    </div>
+  </div>
+  <div id="historial-liquidaciones"></div>
+</div>
+
 <div id="panel-caja" class="panel">
   <div class="period-row">
     <button class="pbtn active" onclick="setPeriod('caja','hoy',this)">Hoy</button>
@@ -215,6 +251,22 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   </div>
   <div class="card" style="padding:0 14px"><div id="caja-chicas"></div></div>
   <button class="btn-outline" onclick="exportCSV()" style="margin-top:4px"><i class="ti ti-download"></i> Descargar Excel / CSV</button>
+</div>
+
+<div id="panel-ranking" class="panel">
+  <div class="period-row">
+    <button class="pbtn active" onclick="setPeriod('ranking','mes',this)">Este mes</button>
+    <button class="pbtn" onclick="setPeriod('ranking','semana',this)">Esta semana</button>
+    <button class="pbtn" onclick="setPeriod('ranking','todos',this)">Todos</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-trophy"></i> Servicios más pedidos</div>
+    <div id="ranking-servicios"></div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-users"></i> Ranking de profesionales</div>
+    <div id="ranking-chicas"></div>
+  </div>
 </div>
 
 <div id="panel-config" class="panel">
@@ -248,15 +300,17 @@ const COM = 0.37;
 const fmt = n => '$' + Math.round(n).toLocaleString('es-AR');
 const today = () => { const d = new Date(); return [d.getDate().toString().padStart(2,'0'),(d.getMonth()+1).toString().padStart(2,'0'),d.getFullYear()].join('/'); };
 const toISO = s => { const p = s.split('/'); return `${p[2]}-${p[1]}-${p[0]}`; };
+const fromISO = s => { if (!s) return ''; const p = s.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; };
+const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-let periodos = { turnos:'hoy', com:'hoy', caja:'hoy' };
+let periodos = { turnos:'hoy', com:'hoy', caja:'hoy', ranking:'mes' };
 let serviciosCache = [];
 let selectedSrvs = [];
 let pagoActual = 'efectivo';
-let adicionalMonto = 0;
-let adicionalDesc = '';
+let liqData = null;
 
 document.getElementById('reg-fecha').value = today();
+document.getElementById('liq-mes').value = new Date().getMonth()+1;
 
 async function api(method, url, body) {
   const opts = { method, headers:{'Content-Type':'application/json'} };
@@ -288,6 +342,8 @@ function showTab(name, el) {
   if (name==='turnos') renderTurnos();
   if (name==='comisiones') renderCom();
   if (name==='caja') renderCaja();
+  if (name==='ranking') renderRanking();
+  if (name==='liquidaciones') initLiquidaciones();
   if (name==='config') renderConfig();
 }
 
@@ -299,14 +355,14 @@ function setPeriod(tab, p, el) {
   if (tab==='turnos') renderTurnos();
   if (tab==='com') renderCom();
   if (tab==='caja') renderCaja();
+  if (tab==='ranking') renderRanking();
 }
 
 function selectPago(p, el) {
   pagoActual = p;
   document.querySelectorAll('.pago-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
-  renderSelectedSrvs();
-  updateTotal();
+  renderSelectedSrvs(); updateTotal();
 }
 
 function toggleBox(checkId, bodyId) {
@@ -322,17 +378,15 @@ function toggleBox(checkId, bodyId) {
 function updateTotal() {
   const isEf = pagoActual === 'efectivo';
   const srvTotal = selectedSrvs.reduce((s,x) => s+(isEf?x.precio_ef:x.precio_lista), 0);
-  adicionalMonto = parseFloat(document.getElementById('adicional-monto')?.value)||0;
-  const subtotal = srvTotal + adicionalMonto;
+  const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
+  const subtotal = srvTotal + adicional;
   const sena = parseFloat(document.getElementById('sena-monto').value)||0;
   const desc = parseFloat(document.getElementById('desc-monto').value)||0;
   const total = Math.max(0, subtotal - sena - desc);
-  const baseComision = selectedSrvs.reduce((s,x) => s+x.precio_ef, 0) + adicionalMonto;
-
+  const baseComision = selectedSrvs.reduce((s,x) => s+x.precio_ef, 0) + adicional;
   document.getElementById('preview-subtotal').textContent = fmt(subtotal);
   document.getElementById('preview-total').textContent = fmt(total);
   document.getElementById('preview-com').textContent = baseComision>0 ? `Comisión a pagar: ${fmt(baseComision*COM)} (sobre ${fmt(baseComision)})` : '';
-
   document.getElementById('row-sena').style.display = sena>0?'flex':'none';
   if (sena>0) document.getElementById('preview-sena').textContent = `-${fmt(sena)}`;
   document.getElementById('row-desc').style.display = desc>0?'flex':'none';
@@ -359,20 +413,15 @@ function buildPicker(servicios) {
         <span class="srv-item-name">${s.nombre}</span>
         <span class="srv-item-prices">Ef: ${fmt(s.precio_ef)}<br>Lista: ${fmt(s.precio_lista)}</span>
       </div>`).join('')}</div>`).join('');
-
-  // Adicional siempre al final
   const adicionalHTML = `
     <div class="cat-header" onclick="toggleCat(this)"><span>✦ Adicional / Deco</span><i class="ti ti-chevron-down" style="font-size:14px"></i></div>
-    <div class="cat-body">
-      <div class="adicional-box">
-        <div style="font-size:13px;color:var(--text-2);margin-bottom:8px">Cargá manualmente el monto del adicional o deco</div>
-        <div class="g2">
-          <div class="field" style="margin:0"><label>Monto ($)</label><input type="number" id="adicional-monto" placeholder="0" oninput="updateTotal()"></div>
-          <div class="field" style="margin:0"><label>Descripción</label><input type="text" id="adicional-desc" placeholder="Ej: deco navideña, nail art..."></div>
-        </div>
+    <div class="cat-body"><div class="adicional-box">
+      <div style="font-size:13px;color:var(--text-2);margin-bottom:8px">Cargá manualmente el monto del adicional o deco</div>
+      <div class="g2">
+        <div class="field" style="margin:0"><label>Monto ($)</label><input type="number" id="adicional-monto" placeholder="0" oninput="updateTotal()"></div>
+        <div class="field" style="margin:0"><label>Descripción</label><input type="text" id="adicional-desc" placeholder="Ej: deco navideña..."></div>
       </div>
-    </div>`;
-
+    </div></div>`;
   document.getElementById('srv-picker').innerHTML = pickerHTML + adicionalHTML;
   refreshPicker();
 }
@@ -406,8 +455,7 @@ function renderSelectedSrvs() {
   const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
   const adicionalDescVal = document.getElementById('adicional-desc')?.value||'';
   const items = [...selectedSrvs];
-  if (adicional>0) items.push({id:'adicional', nombre: adicionalDescVal||'Adicional / Deco', precio_ef:adicional, precio_lista:adicional, isAdicional:true});
-
+  if (adicional>0) items.push({id:'adicional', nombre:adicionalDescVal||'Adicional / Deco', precio_ef:adicional, precio_lista:adicional, isAdicional:true});
   if (!items.length) { cont.style.display='none'; return; }
   cont.style.display='flex';
   cont.innerHTML = items.map(s=>`
@@ -430,33 +478,23 @@ async function registrar() {
   const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
   const adicionalDescVal = document.getElementById('adicional-desc')?.value.trim()||'';
   const msg = document.getElementById('reg-msg');
-
   if (!chica||!clienta||(!selectedSrvs.length&&!adicional)) {
     msg.className='msg show err'; msg.textContent='Completá profesional, clienta y al menos un servicio.'; return;
   }
-
   const isEf = pagoActual==='efectivo';
   const srvTotal = selectedSrvs.reduce((s,x)=>s+(isEf?x.precio_ef:x.precio_lista),0);
   const subtotal = srvTotal + adicional;
   const cobrado = Math.max(0, subtotal - sena - descMonto);
   const base_comision = selectedSrvs.reduce((s,x)=>s+x.precio_ef,0) + adicional;
-
   const servicios = selectedSrvs.map(s=>({nombre:s.nombre, precio_ef:s.precio_ef, precio_lista:s.precio_lista}));
   if (adicional>0) servicios.push({nombre:adicionalDescVal||'Adicional / Deco', precio_ef:adicional, precio_lista:adicional});
-
-  await api('POST','/api/turnos',{
-    chica, clienta, pago:pagoActual, cobrado, base_comision, fecha, origen, obs,
-    sena_monto:sena, descuento_monto:descMonto, descuento_motivo:descMotivo,
-    servicios
-  });
-
+  await api('POST','/api/turnos',{chica, clienta, pago:pagoActual, cobrado, base_comision, fecha, origen, obs, sena_monto:sena, descuento_monto:descMonto, descuento_motivo:descMotivo, servicios});
   selectedSrvs=[]; refreshPicker(); renderSelectedSrvs(); updateTotal();
   ['reg-clienta','reg-obs','sena-monto','desc-monto','desc-motivo','adicional-monto','adicional-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['sena-check','desc-check'].forEach(id=>document.getElementById(id).checked=false);
   ['sena-body','desc-body'].forEach(id=>document.getElementById(id).classList.remove('open'));
   pagoActual='efectivo';
   document.querySelectorAll('.pago-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
-
   msg.className='msg show ok';
   msg.textContent=`Turno de ${chica} registrado — cobrado ${fmt(cobrado)}${sena?` · seña ${fmt(sena)}`:''}${descMonto?` · desc. ${fmt(descMonto)}`:''}`;
   setTimeout(()=>{msg.className='msg'; msg.textContent='';},4000);
@@ -516,6 +554,108 @@ async function renderCom() {
     `<div class="total-com-row"><span>Total a pagar</span><span style="font-size:18px;color:var(--purple)">${fmt(res.comisiones)}</span></div>`;
 }
 
+async function initLiquidaciones() {
+  const chicas = await api('GET','/api/chicas');
+  ['adel-chica','liq-chica'].forEach(id => {
+    const el = document.getElementById(id); const v = el.value;
+    el.innerHTML = '<option value="">Seleccionar...</option>' + chicas.map(c=>`<option>${c.nombre}</option>`).join('');
+    if (v) el.value = v;
+  });
+  renderHistorialLiquidaciones();
+}
+
+async function registrarAdelanto() {
+  const chica = document.getElementById('adel-chica').value;
+  const monto = parseFloat(document.getElementById('adel-monto').value)||0;
+  const obs = document.getElementById('adel-obs').value.trim();
+  const msg = document.getElementById('adel-msg');
+  if (!chica||!monto) { msg.className='msg show err'; msg.textContent='Completá profesional y monto.'; return; }
+  const d = new Date(); const pad = n=>n.toString().padStart(2,'0');
+  const fecha = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  await api('POST','/api/adelantos',{chica, monto, fecha, obs});
+  document.getElementById('adel-monto').value='';
+  document.getElementById('adel-obs').value='';
+  msg.className='msg show ok'; msg.textContent=`Adelanto de ${fmt(monto)} registrado para ${chica}`;
+  setTimeout(()=>{msg.className='msg';},3000);
+  calcularLiquidacion();
+}
+
+async function calcularLiquidacion() {
+  const chica = document.getElementById('liq-chica').value;
+  const mes = parseInt(document.getElementById('liq-mes').value);
+  if (!chica||!mes) { document.getElementById('liq-preview').style.display='none'; return; }
+  const d = new Date(); const anio = d.getFullYear();
+  const pad = n=>n.toString().padStart(2,'0');
+  const desde = `${anio}-${pad(mes)}-01`;
+  const ultimoDia = new Date(anio, mes, 0).getDate();
+  const hasta = `${anio}-${pad(mes)}-${ultimoDia}`;
+  const [res, adelantos] = await Promise.all([
+    api('GET',`/api/resumen?desde=${desde}&hasta=${hasta}`),
+    api('GET',`/api/adelantos?chica=${encodeURIComponent(chica)}`)
+  ]);
+  const chicaData = res.porChica?.find(c=>c.chica===chica);
+  const comisiones = chicaData?.comision||0;
+  const pendientes = adelantos.filter(a=>!a.descontado);
+  const totalAdel = pendientes.reduce((s,a)=>s+a.monto,0);
+  const total = Math.max(0, comisiones - totalAdel);
+  liqData = { chica, desde, hasta, comisiones, adelantosMonto:totalAdel, adelantosIds:pendientes.map(a=>a.id), total, mes };
+  document.getElementById('liq-comisiones').textContent = fmt(comisiones);
+  document.getElementById('liq-row-adel').style.display = totalAdel>0?'flex':'none';
+  document.getElementById('liq-adel-monto').textContent = `-${fmt(totalAdel)}`;
+  document.getElementById('liq-total').textContent = fmt(total);
+  document.getElementById('liq-adel-lista').innerHTML = pendientes.length ?
+    `<div style="background:var(--coral-light);border-radius:var(--r);padding:10px 12px;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:600;color:var(--coral);margin-bottom:6px">Adelantos a descontar:</div>
+      ${pendientes.map(a=>`<div class="adelanto-row"><span style="color:var(--text-2)">${fromISO(a.fecha)}${a.obs?' — '+a.obs:''}</span><span style="color:var(--coral);font-weight:600">-${fmt(a.monto)}</span></div>`).join('')}
+    </div>` : '';
+  document.getElementById('liq-preview').style.display='block';
+}
+
+async function guardarLiquidacion() {
+  if (!liqData) return;
+  await api('POST','/api/liquidaciones', liqData);
+  const msg = document.getElementById('liq-msg');
+  msg.className='msg show ok'; msg.textContent=`Liquidación de ${liqData.chica} (${MESES[liqData.mes]}) guardada — ${fmt(liqData.total)} a pagar`;
+  setTimeout(()=>{msg.className='msg';},4000);
+  document.getElementById('liq-preview').style.display='none';
+  liqData=null;
+  renderHistorialLiquidaciones();
+}
+
+async function renderHistorialLiquidaciones() {
+  const liqs = await api('GET','/api/liquidaciones');
+  const el = document.getElementById('historial-liquidaciones');
+  if (!liqs.length) { el.innerHTML=''; return; }
+  el.innerHTML = `<div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Historial</div>` +
+    liqs.map(l=>`
+      <div class="liq-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="avatar">${l.chica.substring(0,2).toUpperCase()}</div>
+            <div><div style="font-weight:600">${l.chica}</div><div style="font-size:12px;color:var(--text-2)">${fromISO(l.desde)} → ${fromISO(l.hasta)}</div></div>
+          </div>
+          <span class="badge ${l.pagada?'b-pagada':'b-pendiente'}">${l.pagada?'✓ Pagada':'Pendiente'}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid var(--gray-border)">
+          <div style="font-size:12px;color:var(--text-2)">Com: ${fmt(l.comisiones)}${l.adelantosMonto?` · Adelantos: -${fmt(l.adelantosMonto)}`:''}</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px;font-weight:700;color:var(--purple)">${fmt(l.total)}</span>
+            ${!l.pagada?`<button class="btn-sm btn-success" onclick="marcarPagada(${l.id})"><i class="ti ti-check"></i> Pagada</button>`:''}
+            <button class="btn-sm btn-danger" onclick="delLiquidacion(${l.id})" style="padding:4px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>
+          </div>
+        </div>
+      </div>`).join('');
+}
+
+async function marcarPagada(id) {
+  await api('PUT',`/api/liquidaciones/${id}`,{pagada:true});
+  renderHistorialLiquidaciones();
+}
+async function delLiquidacion(id) {
+  if (!confirm('¿Eliminar esta liquidación?')) return;
+  await api('DELETE',`/api/liquidaciones/${id}`); renderHistorialLiquidaciones();
+}
+
 async function renderCaja() {
   const range = getRange(periodos.caja);
   const res = await api('GET',`/api/resumen?${new URLSearchParams(range)}`);
@@ -538,6 +678,35 @@ async function renderCaja() {
       </div>`).join('');
 }
 
+async function renderRanking() {
+  const range = getRange(periodos.ranking);
+  const res = await api('GET',`/api/resumen?${new URLSearchParams(range)}`);
+  const srvs = res.rankingServicios||[];
+  const maxCant = srvs[0]?.cantidad||1;
+  document.getElementById('ranking-servicios').innerHTML = !srvs.length ? '<div class="empty">Sin datos aún</div>' :
+    srvs.map((s,i)=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--gray-border)">
+        <span style="font-size:13px;font-weight:700;color:var(--text-3);width:20px;text-align:center">${i+1}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px">${s.nombre}</div>
+          <div style="display:flex;align-items:center">
+            <div class="rank-bar-bg"><div class="rank-bar" style="width:${Math.round(s.cantidad/maxCant*100)}%"></div></div>
+            <span style="font-size:12px;color:var(--text-2);white-space:nowrap">${s.cantidad} vez${s.cantidad!==1?'es':''}</span>
+          </div>
+        </div>
+        <span style="font-size:13px;font-weight:600;color:var(--purple)">${fmt(s.facturado)}</span>
+      </div>`).join('');
+  const chicas = [...(res.porChica||[])].sort((a,b)=>b.turnos-a.turnos);
+  document.getElementById('ranking-chicas').innerHTML = !chicas.length ? '<div class="empty">Sin datos aún</div>' :
+    chicas.map((c,i)=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--gray-border)">
+        <span style="font-size:13px;font-weight:700;color:var(--text-3);width:20px;text-align:center">${i+1}</span>
+        <div class="avatar">${c.chica.substring(0,2).toUpperCase()}</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:500">${c.chica}</div><div style="font-size:12px;color:var(--text-2)">${c.turnos} turnos · base ${fmt(c.base_ef)}</div></div>
+        <div style="text-align:right"><div style="font-weight:700;color:var(--purple)">${fmt(c.cobrado)}</div><div style="font-size:11px;color:var(--text-2)">cobrado</div></div>
+      </div>`).join('');
+}
+
 async function renderConfig() {
   const [chicas, servicios] = await Promise.all([api('GET','/api/chicas'), api('GET','/api/servicios')]);
   document.getElementById('cfg-chicas').innerHTML = chicas.map(c=>`
@@ -545,7 +714,6 @@ async function renderConfig() {
       <div style="display:flex;align-items:center;gap:8px"><div class="avatar">${c.nombre.substring(0,2).toUpperCase()}</div><span>${c.nombre}</span></div>
       <button class="btn-sm btn-danger" onclick="delChica(${c.id})"><i class="ti ti-trash"></i></button>
     </div>`).join('');
-
   const cats={};
   servicios.forEach(s=>{if(!cats[s.categoria])cats[s.categoria]=[];cats[s.categoria].push(s);});
   document.getElementById('cfg-servicios').innerHTML = Object.entries(cats).map(([cat,srvs])=>`
@@ -562,17 +730,13 @@ async function renderConfig() {
           <div class="edit-row" id="edit-row-${s.id}">
             <div class="field" style="margin:0;flex:1"><label>Precio ef. ($)</label><input type="number" id="edit-ef-${s.id}" value="${s.precio_ef}"></div>
             <div class="field" style="margin:0;flex:1"><label>Precio lista ($)</label><input type="number" id="edit-lista-${s.id}" value="${s.precio_lista}"></div>
-            <button class="btn-sm" style="background:var(--purple);color:#fff;border-color:var(--purple);align-self:flex-end" onclick="saveEdit(${s.id})"><i class="ti ti-check"></i> Guardar</button>
+            <button class="btn-sm btn-purple" onclick="saveEdit(${s.id})" style="align-self:flex-end"><i class="ti ti-check"></i> Guardar</button>
           </div>
         </div>`).join('')}
     </div>`).join('');
 }
 
-function toggleEdit(id) {
-  const row = document.getElementById(`edit-row-${id}`);
-  row.classList.toggle('open');
-}
-
+function toggleEdit(id) { document.getElementById(`edit-row-${id}`).classList.toggle('open'); }
 async function saveEdit(id) {
   const ef = parseFloat(document.getElementById(`edit-ef-${id}`).value)||0;
   const lista = parseFloat(document.getElementById(`edit-lista-${id}`).value)||ef;
