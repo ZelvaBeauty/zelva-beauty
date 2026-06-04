@@ -71,6 +71,7 @@ const defaultData = {
   turnos: [],
   nextId: { chicas: 8, servicios: 50, turnos: 1 }
 };
+
 const db = new Low(adapter, defaultData);
 await db.read();
 if (!db.data.nextId) db.data.nextId = defaultData.nextId;
@@ -82,6 +83,7 @@ await db.write();
 const nextId = (key) => { const id = db.data.nextId[key]++; db.write(); return id; };
 const COM = 0.37;
 
+// CHICAS
 app.get('/api/chicas', (req, res) => res.json(db.data.chicas.sort((a,b)=>a.nombre.localeCompare(b.nombre))));
 app.post('/api/chicas', async (req, res) => {
   const { nombre } = req.body;
@@ -96,6 +98,7 @@ app.delete('/api/chicas/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
+// SERVICIOS
 app.get('/api/servicios', (req, res) => res.json(db.data.servicios.sort((a,b)=>a.categoria.localeCompare(b.categoria)||a.nombre.localeCompare(b.nombre))));
 app.post('/api/servicios', async (req, res) => {
   const { categoria, nombre, precio_ef, precio_lista } = req.body;
@@ -104,11 +107,19 @@ app.post('/api/servicios', async (req, res) => {
   db.data.servicios.push({ id, categoria: categoria||'Otros', nombre, precio_ef: precio_ef||0, precio_lista: precio_lista||precio_ef||0 });
   await db.write(); res.json({ id });
 });
+app.put('/api/servicios/:id', async (req, res) => {
+  const { precio_ef, precio_lista } = req.body;
+  const s = db.data.servicios.find(x=>x.id===parseInt(req.params.id));
+  if (!s) return res.status(404).json({ error: 'No encontrado' });
+  s.precio_ef = precio_ef; s.precio_lista = precio_lista;
+  await db.write(); res.json({ ok: true });
+});
 app.delete('/api/servicios/:id', async (req, res) => {
   db.data.servicios = db.data.servicios.filter(s=>s.id!==parseInt(req.params.id));
   await db.write(); res.json({ ok: true });
 });
 
+// TURNOS
 app.get('/api/turnos', (req, res) => {
   const { desde, hasta } = req.query;
   let turnos = db.data.turnos;
@@ -117,10 +128,10 @@ app.get('/api/turnos', (req, res) => {
   res.json([...turnos].sort((a,b)=>b.creado_at.localeCompare(a.creado_at)));
 });
 app.post('/api/turnos', async (req, res) => {
-  const { chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen, obs, sena_monto, descuento_pct, descuento_motivo } = req.body;
+  const { chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen, obs, sena_monto, descuento_monto, descuento_motivo } = req.body;
   if (!chica||!clienta||!servicios?.length||!pago) return res.status(400).json({ error: 'Faltan campos' });
   const id = nextId('turnos');
-  db.data.turnos.push({ id, chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_pct:descuento_pct||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
+  db.data.turnos.push({ id, chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_monto:descuento_monto||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
 app.delete('/api/turnos/:id', async (req, res) => {
@@ -128,6 +139,7 @@ app.delete('/api/turnos/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
+// RESUMEN
 app.get('/api/resumen', (req, res) => {
   const { desde, hasta } = req.query;
   let turnos = db.data.turnos;
