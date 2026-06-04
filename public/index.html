@@ -99,7 +99,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .rank-bar-bg{background:var(--gray-surface);border-radius:4px;height:6px;flex:1;margin:0 8px}
 .rank-bar{background:var(--purple);border-radius:4px;height:6px}
 .liq-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--r);padding:12px;margin-bottom:8px}
-.adelanto-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--gray-border);font-size:13px}
+.adelanto-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-border);font-size:13px;gap:8px}
 .adelanto-row:last-child{border-bottom:none}
 </style>
 </head>
@@ -235,6 +235,21 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     </div>
   </div>
   <div id="historial-liquidaciones"></div>
+  <div class="card" style="margin-top:4px">
+    <div class="card-title"><i class="ti ti-cash"></i> Historial de adelantos</div>
+    <div class="g2" style="margin-bottom:10px">
+      <div class="field" style="margin:0"><label>Filtrar por profesional</label>
+        <select id="adel-filtro" onchange="renderAdelantos()"><option value="">Todas</option></select>
+      </div>
+      <div class="field" style="margin:0"><label>Mostrar</label>
+        <select id="adel-estado" onchange="renderAdelantos()">
+          <option value="pendientes">Pendientes de descontar</option>
+          <option value="todos">Todos</option>
+        </select>
+      </div>
+    </div>
+    <div id="lista-adelantos"></div>
+  </div>
 </div>
 
 <div id="panel-caja" class="panel">
@@ -561,7 +576,10 @@ async function initLiquidaciones() {
     el.innerHTML = '<option value="">Seleccionar...</option>' + chicas.map(c=>`<option>${c.nombre}</option>`).join('');
     if (v) el.value = v;
   });
+  const af = document.getElementById('adel-filtro');
+  if (af) af.innerHTML = '<option value="">Todas</option>' + chicas.map(c=>`<option>${c.nombre}</option>`).join('');
   renderHistorialLiquidaciones();
+  renderAdelantos();
 }
 
 async function registrarAdelanto() {
@@ -577,6 +595,7 @@ async function registrarAdelanto() {
   document.getElementById('adel-obs').value='';
   msg.className='msg show ok'; msg.textContent=`Adelanto de ${fmt(monto)} registrado para ${chica}`;
   setTimeout(()=>{msg.className='msg';},3000);
+  renderAdelantos();
   calcularLiquidacion();
 }
 
@@ -620,6 +639,7 @@ async function guardarLiquidacion() {
   document.getElementById('liq-preview').style.display='none';
   liqData=null;
   renderHistorialLiquidaciones();
+  renderAdelantos();
 }
 
 async function renderHistorialLiquidaciones() {
@@ -654,6 +674,34 @@ async function marcarPagada(id) {
 async function delLiquidacion(id) {
   if (!confirm('¿Eliminar esta liquidación?')) return;
   await api('DELETE',`/api/liquidaciones/${id}`); renderHistorialLiquidaciones();
+}
+
+async function renderAdelantos() {
+  const chica = document.getElementById('adel-filtro')?.value||'';
+  const estado = document.getElementById('adel-estado')?.value||'pendientes';
+  const url = chica ? `/api/adelantos?chica=${encodeURIComponent(chica)}` : '/api/adelantos';
+  const adelantos = await api('GET', url);
+  const filtrados = estado==='pendientes' ? adelantos.filter(a=>!a.descontado) : adelantos;
+  const el = document.getElementById('lista-adelantos');
+  if (!filtrados.length) { el.innerHTML='<div class="empty" style="padding:16px">No hay adelantos</div>'; return; }
+  el.innerHTML = filtrados.map(a=>`
+    <div class="adelanto-row">
+      <div style="flex:1">
+        <span style="font-weight:600">${a.chica}</span>
+        <span style="color:var(--text-2);margin-left:8px">${fromISO(a.fecha)}${a.obs?' — '+a.obs:''}</span>
+        ${a.descontado?'<span class="badge b-pagada" style="margin-left:6px">Descontado</span>':'<span class="badge b-pendiente" style="margin-left:6px">Pendiente</span>'}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-weight:700;color:var(--coral)">${fmt(a.monto)}</span>
+        <button class="btn-sm btn-danger" onclick="delAdelanto(${a.id})" style="padding:3px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+async function delAdelanto(id) {
+  if (!confirm('¿Eliminar este adelanto?')) return;
+  await api('DELETE',`/api/adelantos/${id}`);
+  renderAdelantos();
 }
 
 async function renderCaja() {
