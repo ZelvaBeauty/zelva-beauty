@@ -71,7 +71,8 @@ const defaultData = {
   turnos: [],
   adelantos: [],
   liquidaciones: [],
-  nextId: { chicas: 8, servicios: 50, turnos: 1, adelantos: 1, liquidaciones: 1 }
+  gastos: [],
+  nextId: { chicas: 8, servicios: 50, turnos: 1, adelantos: 1, liquidaciones: 1, gastos: 1 }
 };
 
 const db = new Low(adapter, defaultData);
@@ -82,8 +83,10 @@ if (!db.data.servicios?.length) db.data.servicios = defaultData.servicios;
 if (!db.data.turnos) db.data.turnos = [];
 if (!db.data.adelantos) db.data.adelantos = [];
 if (!db.data.liquidaciones) db.data.liquidaciones = [];
+if (!db.data.gastos) db.data.gastos = [];
 if (!db.data.nextId.adelantos) db.data.nextId.adelantos = 1;
 if (!db.data.nextId.liquidaciones) db.data.nextId.liquidaciones = 1;
+if (!db.data.nextId.gastos) db.data.nextId.gastos = 1;
 await db.write();
 
 const nextId = (key) => { const id = db.data.nextId[key]++; db.write(); return id; };
@@ -159,6 +162,12 @@ app.post('/api/adelantos', async (req, res) => {
   db.data.adelantos.push({ id, chica, monto, fecha: fecha||new Date().toISOString().slice(0,10), obs:obs||'', descontado:false, creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
+app.put('/api/adelantos/:id', async (req, res) => {
+  const a = db.data.adelantos.find(x=>x.id===parseInt(req.params.id));
+  if (!a) return res.status(404).json({ error: 'No encontrado' });
+  if (req.body.descontado !== undefined) a.descontado = req.body.descontado;
+  await db.write(); res.json({ ok: true });
+});
 app.delete('/api/adelantos/:id', async (req, res) => {
   db.data.adelantos = db.data.adelantos.filter(a=>a.id!==parseInt(req.params.id));
   await db.write(); res.json({ ok: true });
@@ -189,6 +198,26 @@ app.delete('/api/liquidaciones/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
+// GASTOS
+app.get('/api/gastos', (req, res) => {
+  const { desde, hasta } = req.query;
+  let gastos = db.data.gastos||[];
+  if (desde && hasta) gastos = gastos.filter(g=>g.fecha>=desde&&g.fecha<=hasta);
+  else if (desde) gastos = gastos.filter(g=>g.fecha>=desde);
+  res.json([...gastos].sort((a,b)=>b.fecha.localeCompare(a.fecha)));
+});
+app.post('/api/gastos', async (req, res) => {
+  const { categoria, descripcion, monto, fecha } = req.body;
+  if (!categoria||!monto) return res.status(400).json({ error: 'Faltan campos' });
+  const id = nextId('gastos');
+  db.data.gastos.push({ id, categoria, descripcion:descripcion||'', monto, fecha: fecha||new Date().toISOString().slice(0,10), creado_at: new Date().toISOString() });
+  await db.write(); res.json({ id });
+});
+app.delete('/api/gastos/:id', async (req, res) => {
+  db.data.gastos = db.data.gastos.filter(g=>g.id!==parseInt(req.params.id));
+  await db.write(); res.json({ ok: true });
+});
+
 // RESUMEN
 app.get('/api/resumen', (req, res) => {
   const { desde, hasta } = req.query;
@@ -209,8 +238,14 @@ app.get('/api/resumen', (req, res) => {
     if (!srvCount[n]) srvCount[n]={nombre:n,cantidad:0,facturado:0};
     srvCount[n].cantidad++; srvCount[n].facturado+=s.precio_ef||0;
   }));
+  // gastos del mismo período
+  let gastos = db.data.gastos||[];
+  if (desde && hasta) gastos = gastos.filter(g=>g.fecha>=desde&&g.fecha<=hasta);
+  else if (desde) gastos = gastos.filter(g=>g.fecha>=desde);
+  const totalGastos = gastos.reduce((s,g)=>s+g.monto,0);
+  const salon = cobrado - base_ef*COM;
   res.json({
-    turnos: turnos.length, cobrado, comisiones: base_ef*COM, salon: cobrado-base_ef*COM,
+    turnos: turnos.length, cobrado, comisiones: base_ef*COM, salon, gastos: totalGastos, neto: salon - totalGastos,
     efectivo: sum(t=>t.pago==='efectivo'?t.cobrado:0),
     transferencia: sum(t=>t.pago==='transferencia'?t.cobrado:0),
     qr: sum(t=>t.pago==='qr'?t.cobrado:0),
