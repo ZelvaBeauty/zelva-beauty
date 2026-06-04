@@ -69,7 +69,9 @@ const defaultData = {
     {id:49,categoria:'Service Pestañas tecnológicas',nombre:'Service 5D - Mega volumen',precio_ef:39600,precio_lista:47520},
   ],
   turnos: [],
-  nextId: { chicas: 8, servicios: 50, turnos: 1 }
+  adelantos: [],
+  liquidaciones: [],
+  nextId: { chicas: 8, servicios: 50, turnos: 1, adelantos: 1, liquidaciones: 1 }
 };
 
 const db = new Low(adapter, defaultData);
@@ -78,6 +80,10 @@ if (!db.data.nextId) db.data.nextId = defaultData.nextId;
 if (!db.data.chicas?.length) db.data.chicas = defaultData.chicas;
 if (!db.data.servicios?.length) db.data.servicios = defaultData.servicios;
 if (!db.data.turnos) db.data.turnos = [];
+if (!db.data.adelantos) db.data.adelantos = [];
+if (!db.data.liquidaciones) db.data.liquidaciones = [];
+if (!db.data.nextId.adelantos) db.data.nextId.adelantos = 1;
+if (!db.data.nextId.liquidaciones) db.data.nextId.liquidaciones = 1;
 await db.write();
 
 const nextId = (key) => { const id = db.data.nextId[key]++; db.write(); return id; };
@@ -139,6 +145,50 @@ app.delete('/api/turnos/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
+// ADELANTOS
+app.get('/api/adelantos', (req, res) => {
+  const { chica } = req.query;
+  let a = db.data.adelantos;
+  if (chica) a = a.filter(x=>x.chica===chica);
+  res.json([...a].sort((a,b)=>b.fecha.localeCompare(a.fecha)));
+});
+app.post('/api/adelantos', async (req, res) => {
+  const { chica, monto, fecha, obs } = req.body;
+  if (!chica||!monto) return res.status(400).json({ error: 'Faltan campos' });
+  const id = nextId('adelantos');
+  db.data.adelantos.push({ id, chica, monto, fecha: fecha||new Date().toISOString().slice(0,10), obs:obs||'', descontado:false, creado_at: new Date().toISOString() });
+  await db.write(); res.json({ id });
+});
+app.delete('/api/adelantos/:id', async (req, res) => {
+  db.data.adelantos = db.data.adelantos.filter(a=>a.id!==parseInt(req.params.id));
+  await db.write(); res.json({ ok: true });
+});
+
+// LIQUIDACIONES
+app.get('/api/liquidaciones', (req, res) => res.json([...db.data.liquidaciones].sort((a,b)=>b.creado_at.localeCompare(a.creado_at))));
+app.post('/api/liquidaciones', async (req, res) => {
+  const { chica, desde, hasta, comisiones, adelantosMonto, adelantosIds, total } = req.body;
+  const id = nextId('liquidaciones');
+  db.data.liquidaciones.push({ id, chica, desde, hasta, comisiones, adelantosMonto, total, pagada:false, creado_at: new Date().toISOString() });
+  if (adelantosIds?.length) {
+    adelantosIds.forEach(aid => {
+      const a = db.data.adelantos.find(x=>x.id===aid);
+      if (a) a.descontado = true;
+    });
+  }
+  await db.write(); res.json({ id });
+});
+app.put('/api/liquidaciones/:id', async (req, res) => {
+  const liq = db.data.liquidaciones.find(x=>x.id===parseInt(req.params.id));
+  if (!liq) return res.status(404).json({ error: 'No encontrada' });
+  if (req.body.pagada !== undefined) liq.pagada = req.body.pagada;
+  await db.write(); res.json({ ok: true });
+});
+app.delete('/api/liquidaciones/:id', async (req, res) => {
+  db.data.liquidaciones = db.data.liquidaciones.filter(l=>l.id!==parseInt(req.params.id));
+  await db.write(); res.json({ ok: true });
+});
+
 // RESUMEN
 app.get('/api/resumen', (req, res) => {
   const { desde, hasta } = req.query;
@@ -153,6 +203,12 @@ app.get('/api/resumen', (req, res) => {
     if (!byChica[t.chica]) byChica[t.chica]={chica:t.chica,turnos:0,base_ef:0,cobrado:0};
     byChica[t.chica].turnos++; byChica[t.chica].base_ef+=t.base_comision; byChica[t.chica].cobrado+=t.cobrado;
   });
+  const srvCount = {};
+  turnos.forEach(t => (t.servicios||[]).forEach(s => {
+    const n = s.servicio||s.nombre;
+    if (!srvCount[n]) srvCount[n]={nombre:n,cantidad:0,facturado:0};
+    srvCount[n].cantidad++; srvCount[n].facturado+=s.precio_ef||0;
+  }));
   res.json({
     turnos: turnos.length, cobrado, comisiones: base_ef*COM, salon: cobrado-base_ef*COM,
     efectivo: sum(t=>t.pago==='efectivo'?t.cobrado:0),
@@ -162,7 +218,8 @@ app.get('/api/resumen', (req, res) => {
     credito: sum(t=>t.pago==='credito'?t.cobrado:0),
     openpay: sum(t=>t.pago==='openpay'?t.cobrado:0),
     online: turnos.filter(t=>t.origen==='online').length,
-    porChica: Object.values(byChica).map(c=>({...c,comision:c.base_ef*COM})).sort((a,b)=>a.chica.localeCompare(b.chica))
+    porChica: Object.values(byChica).map(c=>({...c,comision:c.base_ef*COM})).sort((a,b)=>a.chica.localeCompare(b.chica)),
+    rankingServicios: Object.values(srvCount).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10)
   });
 });
 
