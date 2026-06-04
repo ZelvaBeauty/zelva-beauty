@@ -11,7 +11,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(join(__dirname, 'public')));
 
-const adapter = new JSONFile(join(__dirname, 'zelva.json'));
+const DATA_PATH = process.env.RENDER ? '/var/data/zelva.json' : join(__dirname, 'zelva.json');
+const adapter = new JSONFile(DATA_PATH);
 const defaultData = {
   chicas: [
     {id:1,nombre:'Shan'},{id:2,nombre:'Mica'},{id:3,nombre:'Giuli'},
@@ -238,7 +239,6 @@ app.get('/api/resumen', (req, res) => {
     if (!srvCount[n]) srvCount[n]={nombre:n,cantidad:0,facturado:0};
     srvCount[n].cantidad++; srvCount[n].facturado+=s.precio_ef||0;
   }));
-  // gastos del mismo período
   let gastos = db.data.gastos||[];
   if (desde && hasta) gastos = gastos.filter(g=>g.fecha>=desde&&g.fecha<=hasta);
   else if (desde) gastos = gastos.filter(g=>g.fecha>=desde);
