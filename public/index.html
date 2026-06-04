@@ -38,6 +38,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .btn:active{background:var(--purple-dark)}
 .btn-sm{font-size:12px;padding:5px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--gray-border);background:var(--gray-surface);color:var(--text);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
 .btn-danger{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-border)}
+.btn-edit{background:#E6F1FB;color:#0C447C;border-color:#A8C8F0}
 .btn-outline{background:#fff;color:var(--purple);border:1px solid var(--purple);width:100%;padding:10px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 .metrics-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
@@ -57,12 +58,13 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .info-amber{background:var(--amber-light);color:var(--amber)}.info-purple{background:var(--purple-light);color:var(--purple-dark)}
 .msg{font-size:13px;text-align:center;margin-top:8px;padding:7px;border-radius:var(--r);display:none}
 .msg.show{display:block}.msg.ok{background:var(--success-bg);color:var(--success-text)}.msg.err{background:var(--danger-bg);color:var(--danger-text)}
-.srv-picker{border:1px solid var(--gray-border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;max-height:320px;overflow-y:auto}
+.srv-picker{border:1px solid var(--gray-border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;max-height:340px;overflow-y:auto}
 .cat-header{padding:8px 12px;background:var(--gray-surface);font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
 .cat-body{display:none}.cat-body.open{display:block}
 .srv-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-top:1px solid var(--gray-border);cursor:pointer}
 .srv-item:hover{background:var(--gray-surface)}.srv-item.selected{background:var(--purple-light)}
 .srv-item-name{font-size:13px;flex:1}.srv-item-prices{font-size:12px;color:var(--text-2);text-align:right;margin-left:10px}
+.adicional-box{padding:10px 12px;border-top:1px solid var(--gray-border);background:#FFFBF0}
 .selected-srvs{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .selected-srv{background:var(--purple-light);border-radius:var(--r);padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .selected-srv-name{font-size:13px;color:var(--purple-dark);flex:1}.selected-srv-price{font-size:13px;font-weight:600;color:var(--purple);white-space:nowrap}
@@ -90,6 +92,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .list-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-border);gap:8px}
 .list-item:last-child{border-bottom:none}
 .pago-desglose{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.edit-row{display:none;background:#F0F4FF;border-radius:var(--r);padding:10px;margin-top:6px;gap:8px;align-items:flex-end}
+.edit-row.open{display:flex}
 </style>
 </head>
 <body>
@@ -249,6 +253,8 @@ let periodos = { turnos:'hoy', com:'hoy', caja:'hoy' };
 let serviciosCache = [];
 let selectedSrvs = [];
 let pagoActual = 'efectivo';
+let adicionalMonto = 0;
+let adicionalDesc = '';
 
 document.getElementById('reg-fecha').value = today();
 
@@ -315,11 +321,13 @@ function toggleBox(checkId, bodyId) {
 
 function updateTotal() {
   const isEf = pagoActual === 'efectivo';
-  const subtotal = selectedSrvs.reduce((s,x) => s+(isEf?x.precio_ef:x.precio_lista), 0);
+  const srvTotal = selectedSrvs.reduce((s,x) => s+(isEf?x.precio_ef:x.precio_lista), 0);
+  adicionalMonto = parseFloat(document.getElementById('adicional-monto')?.value)||0;
+  const subtotal = srvTotal + adicionalMonto;
   const sena = parseFloat(document.getElementById('sena-monto').value)||0;
   const desc = parseFloat(document.getElementById('desc-monto').value)||0;
   const total = Math.max(0, subtotal - sena - desc);
-  const baseComision = selectedSrvs.reduce((s,x) => s+x.precio_ef, 0);
+  const baseComision = selectedSrvs.reduce((s,x) => s+x.precio_ef, 0) + adicionalMonto;
 
   document.getElementById('preview-subtotal').textContent = fmt(subtotal);
   document.getElementById('preview-total').textContent = fmt(total);
@@ -344,13 +352,28 @@ async function loadSelects() {
 function buildPicker(servicios) {
   const cats = {};
   servicios.forEach(s => { if (!cats[s.categoria]) cats[s.categoria]=[]; cats[s.categoria].push(s); });
-  document.getElementById('srv-picker').innerHTML = Object.entries(cats).map(([cat,srvs]) => `
+  const pickerHTML = Object.entries(cats).map(([cat,srvs]) => `
     <div class="cat-header" onclick="toggleCat(this)"><span>${cat}</span><i class="ti ti-chevron-down" style="font-size:14px"></i></div>
     <div class="cat-body">${srvs.map(s=>`
       <div class="srv-item" data-id="${s.id}" data-nombre="${s.nombre}" data-ef="${s.precio_ef}" data-lista="${s.precio_lista}" onclick="toggleSrv(this)">
         <span class="srv-item-name">${s.nombre}</span>
         <span class="srv-item-prices">Ef: ${fmt(s.precio_ef)}<br>Lista: ${fmt(s.precio_lista)}</span>
       </div>`).join('')}</div>`).join('');
+
+  // Adicional siempre al final
+  const adicionalHTML = `
+    <div class="cat-header" onclick="toggleCat(this)"><span>✦ Adicional / Deco</span><i class="ti ti-chevron-down" style="font-size:14px"></i></div>
+    <div class="cat-body">
+      <div class="adicional-box">
+        <div style="font-size:13px;color:var(--text-2);margin-bottom:8px">Cargá manualmente el monto del adicional o deco</div>
+        <div class="g2">
+          <div class="field" style="margin:0"><label>Monto ($)</label><input type="number" id="adicional-monto" placeholder="0" oninput="updateTotal()"></div>
+          <div class="field" style="margin:0"><label>Descripción</label><input type="text" id="adicional-desc" placeholder="Ej: deco navideña, nail art..."></div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('srv-picker').innerHTML = pickerHTML + adicionalHTML;
   refreshPicker();
 }
 
@@ -379,14 +402,19 @@ function removeSrv(id) {
 
 function renderSelectedSrvs() {
   const cont = document.getElementById('selected-srvs');
-  if (!selectedSrvs.length) { cont.style.display='none'; return; }
-  cont.style.display='flex';
   const isEf = pagoActual==='efectivo';
-  cont.innerHTML = selectedSrvs.map(s=>`
-    <div class="selected-srv">
+  const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
+  const adicionalDescVal = document.getElementById('adicional-desc')?.value||'';
+  const items = [...selectedSrvs];
+  if (adicional>0) items.push({id:'adicional', nombre: adicionalDescVal||'Adicional / Deco', precio_ef:adicional, precio_lista:adicional, isAdicional:true});
+
+  if (!items.length) { cont.style.display='none'; return; }
+  cont.style.display='flex';
+  cont.innerHTML = items.map(s=>`
+    <div class="selected-srv" style="${s.isAdicional?'background:#FFFBF0;border:1px solid #F5DFA0':''}">
       <span class="selected-srv-name">${s.nombre}</span>
-      <span class="selected-srv-price">${fmt(isEf?s.precio_ef:s.precio_lista)}</span>
-      <button class="btn-sm" onclick="removeSrv(${s.id})" style="padding:3px 6px"><i class="ti ti-x" style="font-size:13px"></i></button>
+      <span class="selected-srv-price">${fmt(s.isAdicional?s.precio_ef:(isEf?s.precio_ef:s.precio_lista))}</span>
+      ${!s.isAdicional?`<button class="btn-sm" onclick="removeSrv(${s.id})" style="padding:3px 6px"><i class="ti ti-x" style="font-size:13px"></i></button>`:''}
     </div>`).join('');
 }
 
@@ -399,25 +427,31 @@ async function registrar() {
   const sena = parseFloat(document.getElementById('sena-monto').value)||0;
   const descMonto = parseFloat(document.getElementById('desc-monto').value)||0;
   const descMotivo = document.getElementById('desc-motivo').value.trim();
+  const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
+  const adicionalDescVal = document.getElementById('adicional-desc')?.value.trim()||'';
   const msg = document.getElementById('reg-msg');
 
-  if (!chica||!clienta||!selectedSrvs.length) {
+  if (!chica||!clienta||(!selectedSrvs.length&&!adicional)) {
     msg.className='msg show err'; msg.textContent='Completá profesional, clienta y al menos un servicio.'; return;
   }
 
   const isEf = pagoActual==='efectivo';
-  const subtotal = selectedSrvs.reduce((s,x)=>s+(isEf?x.precio_ef:x.precio_lista),0);
+  const srvTotal = selectedSrvs.reduce((s,x)=>s+(isEf?x.precio_ef:x.precio_lista),0);
+  const subtotal = srvTotal + adicional;
   const cobrado = Math.max(0, subtotal - sena - descMonto);
-  const base_comision = selectedSrvs.reduce((s,x)=>s+x.precio_ef,0);
+  const base_comision = selectedSrvs.reduce((s,x)=>s+x.precio_ef,0) + adicional;
+
+  const servicios = selectedSrvs.map(s=>({nombre:s.nombre, precio_ef:s.precio_ef, precio_lista:s.precio_lista}));
+  if (adicional>0) servicios.push({nombre:adicionalDescVal||'Adicional / Deco', precio_ef:adicional, precio_lista:adicional});
 
   await api('POST','/api/turnos',{
     chica, clienta, pago:pagoActual, cobrado, base_comision, fecha, origen, obs,
     sena_monto:sena, descuento_monto:descMonto, descuento_motivo:descMotivo,
-    servicios: selectedSrvs.map(s=>({nombre:s.nombre, precio_ef:s.precio_ef, precio_lista:s.precio_lista}))
+    servicios
   });
 
   selectedSrvs=[]; refreshPicker(); renderSelectedSrvs(); updateTotal();
-  ['reg-clienta','reg-obs','sena-monto','desc-monto','desc-motivo'].forEach(id=>document.getElementById(id).value='');
+  ['reg-clienta','reg-obs','sena-monto','desc-monto','desc-motivo','adicional-monto','adicional-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['sena-check','desc-check'].forEach(id=>document.getElementById(id).checked=false);
   ['sena-body','desc-body'].forEach(id=>document.getElementById(id).classList.remove('open'));
   pagoActual='efectivo';
@@ -511,18 +545,41 @@ async function renderConfig() {
       <div style="display:flex;align-items:center;gap:8px"><div class="avatar">${c.nombre.substring(0,2).toUpperCase()}</div><span>${c.nombre}</span></div>
       <button class="btn-sm btn-danger" onclick="delChica(${c.id})"><i class="ti ti-trash"></i></button>
     </div>`).join('');
+
   const cats={};
   servicios.forEach(s=>{if(!cats[s.categoria])cats[s.categoria]=[];cats[s.categoria].push(s);});
   document.getElementById('cfg-servicios').innerHTML = Object.entries(cats).map(([cat,srvs])=>`
     <div style="margin-bottom:10px">
       <div style="font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;padding:6px 0;border-bottom:1px solid var(--gray-border)">${cat}</div>
       ${srvs.map(s=>`
-        <div class="list-item">
-          <span style="font-size:13px;flex:1">${s.nombre}</span>
-          <span style="font-size:12px;color:var(--text-2);margin:0 10px">Ef: ${fmt(s.precio_ef)} / Lista: ${fmt(s.precio_lista)}</span>
-          <button class="btn-sm btn-danger" onclick="delServicio(${s.id})"><i class="ti ti-trash"></i></button>
+        <div class="list-item" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;flex:1">${s.nombre}</span>
+            <span style="font-size:12px;color:var(--text-2);margin:0 6px" id="precio-lbl-${s.id}">Ef: ${fmt(s.precio_ef)} / Lista: ${fmt(s.precio_lista)}</span>
+            <button class="btn-sm btn-edit" onclick="toggleEdit(${s.id})"><i class="ti ti-pencil"></i></button>
+            <button class="btn-sm btn-danger" onclick="delServicio(${s.id})"><i class="ti ti-trash"></i></button>
+          </div>
+          <div class="edit-row" id="edit-row-${s.id}">
+            <div class="field" style="margin:0;flex:1"><label>Precio ef. ($)</label><input type="number" id="edit-ef-${s.id}" value="${s.precio_ef}"></div>
+            <div class="field" style="margin:0;flex:1"><label>Precio lista ($)</label><input type="number" id="edit-lista-${s.id}" value="${s.precio_lista}"></div>
+            <button class="btn-sm" style="background:var(--purple);color:#fff;border-color:var(--purple);align-self:flex-end" onclick="saveEdit(${s.id})"><i class="ti ti-check"></i> Guardar</button>
+          </div>
         </div>`).join('')}
     </div>`).join('');
+}
+
+function toggleEdit(id) {
+  const row = document.getElementById(`edit-row-${id}`);
+  row.classList.toggle('open');
+}
+
+async function saveEdit(id) {
+  const ef = parseFloat(document.getElementById(`edit-ef-${id}`).value)||0;
+  const lista = parseFloat(document.getElementById(`edit-lista-${id}`).value)||ef;
+  await api('PUT',`/api/servicios/${id}`,{precio_ef:ef, precio_lista:lista});
+  document.getElementById(`precio-lbl-${id}`).textContent = `Ef: ${fmt(ef)} / Lista: ${fmt(lista)}`;
+  document.getElementById(`edit-row-${id}`).classList.remove('open');
+  loadSelects();
 }
 
 async function addChica() {
