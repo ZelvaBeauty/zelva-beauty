@@ -101,6 +101,15 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .liq-card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--r);padding:12px;margin-bottom:8px}
 .adelanto-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-border);font-size:13px;gap:8px}
 .adelanto-row:last-child{border-bottom:none}
+.gasto-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-border);gap:8px}
+.gasto-item:last-child{border-bottom:none}
+.cat-badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.cat-alquiler{background:#E6F1FB;color:#0C447C}
+.cat-insumos{background:#EEEDFE;color:#3C3489}
+.cat-impuestos{background:#FAECE7;color:#712B13}
+.cat-servicios{background:#E1F5EE;color:#085041}
+.cat-sueldos{background:#FAEEDA;color:#633806}
+.cat-otros{background:#f0efe9;color:#5f5f58}
 </style>
 </head>
 <body>
@@ -113,6 +122,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <button class="tab" onclick="showTab('turnos',this)"><i class="ti ti-list"></i> Turnos</button>
   <button class="tab" onclick="showTab('comisiones',this)"><i class="ti ti-wallet"></i> Comisiones</button>
   <button class="tab" onclick="showTab('liquidaciones',this)"><i class="ti ti-receipt"></i> Liquidar</button>
+  <button class="tab" onclick="showTab('gastos',this)"><i class="ti ti-minus"></i> Gastos</button>
   <button class="tab" onclick="showTab('caja',this)"><i class="ti ti-chart-bar"></i> Caja</button>
   <button class="tab" onclick="showTab('ranking',this)"><i class="ti ti-trophy"></i> Ranking</button>
   <button class="tab" onclick="showTab('config',this)"><i class="ti ti-settings"></i> Config</button>
@@ -252,6 +262,38 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   </div>
 </div>
 
+<div id="panel-gastos" class="panel">
+  <div class="card">
+    <div class="card-title"><i class="ti ti-minus"></i> Registrar gasto</div>
+    <div class="g2">
+      <div class="field"><label>Categoría</label>
+        <select id="gasto-cat">
+          <option value="Alquiler">Alquiler</option>
+          <option value="Insumos">Insumos</option>
+          <option value="Impuestos">Impuestos</option>
+          <option value="Servicios">Servicios (luz, agua, internet)</option>
+          <option value="Sueldos">Sueldos fijos</option>
+          <option value="Otros">Otros</option>
+        </select>
+      </div>
+      <div class="field"><label>Monto ($)</label><input type="number" id="gasto-monto" placeholder="0"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Descripción</label><input type="text" id="gasto-desc" placeholder="Ej: alquiler mayo, café y azúcar..."></div>
+      <div class="field"><label>Fecha</label><input type="text" id="gasto-fecha"></div>
+    </div>
+    <button class="btn-sm btn-purple" onclick="registrarGasto()" style="width:100%;justify-content:center;padding:10px"><i class="ti ti-plus"></i> Registrar gasto</button>
+    <div class="msg" id="gasto-msg"></div>
+  </div>
+  <div class="period-row">
+    <button class="pbtn active" onclick="setPeriod('gastos','mes',this)">Este mes</button>
+    <button class="pbtn" onclick="setPeriod('gastos','semana',this)">Esta semana</button>
+    <button class="pbtn" onclick="setPeriod('gastos','todos',this)">Todos</button>
+  </div>
+  <div class="metrics" id="gastos-resumen"></div>
+  <div class="card" style="padding:0 14px"><div id="lista-gastos"></div></div>
+</div>
+
 <div id="panel-caja" class="panel">
   <div class="period-row">
     <button class="pbtn active" onclick="setPeriod('caja','hoy',this)">Hoy</button>
@@ -317,8 +359,9 @@ const today = () => { const d = new Date(); return [d.getDate().toString().padSt
 const toISO = s => { const p = s.split('/'); return `${p[2]}-${p[1]}-${p[0]}`; };
 const fromISO = s => { if (!s) return ''; const p = s.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; };
 const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const CAT_BADGE = {Alquiler:'cat-alquiler',Insumos:'cat-insumos',Impuestos:'cat-impuestos',Servicios:'cat-servicios',Sueldos:'cat-sueldos',Otros:'cat-otros'};
 
-let periodos = { turnos:'hoy', com:'hoy', caja:'hoy', ranking:'mes' };
+let periodos = { turnos:'hoy', com:'hoy', caja:'hoy', ranking:'mes', gastos:'mes' };
 let serviciosCache = [];
 let selectedSrvs = [];
 let pagoActual = 'efectivo';
@@ -326,6 +369,7 @@ let liqData = null;
 
 document.getElementById('reg-fecha').value = today();
 document.getElementById('liq-mes').value = new Date().getMonth()+1;
+document.getElementById('gasto-fecha').value = today();
 
 async function api(method, url, body) {
   const opts = { method, headers:{'Content-Type':'application/json'} };
@@ -359,6 +403,7 @@ function showTab(name, el) {
   if (name==='caja') renderCaja();
   if (name==='ranking') renderRanking();
   if (name==='liquidaciones') initLiquidaciones();
+  if (name==='gastos') renderGastos();
   if (name==='config') renderConfig();
 }
 
@@ -371,6 +416,7 @@ function setPeriod(tab, p, el) {
   if (tab==='com') renderCom();
   if (tab==='caja') renderCaja();
   if (tab==='ranking') renderRanking();
+  if (tab==='gastos') renderGastos();
 }
 
 function selectPago(p, el) {
@@ -595,8 +641,7 @@ async function registrarAdelanto() {
   document.getElementById('adel-obs').value='';
   msg.className='msg show ok'; msg.textContent=`Adelanto de ${fmt(monto)} registrado para ${chica}`;
   setTimeout(()=>{msg.className='msg';},3000);
-  renderAdelantos();
-  calcularLiquidacion();
+  renderAdelantos(); calcularLiquidacion();
 }
 
 async function calcularLiquidacion() {
@@ -638,8 +683,7 @@ async function guardarLiquidacion() {
   setTimeout(()=>{msg.className='msg';},4000);
   document.getElementById('liq-preview').style.display='none';
   liqData=null;
-  renderHistorialLiquidaciones();
-  renderAdelantos();
+  renderHistorialLiquidaciones(); renderAdelantos();
 }
 
 async function renderHistorialLiquidaciones() {
@@ -668,8 +712,7 @@ async function renderHistorialLiquidaciones() {
 }
 
 async function marcarPagada(id) {
-  await api('PUT',`/api/liquidaciones/${id}`,{pagada:true});
-  renderHistorialLiquidaciones();
+  await api('PUT',`/api/liquidaciones/${id}`,{pagada:true}); renderHistorialLiquidaciones();
 }
 async function delLiquidacion(id) {
   if (!confirm('¿Eliminar esta liquidación?')) return;
@@ -700,8 +743,54 @@ async function renderAdelantos() {
 
 async function delAdelanto(id) {
   if (!confirm('¿Eliminar este adelanto?')) return;
-  await api('DELETE',`/api/adelantos/${id}`);
-  renderAdelantos();
+  await api('DELETE',`/api/adelantos/${id}`); renderAdelantos();
+}
+
+async function registrarGasto() {
+  const categoria = document.getElementById('gasto-cat').value;
+  const monto = parseFloat(document.getElementById('gasto-monto').value)||0;
+  const descripcion = document.getElementById('gasto-desc').value.trim();
+  const fecha = toISO(document.getElementById('gasto-fecha').value||today());
+  const msg = document.getElementById('gasto-msg');
+  if (!monto) { msg.className='msg show err'; msg.textContent='Ingresá el monto del gasto.'; return; }
+  await api('POST','/api/gastos',{categoria, monto, descripcion, fecha});
+  document.getElementById('gasto-monto').value='';
+  document.getElementById('gasto-desc').value='';
+  document.getElementById('gasto-fecha').value=today();
+  msg.className='msg show ok'; msg.textContent=`Gasto de ${fmt(monto)} registrado (${categoria})`;
+  setTimeout(()=>{msg.className='msg';},3000);
+  renderGastos();
+}
+
+async function renderGastos() {
+  const range = getRange(periodos.gastos);
+  const params = new URLSearchParams(range);
+  const gastos = await api('GET',`/api/gastos?${params}`);
+  const total = gastos.reduce((s,g)=>s+g.monto,0);
+  const porCat = {};
+  gastos.forEach(g=>{ if(!porCat[g.categoria])porCat[g.categoria]=0; porCat[g.categoria]+=g.monto; });
+  document.getElementById('gastos-resumen').innerHTML=`
+    <div class="metric"><div class="metric-label">Total gastos</div><div class="metric-value mv-coral">${fmt(total)}</div></div>
+    <div class="metric"><div class="metric-label">Registros</div><div class="metric-value">${gastos.length}</div></div>`;
+  const lista = document.getElementById('lista-gastos');
+  if (!gastos.length) { lista.innerHTML='<div class="empty">No hay gastos en este período</div>'; return; }
+  lista.innerHTML = gastos.map(g=>`
+    <div class="gasto-item">
+      <div style="flex:1">
+        <span class="cat-badge ${CAT_BADGE[g.categoria]||'cat-otros'}">${g.categoria}</span>
+        ${g.descripcion?`<span style="font-size:13px;color:var(--text-2);margin-left:8px">${g.descripcion}</span>`:''}
+        <div style="font-size:12px;color:var(--text-3);margin-top:2px">${fromISO(g.fecha)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-weight:700;color:var(--coral);font-size:15px">${fmt(g.monto)}</span>
+        <button class="btn-sm btn-danger" onclick="delGasto(${g.id})" style="padding:3px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+async function delGasto(id) {
+  if (!confirm('¿Eliminar este gasto?')) return;
+  await api('DELETE',`/api/gastos/${id}`); renderGastos();
 }
 
 async function renderCaja() {
@@ -710,7 +799,9 @@ async function renderCaja() {
   document.getElementById('caja-top').innerHTML=`
     <div class="metric"><div class="metric-label">Total cobrado</div><div class="metric-value mv-purple">${fmt(res.cobrado)}</div></div>
     <div class="metric"><div class="metric-label">Comisiones</div><div class="metric-value mv-amber">${fmt(res.comisiones)}</div></div>
-    <div class="metric"><div class="metric-label">Para el salón</div><div class="metric-value mv-teal">${fmt(res.salon)}</div></div>`;
+    <div class="metric"><div class="metric-label">Para el salón</div><div class="metric-value mv-teal">${fmt(res.salon)}</div></div>
+    <div class="metric"><div class="metric-label">Gastos</div><div class="metric-value mv-coral">${fmt(res.gastos||0)}</div></div>
+    <div class="metric" style="grid-column:span 2;background:var(--purple-light)"><div class="metric-label" style="color:var(--purple-dark)">Resultado neto</div><div class="metric-value mv-purple">${fmt(res.neto||0)}</div></div>`;
   document.getElementById('caja-pago').innerHTML=[
     {k:'efectivo',l:'Efectivo'},{k:'transferencia',l:'Transferencia'},{k:'qr',l:'QR'},
     {k:'debito',l:'Débito'},{k:'credito',l:'Crédito'},{k:'openpay',l:'OpenPay'}
