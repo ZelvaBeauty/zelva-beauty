@@ -81,6 +81,7 @@ await db.read();
 if (!db.data.nextId) db.data.nextId = defaultData.nextId;
 if (!db.data.chicas?.length) db.data.chicas = defaultData.chicas;
 if (!db.data.servicios?.length) db.data.servicios = defaultData.servicios;
+// agregar costo_insumos a servicios existentes si no lo tienen
 db.data.servicios.forEach(s => {
   const def = defaultData.servicios.find(d => d.id === s.id);
   if (def && s.costo_insumos === undefined) s.costo_insumos = def.costo_insumos;
@@ -145,6 +146,7 @@ app.get('/api/turnos', (req, res) => {
 app.post('/api/turnos', async (req, res) => {
   const { chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen, obs, sena_monto, descuento_monto, descuento_motivo } = req.body;
   if (!chica||!clienta||!servicios?.length||!pago) return res.status(400).json({ error: 'Faltan campos' });
+  // calcular costo de insumos sumando los de cada servicio
   const costo_insumos = servicios.reduce((sum, s) => {
     const srv = db.data.servicios.find(x => x.nombre === s.nombre);
     return sum + (srv?.costo_insumos || s.costo_insumos || 0);
