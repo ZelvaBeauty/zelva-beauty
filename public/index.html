@@ -44,6 +44,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .btn-outline{background:#fff;color:var(--purple);border:1px solid var(--purple);width:100%;padding:10px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 .metrics-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.metrics-6{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .metric{background:var(--gray-surface);border-radius:var(--r);padding:11px}
 .metric-label{font-size:11px;color:var(--text-2);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
 .metric-value{font-size:19px;font-weight:700}
@@ -110,6 +111,10 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .cat-servicios{background:#E1F5EE;color:#085041}
 .cat-sueldos{background:#FAEEDA;color:#633806}
 .cat-otros{background:#f0efe9;color:#5f5f58}
+.insumo-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-border);gap:8px}
+.insumo-row:last-child{border-bottom:none}
+.insumo-edit{display:none;background:#F0F4FF;border-radius:var(--r);padding:10px;margin-top:6px;gap:8px;align-items:flex-end}
+.insumo-edit.open{display:flex}
 </style>
 </head>
 <body>
@@ -125,6 +130,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <button class="tab" onclick="showTab('gastos',this)"><i class="ti ti-minus"></i> Gastos</button>
   <button class="tab" onclick="showTab('caja',this)"><i class="ti ti-chart-bar"></i> Caja</button>
   <button class="tab" onclick="showTab('ranking',this)"><i class="ti ti-trophy"></i> Ranking</button>
+  <button class="tab" onclick="showTab('insumos',this)"><i class="ti ti-box"></i> Insumos</button>
   <button class="tab" onclick="showTab('config',this)"><i class="ti ti-settings"></i> Config</button>
 </div>
 
@@ -279,7 +285,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div class="field"><label>Monto ($)</label><input type="number" id="gasto-monto" placeholder="0"></div>
     </div>
     <div class="g2">
-      <div class="field"><label>Descripción</label><input type="text" id="gasto-desc" placeholder="Ej: alquiler mayo, café y azúcar..."></div>
+      <div class="field"><label>Descripción</label><input type="text" id="gasto-desc" placeholder="Ej: alquiler mayo..."></div>
       <div class="field"><label>Fecha</label><input type="text" id="gasto-fecha"></div>
     </div>
     <button class="btn-sm btn-purple" onclick="registrarGasto()" style="width:100%;justify-content:center;padding:10px"><i class="ti ti-plus"></i> Registrar gasto</button>
@@ -301,7 +307,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     <button class="pbtn" onclick="setPeriod('caja','mes',this)">Este mes</button>
     <button class="pbtn" onclick="setPeriod('caja','todos',this)">Todos</button>
   </div>
-  <div class="metrics-3" id="caja-top"></div>
+  <div class="metrics-6" id="caja-top"></div>
   <div class="card">
     <div class="card-title"><i class="ti ti-cash"></i> Desglose por medio de pago</div>
     <div class="pago-desglose" id="caja-pago"></div>
@@ -324,6 +330,11 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     <div class="card-title"><i class="ti ti-users"></i> Ranking de profesionales</div>
     <div id="ranking-chicas"></div>
   </div>
+</div>
+
+<div id="panel-insumos" class="panel">
+  <div class="info-box info-purple"><i class="ti ti-info-circle" style="flex-shrink:0;font-size:16px"></i>Estos costos se usan para calcular la ganancia real en Caja. Actualizalos cuando cambien los precios de los proveedores.</div>
+  <div id="lista-insumos"></div>
 </div>
 
 <div id="panel-config" class="panel">
@@ -360,6 +371,53 @@ const toISO = s => { const p = s.split('/'); return `${p[2]}-${p[1]}-${p[0]}`; }
 const fromISO = s => { if (!s) return ''; const p = s.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; };
 const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const CAT_BADGE = {Alquiler:'cat-alquiler',Insumos:'cat-insumos',Impuestos:'cat-impuestos',Servicios:'cat-servicios',Sueldos:'cat-sueldos',Otros:'cat-otros'};
+const PROVEEDORES = {
+  'Manicura sin esmaltar':'La Manola / Nail Show',
+  'Esmaltado tradicional':'La Manola / Nail Show',
+  'Esmaltado semipermanente':'RIMERA 15 / CHARM LIMIT',
+  'Nivelacion en gel':'Nail Show / Jennifer B',
+  'Capping dipping':'Nail Show',
+  'Capping en perla':'Nail Show / Jennifer B',
+  'Capping en polygel':'Nail Show / Jennifer B',
+  'Esculpidas en poly':'Nail Show / Jennifer B',
+  'Esculpidas acrílicas':'La Manola / Nail Show',
+  'Soft gel':'Nail Show / Jennifer B',
+  'Service esculpidas':'Nail Show',
+  'Cambio de esmalte':'La Manola',
+  'Manicura para niñas':'La Manola',
+  'Manicura para hombres':'La Manola',
+  'Belleza de pies sin esmaltar':'La Manola',
+  'Belleza con esmalte tradicional':'La Manola',
+  'Belleza con esmalte semipermanente':'RIMERA 15',
+  'Pedicuria sin esmaltar':'La Manola',
+  'Pedicuria con esmalte tradicional':'La Manola',
+  'Pedicuria con esmalte semipermanente':'RIMERA 15',
+  'Retiro de semipermanente':'Neoclean',
+  'Retiro de capping':'Neoclean',
+  'Retiro de esculpidas':'Neoclean',
+  'Retiro total de semi':'Neoclean',
+  'Lifting de pestañas + botox':'Ese Beauty / La Lupita',
+  'Perfilado de cejas':'La Lupita',
+  'Perfilado de cejas + Henna':'La Lupita',
+  'Laminado de cejas + botox':'Ese Beauty / La Lupita',
+  'Tinte de pestañas':'La Lupita',
+  'Lifting + Perfilado':'Ese Beauty / La Lupita',
+  'Laminado + Perfilado':'Ese Beauty / La Lupita',
+  'Lifting + Laminado':'Ese Beauty / La Lupita',
+  'Lifting + Laminado + Perfilado':'Ese Beauty / La Lupita',
+  'Clásicas PXP':'Jennifer B / Ese Beauty',
+  'Volumen Brasilero':'Jennifer B / Ese Beauty',
+  'Volumen ruso':'Jennifer B / Ese Beauty',
+  'Service Clásicas PXP':'Jennifer B / Ese Beauty',
+  'Service Volumen Brasilero':'Jennifer B / Ese Beauty',
+  'Service Volumen Ruso':'Jennifer B / Ese Beauty',
+  '3D - Volumen light':'Jennifer B / Ese Beauty',
+  '4D - Volumen medio':'Jennifer B / Ese Beauty',
+  '5D - Mega volumen':'Jennifer B / Ese Beauty',
+  'Service 3D - Volumen light':'Jennifer B / Ese Beauty',
+  'Service 4D - Volumen medio':'Jennifer B / Ese Beauty',
+  'Service 5D - Mega volumen':'Jennifer B / Ese Beauty',
+};
 
 let periodos = { turnos:'hoy', com:'hoy', caja:'hoy', ranking:'mes', gastos:'mes' };
 let serviciosCache = [];
@@ -404,6 +462,7 @@ function showTab(name, el) {
   if (name==='ranking') renderRanking();
   if (name==='liquidaciones') initLiquidaciones();
   if (name==='gastos') renderGastos();
+  if (name==='insumos') renderInsumos();
   if (name==='config') renderConfig();
 }
 
@@ -764,11 +823,8 @@ async function registrarGasto() {
 
 async function renderGastos() {
   const range = getRange(periodos.gastos);
-  const params = new URLSearchParams(range);
-  const gastos = await api('GET',`/api/gastos?${params}`);
+  const gastos = await api('GET',`/api/gastos?${new URLSearchParams(range)}`);
   const total = gastos.reduce((s,g)=>s+g.monto,0);
-  const porCat = {};
-  gastos.forEach(g=>{ if(!porCat[g.categoria])porCat[g.categoria]=0; porCat[g.categoria]+=g.monto; });
   document.getElementById('gastos-resumen').innerHTML=`
     <div class="metric"><div class="metric-label">Total gastos</div><div class="metric-value mv-coral">${fmt(total)}</div></div>
     <div class="metric"><div class="metric-label">Registros</div><div class="metric-value">${gastos.length}</div></div>`;
@@ -800,8 +856,9 @@ async function renderCaja() {
     <div class="metric"><div class="metric-label">Total cobrado</div><div class="metric-value mv-purple">${fmt(res.cobrado)}</div></div>
     <div class="metric"><div class="metric-label">Comisiones</div><div class="metric-value mv-amber">${fmt(res.comisiones)}</div></div>
     <div class="metric"><div class="metric-label">Para el salón</div><div class="metric-value mv-teal">${fmt(res.salon)}</div></div>
-    <div class="metric"><div class="metric-label">Gastos</div><div class="metric-value mv-coral">${fmt(res.gastos||0)}</div></div>
-    <div class="metric" style="grid-column:span 2;background:var(--purple-light)"><div class="metric-label" style="color:var(--purple-dark)">Resultado neto</div><div class="metric-value mv-purple">${fmt(res.neto||0)}</div></div>`;
+    <div class="metric"><div class="metric-label">Costo insumos</div><div class="metric-value mv-coral">${fmt(res.costo_insumos||0)}</div></div>
+    <div class="metric"><div class="metric-label">Gastos fijos</div><div class="metric-value mv-coral">${fmt(res.gastos||0)}</div></div>
+    <div class="metric" style="background:var(--purple-light)"><div class="metric-label" style="color:var(--purple-dark)">Ganancia real</div><div class="metric-value mv-purple">${fmt(res.ganancia_real||0)}</div></div>`;
   document.getElementById('caja-pago').innerHTML=[
     {k:'efectivo',l:'Efectivo'},{k:'transferencia',l:'Transferencia'},{k:'qr',l:'QR'},
     {k:'debito',l:'Débito'},{k:'credito',l:'Crédito'},{k:'openpay',l:'OpenPay'}
@@ -846,8 +903,53 @@ async function renderRanking() {
       </div>`).join('');
 }
 
+async function renderInsumos() {
+  const servicios = await api('GET','/api/servicios');
+  serviciosCache = servicios;
+  const cats = {};
+  servicios.forEach(s => { if (!cats[s.categoria]) cats[s.categoria]=[]; cats[s.categoria].push(s); });
+  document.getElementById('lista-insumos').innerHTML = Object.entries(cats).map(([cat,srvs])=>`
+    <div class="card">
+      <div class="card-title"><i class="ti ti-box"></i> ${cat}</div>
+      ${srvs.map(s=>`
+        <div class="insumo-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:500">${s.nombre}</div>
+              <div style="font-size:12px;color:var(--text-3);margin-top:2px">${PROVEEDORES[s.nombre]||'—'}</div>
+            </div>
+            <div style="text-align:right;margin-right:8px">
+              <div style="font-size:13px;font-weight:600;color:var(--coral)">${fmt(s.costo_insumos||0)}</div>
+              <div style="font-size:11px;color:var(--text-3)">costo insumos</div>
+            </div>
+            <button class="btn-sm btn-edit" onclick="toggleInsumoEdit(${s.id})"><i class="ti ti-pencil"></i></button>
+          </div>
+          <div class="insumo-edit" id="insumo-edit-${s.id}">
+            <div class="field" style="margin:0;flex:1">
+              <label>Nuevo costo de insumos ($)</label>
+              <input type="number" id="insumo-val-${s.id}" value="${s.costo_insumos||0}">
+            </div>
+            <button class="btn-sm btn-purple" onclick="saveInsumo(${s.id})" style="align-self:flex-end"><i class="ti ti-check"></i> Guardar</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function toggleInsumoEdit(id) {
+  document.getElementById(`insumo-edit-${id}`).classList.toggle('open');
+}
+
+async function saveInsumo(id) {
+  const costo_insumos = parseFloat(document.getElementById(`insumo-val-${id}`).value)||0;
+  const srv = serviciosCache.find(s=>s.id===id);
+  await api('PUT',`/api/servicios/${id}`,{precio_ef:srv?.precio_ef||0, precio_lista:srv?.precio_lista||0, costo_insumos});
+  document.getElementById(`insumo-edit-${id}`).classList.remove('open');
+  renderInsumos();
+}
+
 async function renderConfig() {
   const [chicas, servicios] = await Promise.all([api('GET','/api/chicas'), api('GET','/api/servicios')]);
+  serviciosCache = servicios;
   document.getElementById('cfg-chicas').innerHTML = chicas.map(c=>`
     <div class="list-item">
       <div style="display:flex;align-items:center;gap:8px"><div class="avatar">${c.nombre.substring(0,2).toUpperCase()}</div><span>${c.nombre}</span></div>
@@ -879,7 +981,8 @@ function toggleEdit(id) { document.getElementById(`edit-row-${id}`).classList.to
 async function saveEdit(id) {
   const ef = parseFloat(document.getElementById(`edit-ef-${id}`).value)||0;
   const lista = parseFloat(document.getElementById(`edit-lista-${id}`).value)||ef;
-  await api('PUT',`/api/servicios/${id}`,{precio_ef:ef, precio_lista:lista});
+  const costo = serviciosCache.find(s=>s.id===id)?.costo_insumos||0;
+  await api('PUT',`/api/servicios/${id}`,{precio_ef:ef, precio_lista:lista, costo_insumos:costo});
   document.getElementById(`precio-lbl-${id}`).textContent = `Ef: ${fmt(ef)} / Lista: ${fmt(lista)}`;
   document.getElementById(`edit-row-${id}`).classList.remove('open');
   loadSelects();
@@ -901,7 +1004,7 @@ async function addServicio() {
   const ef = parseFloat(document.getElementById('inp-srv-ef').value)||0;
   const lista = parseFloat(document.getElementById('inp-srv-lista').value)||ef;
   if (!n) return;
-  await api('POST','/api/servicios',{categoria:cat,nombre:n,precio_ef:ef,precio_lista:lista});
+  await api('POST','/api/servicios',{categoria:cat,nombre:n,precio_ef:ef,precio_lista:lista,costo_insumos:0});
   ['inp-srv-cat','inp-srv-nom','inp-srv-ef','inp-srv-lista'].forEach(id=>document.getElementById(id).value='');
   renderConfig(); loadSelects();
 }
@@ -912,10 +1015,10 @@ async function delServicio(id) {
 
 async function exportCSV() {
   const turnos = await api('GET','/api/turnos');
-  const rows=[['Fecha','Profesional','Clienta','Servicios','Cobrado','Medio pago','Base comisión','Comisión (37%)','Para salón','Descuento','Motivo desc.','Seña','Origen','Observación']];
+  const rows=[['Fecha','Profesional','Clienta','Servicios','Cobrado','Medio pago','Base comisión','Comisión (37%)','Costo insumos','Para salón','Descuento','Seña','Origen','Observación']];
   turnos.forEach(t=>{
     const srvs=(t.servicios||[]).map(s=>s.servicio||s.nombre).join(' + ');
-    rows.push([t.fecha,t.chica,t.clienta,`"${srvs}"`,t.cobrado,t.pago,t.base_comision,Math.round(t.base_comision*0.37),Math.round(t.cobrado-t.base_comision*0.37),t.descuento_monto||0,t.descuento_motivo||'',t.sena_monto||0,t.origen,t.obs||'']);
+    rows.push([t.fecha,t.chica,t.clienta,`"${srvs}"`,t.cobrado,t.pago,t.base_comision,Math.round(t.base_comision*0.37),t.costo_insumos||0,Math.round(t.cobrado-t.base_comision*0.37-(t.costo_insumos||0)),t.descuento_monto||0,t.sena_monto||0,t.origen,t.obs||'']);
   });
   const csv='\uFEFF'+rows.map(r=>r.join(',')).join('\n');
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
