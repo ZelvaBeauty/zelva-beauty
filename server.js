@@ -78,14 +78,12 @@ const defaultData = {
 
 const db = new Low(adapter, defaultData);
 await db.read();
-if (!db.data.nextId) db.data.nextId = defaultData.nextId;
+
+// Inicializar colecciones si no existen
+if (!db.data) db.data = defaultData;
+if (!db.data.nextId) db.data.nextId = { ...defaultData.nextId };
 if (!db.data.chicas?.length) db.data.chicas = defaultData.chicas;
 if (!db.data.servicios?.length) db.data.servicios = defaultData.servicios;
-// agregar costo_insumos a servicios existentes si no lo tienen
-db.data.servicios.forEach(s => {
-  const def = defaultData.servicios.find(d => d.id === s.id);
-  if (def && s.costo_insumos === undefined) s.costo_insumos = def.costo_insumos;
-});
 if (!db.data.turnos) db.data.turnos = [];
 if (!db.data.adelantos) db.data.adelantos = [];
 if (!db.data.liquidaciones) db.data.liquidaciones = [];
@@ -93,6 +91,15 @@ if (!db.data.gastos) db.data.gastos = [];
 if (!db.data.nextId.adelantos) db.data.nextId.adelantos = 1;
 if (!db.data.nextId.liquidaciones) db.data.nextId.liquidaciones = 1;
 if (!db.data.nextId.gastos) db.data.nextId.gastos = 1;
+
+// Actualizar campos nuevos en servicios existentes sin perder datos
+db.data.servicios.forEach(s => {
+  const def = defaultData.servicios.find(d => d.id === s.id);
+  if (def) {
+    if (s.costo_insumos === undefined) s.costo_insumos = def.costo_insumos;
+  }
+});
+
 await db.write();
 
 const nextId = (key) => { const id = db.data.nextId[key]++; db.write(); return id; };
@@ -146,7 +153,6 @@ app.get('/api/turnos', (req, res) => {
 app.post('/api/turnos', async (req, res) => {
   const { chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen, obs, sena_monto, descuento_monto, descuento_motivo } = req.body;
   if (!chica||!clienta||!servicios?.length||!pago) return res.status(400).json({ error: 'Faltan campos' });
-  // calcular costo de insumos sumando los de cada servicio
   const costo_insumos = servicios.reduce((sum, s) => {
     const srv = db.data.servicios.find(x => x.nombre === s.nombre);
     return sum + (srv?.costo_insumos || s.costo_insumos || 0);
