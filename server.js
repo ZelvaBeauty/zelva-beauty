@@ -69,21 +69,93 @@ const defaultData = {
     {id:48,categoria:'Service Pestañas tecnológicas',nombre:'Service 4D - Volumen medio',precio_ef:35100,precio_lista:42120,costo_insumos:9585},
     {id:49,categoria:'Service Pestañas tecnológicas',nombre:'Service 5D - Mega volumen',precio_ef:39600,precio_lista:47520,costo_insumos:9585},
   ],
+  insumos: [
+    {id:1,categoria:'Uñas',nombre:'Ablandador Las Varano 1L',proveedor:'La Manola',precio_unitario:13.9},
+    {id:2,categoria:'Uñas',nombre:'Aceite para cutículas Charm 15ml',proveedor:'La Manola',precio_unitario:116.67},
+    {id:3,categoria:'Uñas',nombre:'Acrílico (Polímero) Nail Show 45gr',proveedor:'Nail Show',precio_unitario:270.11},
+    {id:4,categoria:'Uñas',nombre:'Acrílico Pinky 20gr',proveedor:'La Manola',precio_unitario:120},
+    {id:5,categoria:'Uñas',nombre:'Base coat Meline 15ml',proveedor:'La Manola',precio_unitario:333.33},
+    {id:6,categoria:'Uñas',nombre:'Base esmalte tradicional Cherimoya 10ml',proveedor:'La Manola',precio_unitario:175},
+    {id:7,categoria:'Uñas',nombre:'Base niveladora Angela Bresciano 15ml',proveedor:'MG - AB',precio_unitario:453.33},
+    {id:8,categoria:'Uñas',nombre:'Esmalte Charm 10ml',proveedor:'La Manola',precio_unitario:220},
+    {id:9,categoria:'Uñas',nombre:'Esmalte City Girl 10ml',proveedor:'City Girl',precio_unitario:250},
+    {id:10,categoria:'Uñas',nombre:'Esmalte Meline 15ml',proveedor:'Las Marg',precio_unitario:355.33},
+    {id:11,categoria:'Uñas',nombre:'Esmalte Mely 12ml',proveedor:'Mely',precio_unitario:208.33},
+    {id:12,categoria:'Uñas',nombre:'Esmalte Navi 10ml',proveedor:'Paris',precio_unitario:300},
+    {id:13,categoria:'Uñas',nombre:'Esmalte semipermanente OPI 15ml',proveedor:'La Magia',precio_unitario:1146.67},
+    {id:14,categoria:'Uñas',nombre:'Esmalte tradicional OPI 15ml',proveedor:'La Magia',precio_unitario:526.67},
+    {id:15,categoria:'Uñas',nombre:'Gel de construcción Angela Bresciano 30gr',proveedor:'MG - AB',precio_unitario:333.33},
+    {id:16,categoria:'Uñas',nombre:'Lima buffer x10u',proveedor:'La Manola',precio_unitario:430},
+    {id:17,categoria:'Uñas',nombre:'Lima SK x25u',proveedor:'La Manola',precio_unitario:292},
+    {id:18,categoria:'Uñas',nombre:'Limas circulares pedicuría x60u',proveedor:'ML',precio_unitario:249.83},
+    {id:19,categoria:'Uñas',nombre:'Moldes para esculpidas 300u',proveedor:'City Girl',precio_unitario:28.33},
+    {id:20,categoria:'Uñas',nombre:'Monómero Cherimoya vidrio 100ml',proveedor:'La Manola',precio_unitario:90},
+    {id:21,categoria:'Uñas',nombre:'Polygel Navi 60gr',proveedor:'Navi - MG/AB',precio_unitario:135},
+    {id:22,categoria:'Uñas',nombre:'Prep Nail Show 8ml',proveedor:'Nail Show',precio_unitario:275},
+    {id:23,categoria:'Uñas',nombre:'Primer Nail Show 8ml',proveedor:'Nail Show',precio_unitario:475},
+    {id:24,categoria:'Uñas',nombre:'Remover Las Varano 1L',proveedor:'La Manola',precio_unitario:19.9},
+    {id:25,categoria:'Uñas',nombre:'Solución para polygel Pinky 250ml',proveedor:'La Manola',precio_unitario:13.2},
+    {id:26,categoria:'Uñas',nombre:'Tips soft gel Mely x504u',proveedor:'Mely',precio_unitario:10.52},
+    {id:27,categoria:'Uñas',nombre:'Top coat Meline 15ml',proveedor:'La Manola',precio_unitario:333.33},
+    {id:28,categoria:'Uñas',nombre:'Top esmalte tradicional Cherimoya 10ml',proveedor:'La Manola',precio_unitario:190},
+    {id:29,categoria:'Uñas',nombre:'Ultrabond Cherimoya 15ml',proveedor:'La Manola',precio_unitario:400},
+    {id:30,categoria:'Uñas',nombre:'Xtrabond Mia Secret 30ml',proveedor:'La Lupita',precio_unitario:599.67},
+    {id:31,categoria:'Pestañas y cejas',nombre:'Adhesivo pestañas ODIN 5gr',proveedor:'La Lupita',precio_unitario:5780},
+    {id:32,categoria:'Pestañas y cejas',nombre:'Lifting paso 1 Lion Beauty 1gr x10',proveedor:'La Lupita',precio_unitario:1130},
+    {id:33,categoria:'Pestañas y cejas',nombre:'Lifting paso 2 Lion Beauty 1gr x10',proveedor:'La Lupita',precio_unitario:1130},
+    {id:34,categoria:'Pestañas y cejas',nombre:'Lifting paso 3 Lion Beauty 1gr x10',proveedor:'La Lupita',precio_unitario:1130},
+    {id:35,categoria:'Pestañas y cejas',nombre:'Lifting paso 4 Lion Beauty 1gr x10',proveedor:'La Lupita',precio_unitario:1130},
+    {id:36,categoria:'Pestañas y cejas',nombre:'Shampoo cejas Lion Beauty 150ml',proveedor:'La Lupita',precio_unitario:95.13},
+    {id:37,categoria:'Pestañas y cejas',nombre:'Lash Bonder Iconsign 15ml',proveedor:'ML',precio_unitario:966},
+    {id:38,categoria:'Pestañas y cejas',nombre:'Henna + Fijador Makiaj 10ml',proveedor:'Jennifer B',precio_unitario:455},
+    {id:39,categoria:'Pestañas y cejas',nombre:'Cinta pestañas hipoalergénica 2000u',proveedor:'La Manola',precio_unitario:0.3},
+    {id:40,categoria:'Pestañas y cejas',nombre:'Parches hidrogel x50 pares',proveedor:'La Manola',precio_unitario:67.5},
+    {id:41,categoria:'Pestañas y cejas',nombre:'Lash Pro Glue Melania 7gr',proveedor:'La Manola',precio_unitario:2000},
+    {id:42,categoria:'Pestañas y cejas',nombre:'Cera en perla Depimiel 800gr',proveedor:'La Manola',precio_unitario:12.125},
+    {id:43,categoria:'Pestañas y cejas',nombre:'Hilo diseñador de cejas 10mts',proveedor:'La Manola',precio_unitario:0.25},
+    {id:44,categoria:'Pestañas y cejas',nombre:'Pestañas Lion Beauty 3D W 0.07 D 11MM',proveedor:'La Lupita',precio_unitario:721.875},
+    {id:45,categoria:'Pestañas y cejas',nombre:'Pestañas Lion Beauty 3D W 0.07 D 12MM',proveedor:'La Lupita',precio_unitario:721.875},
+    {id:46,categoria:'Pestañas y cejas',nombre:'Pestañas Lion Beauty 4D W 0.07 D 14MM',proveedor:'La Lupita',precio_unitario:961.875},
+    {id:47,categoria:'Pestañas y cejas',nombre:'Pestañas clásicas Lion Beauty 0.15 D 9MM',proveedor:'Ese Beauty',precio_unitario:343.125},
+    {id:48,categoria:'Pestañas y cejas',nombre:'Pestañas clásicas Lion Beauty 0.15 D 10MM',proveedor:'Ese Beauty',precio_unitario:343.125},
+    {id:49,categoria:'Pestañas y cejas',nombre:'Pestañas clásicas Lion Beauty 0.15 D 11MM',proveedor:'Ese Beauty',precio_unitario:343.125},
+    {id:50,categoria:'Pestañas y cejas',nombre:'Pestañas clásicas Lion Beauty 0.15 D 12MM',proveedor:'Ese Beauty',precio_unitario:343.125},
+    {id:51,categoria:'Pestañas y cejas',nombre:'Pestañas clásicas Lion Beauty 0.15 D 13MM',proveedor:'Ese Beauty',precio_unitario:343.125},
+    {id:52,categoria:'Pestañas y cejas',nombre:'Pestañas clásicas Lion Beauty 0.15 D 14MM',proveedor:'Ese Beauty',precio_unitario:343.125},
+    {id:53,categoria:'Descartables',nombre:'Algodón Doncella 500gr',proveedor:'Neoclean',precio_unitario:13.02},
+    {id:54,categoria:'Descartables',nombre:'Alcohol 96% 5L',proveedor:'Neoclean',precio_unitario:3.146},
+    {id:55,categoria:'Descartables',nombre:'Barbijos x100',proveedor:'ML',precio_unitario:29.99},
+    {id:56,categoria:'Descartables',nombre:'Compresas x50',proveedor:'La Manola',precio_unitario:54},
+    {id:57,categoria:'Descartables',nombre:'Crema exfoliante Libra 1K',proveedor:'La Lupita',precio_unitario:18.4},
+    {id:58,categoria:'Descartables',nombre:'Crema hidratante Libra 1K',proveedor:'ML',precio_unitario:18.9},
+    {id:59,categoria:'Descartables',nombre:'Guantes x100u',proveedor:'La Manola',precio_unitario:60},
+    {id:60,categoria:'Descartables',nombre:'Hojas de bisturí N15 x100',proveedor:'ML',precio_unitario:157},
+    {id:61,categoria:'Descartables',nombre:'Hojas de bisturí N20 x100',proveedor:'ML',precio_unitario:157},
+    {id:62,categoria:'Descartables',nombre:'Palito de naranjo 50u',proveedor:'La Manola',precio_unitario:16},
+    {id:63,categoria:'Descartables',nombre:'Papel aluminio 25mt',proveedor:'ML',precio_unitario:0.228},
+    {id:64,categoria:'Descartables',nombre:'Papel film 300mt',proveedor:'ML',precio_unitario:0.02633},
+    {id:65,categoria:'Descartables',nombre:'Papel film 42mm x200mt',proveedor:'La Manola',precio_unitario:0.0065},
+    {id:66,categoria:'Descartables',nombre:'Servilletas rollo cocina x200u',proveedor:'Neoclean',precio_unitario:11.975},
+    {id:67,categoria:'Descartables',nombre:'Toallitas desmaquillantes Nivea 25u',proveedor:'ML',precio_unitario:181.2},
+    {id:68,categoria:'Descartables',nombre:'Hisopos Farmacity x150u',proveedor:'Farmacity',precio_unitario:19.93},
+    {id:69,categoria:'Descartables',nombre:'Cepillitos x50u',proveedor:'La Manola',precio_unitario:24},
+    {id:70,categoria:'Descartables',nombre:'Wipes sin pelusa x1000u',proveedor:'La Manola',precio_unitario:2.2},
+  ],
   turnos: [],
   adelantos: [],
   liquidaciones: [],
   gastos: [],
-  nextId: { chicas: 8, servicios: 50, turnos: 1, adelantos: 1, liquidaciones: 1, gastos: 1 }
+  nextId: { chicas: 8, servicios: 50, turnos: 1, adelantos: 1, liquidaciones: 1, gastos: 1, insumos: 71 }
 };
 
 const db = new Low(adapter, defaultData);
 await db.read();
 
-// Inicializar colecciones si no existen
 if (!db.data) db.data = defaultData;
 if (!db.data.nextId) db.data.nextId = { ...defaultData.nextId };
 if (!db.data.chicas?.length) db.data.chicas = defaultData.chicas;
 if (!db.data.servicios?.length) db.data.servicios = defaultData.servicios;
+if (!db.data.insumos?.length) db.data.insumos = defaultData.insumos;
 if (!db.data.turnos) db.data.turnos = [];
 if (!db.data.adelantos) db.data.adelantos = [];
 if (!db.data.liquidaciones) db.data.liquidaciones = [];
@@ -91,13 +163,11 @@ if (!db.data.gastos) db.data.gastos = [];
 if (!db.data.nextId.adelantos) db.data.nextId.adelantos = 1;
 if (!db.data.nextId.liquidaciones) db.data.nextId.liquidaciones = 1;
 if (!db.data.nextId.gastos) db.data.nextId.gastos = 1;
+if (!db.data.nextId.insumos) db.data.nextId.insumos = 71;
 
-// Actualizar campos nuevos en servicios existentes sin perder datos
 db.data.servicios.forEach(s => {
   const def = defaultData.servicios.find(d => d.id === s.id);
-  if (def) {
-    if (s.costo_insumos === undefined) s.costo_insumos = def.costo_insumos;
-  }
+  if (def && s.costo_insumos === undefined) s.costo_insumos = def.costo_insumos;
 });
 
 await db.write();
@@ -139,6 +209,28 @@ app.put('/api/servicios/:id', async (req, res) => {
 });
 app.delete('/api/servicios/:id', async (req, res) => {
   db.data.servicios = db.data.servicios.filter(s=>s.id!==parseInt(req.params.id));
+  await db.write(); res.json({ ok: true });
+});
+
+// INSUMOS
+app.get('/api/insumos', (req, res) => res.json(db.data.insumos.sort((a,b)=>a.categoria.localeCompare(b.categoria)||a.nombre.localeCompare(b.nombre))));
+app.post('/api/insumos', async (req, res) => {
+  const { categoria, nombre, proveedor, precio_unitario } = req.body;
+  if (!nombre) return res.status(400).json({ error: 'Falta nombre' });
+  const id = nextId('insumos');
+  db.data.insumos.push({ id, categoria: categoria||'Otros', nombre, proveedor: proveedor||'', precio_unitario: precio_unitario||0 });
+  await db.write(); res.json({ id });
+});
+app.put('/api/insumos/:id', async (req, res) => {
+  const ins = db.data.insumos.find(x=>x.id===parseInt(req.params.id));
+  if (!ins) return res.status(404).json({ error: 'No encontrado' });
+  if (req.body.nombre !== undefined) ins.nombre = req.body.nombre;
+  if (req.body.proveedor !== undefined) ins.proveedor = req.body.proveedor;
+  if (req.body.precio_unitario !== undefined) ins.precio_unitario = req.body.precio_unitario;
+  await db.write(); res.json({ ok: true });
+});
+app.delete('/api/insumos/:id', async (req, res) => {
+  db.data.insumos = db.data.insumos.filter(i=>i.id!==parseInt(req.params.id));
   await db.write(); res.json({ ok: true });
 });
 
