@@ -19,55 +19,55 @@ const defaultData = {
     {id:4,nombre:'Yami'},{id:5,nombre:'Marla'},{id:6,nombre:'Martu'},{id:7,nombre:'Yessi'}
   ],
   servicios: [
-    {id:1,categoria:'Manos',nombre:'Manicura sin esmaltar',precio_ef:18000,precio_lista:21600},
-    {id:2,categoria:'Manos',nombre:'Esmaltado tradicional',precio_ef:20000,precio_lista:24000},
-    {id:3,categoria:'Manos',nombre:'Esmaltado semipermanente',precio_ef:27000,precio_lista:32400},
-    {id:4,categoria:'Manos',nombre:'Nivelacion en gel',precio_ef:35000,precio_lista:42000},
-    {id:5,categoria:'Manos',nombre:'Capping dipping',precio_ef:30000,precio_lista:36000},
-    {id:6,categoria:'Manos',nombre:'Capping en perla',precio_ef:39000,precio_lista:46800},
-    {id:7,categoria:'Manos',nombre:'Capping en polygel',precio_ef:38000,precio_lista:45600},
-    {id:8,categoria:'Manos',nombre:'Esculpidas en poly',precio_ef:40000,precio_lista:48000},
-    {id:9,categoria:'Manos',nombre:'Esculpidas acrílicas',precio_ef:42000,precio_lista:50400},
-    {id:10,categoria:'Manos',nombre:'Soft gel',precio_ef:37000,precio_lista:44400},
-    {id:11,categoria:'Manos',nombre:'Service esculpidas',precio_ef:37000,precio_lista:44400},
-    {id:12,categoria:'Manos',nombre:'Service esculpida x uña',precio_ef:4500,precio_lista:5400},
-    {id:13,categoria:'Manos',nombre:'Service capping x uña',precio_ef:4000,precio_lista:4800},
-    {id:14,categoria:'Manos',nombre:'Cambio de esmalte',precio_ef:20000,precio_lista:24000},
-    {id:15,categoria:'Manos',nombre:'Manicura para niñas',precio_ef:15000,precio_lista:18000},
-    {id:16,categoria:'Manos',nombre:'Manicura para hombres',precio_ef:22000,precio_lista:26400},
-    {id:17,categoria:'Pies',nombre:'Belleza de pies sin esmaltar',precio_ef:23000,precio_lista:27600},
-    {id:18,categoria:'Pies',nombre:'Belleza con esmalte tradicional',precio_ef:25000,precio_lista:30000},
-    {id:19,categoria:'Pies',nombre:'Belleza con esmalte semipermanente',precio_ef:29000,precio_lista:34800},
-    {id:20,categoria:'Pies',nombre:'Pedicuria sin esmaltar',precio_ef:28000,precio_lista:33600},
-    {id:21,categoria:'Pies',nombre:'Pedicuria con esmalte tradicional',precio_ef:34000,precio_lista:40800},
-    {id:22,categoria:'Pies',nombre:'Pedicuria con esmalte semipermanente',precio_ef:38000,precio_lista:45600},
-    {id:23,categoria:'Pies',nombre:'Reconstruccion por uña (pie)',precio_ef:5000,precio_lista:6000},
-    {id:24,categoria:'Retiros',nombre:'Retiro de semipermanente',precio_ef:8000,precio_lista:9600},
-    {id:25,categoria:'Retiros',nombre:'Retiro de capping',precio_ef:10000,precio_lista:12000},
-    {id:26,categoria:'Retiros',nombre:'Retiro de esculpidas',precio_ef:14000,precio_lista:16800},
-    {id:27,categoria:'Retiros',nombre:'Retiro total de semi',precio_ef:10000,precio_lista:12000},
-    {id:28,categoria:'Cejas y Pestañas',nombre:'Lifting de pestañas + botox',precio_ef:32000,precio_lista:38400},
-    {id:29,categoria:'Cejas y Pestañas',nombre:'Perfilado de cejas',precio_ef:16000,precio_lista:19200},
-    {id:30,categoria:'Cejas y Pestañas',nombre:'Perfilado de cejas + Henna',precio_ef:24000,precio_lista:28800},
-    {id:31,categoria:'Cejas y Pestañas',nombre:'Laminado de cejas + botox',precio_ef:32000,precio_lista:38400},
-    {id:32,categoria:'Cejas y Pestañas',nombre:'Tinte de pestañas',precio_ef:5000,precio_lista:6000},
-    {id:33,categoria:'Cejas y Pestañas',nombre:'Retiro de pestañas',precio_ef:10000,precio_lista:12000},
-    {id:34,categoria:'Combos',nombre:'Lifting + Perfilado',precio_ef:43000,precio_lista:51600},
-    {id:35,categoria:'Combos',nombre:'Laminado + Perfilado',precio_ef:39000,precio_lista:46800},
-    {id:36,categoria:'Combos',nombre:'Lifting + Laminado',precio_ef:58000,precio_lista:69600},
-    {id:37,categoria:'Combos',nombre:'Lifting + Laminado + Perfilado',precio_ef:72000,precio_lista:86400},
-    {id:38,categoria:'Pestañas tecnológicas',nombre:'3D - Volumen light',precio_ef:35000,precio_lista:42000},
-    {id:39,categoria:'Pestañas tecnológicas',nombre:'4D - Volumen medio',precio_ef:39000,precio_lista:46800},
-    {id:40,categoria:'Pestañas tecnológicas',nombre:'5D - Mega volumen',precio_ef:44000,precio_lista:52800},
-    {id:41,categoria:'Pestañas clásicas',nombre:'Clásicas PXP',precio_ef:36000,precio_lista:43200},
-    {id:42,categoria:'Pestañas clásicas',nombre:'Volumen Brasilero',precio_ef:40000,precio_lista:48000},
-    {id:43,categoria:'Pestañas clásicas',nombre:'Volumen ruso',precio_ef:45000,precio_lista:54000},
-    {id:44,categoria:'Service Pestañas clásicas',nombre:'Service Clásicas PXP',precio_ef:32400,precio_lista:38880},
-    {id:45,categoria:'Service Pestañas clásicas',nombre:'Service Volumen Brasilero',precio_ef:37000,precio_lista:44400},
-    {id:46,categoria:'Service Pestañas clásicas',nombre:'Service Volumen Ruso',precio_ef:40500,precio_lista:48600},
-    {id:47,categoria:'Service Pestañas tecnológicas',nombre:'Service 3D - Volumen light',precio_ef:31500,precio_lista:37800},
-    {id:48,categoria:'Service Pestañas tecnológicas',nombre:'Service 4D - Volumen medio',precio_ef:35100,precio_lista:42120},
-    {id:49,categoria:'Service Pestañas tecnológicas',nombre:'Service 5D - Mega volumen',precio_ef:39600,precio_lista:47520},
+    {id:1,categoria:'Manos',nombre:'Manicura sin esmaltar',precio_ef:18000,precio_lista:21600,costo_insumos:977},
+    {id:2,categoria:'Manos',nombre:'Esmaltado tradicional',precio_ef:20000,precio_lista:24000,costo_insumos:1163},
+    {id:3,categoria:'Manos',nombre:'Esmaltado semipermanente',precio_ef:27000,precio_lista:32400,costo_insumos:1905},
+    {id:4,categoria:'Manos',nombre:'Nivelacion en gel',precio_ef:35000,precio_lista:42000,costo_insumos:3277},
+    {id:5,categoria:'Manos',nombre:'Capping dipping',precio_ef:30000,precio_lista:36000,costo_insumos:3268},
+    {id:6,categoria:'Manos',nombre:'Capping en perla',precio_ef:39000,precio_lista:46800,costo_insumos:2444},
+    {id:7,categoria:'Manos',nombre:'Capping en polygel',precio_ef:38000,precio_lista:45600,costo_insumos:2444},
+    {id:8,categoria:'Manos',nombre:'Esculpidas en poly',precio_ef:40000,precio_lista:48000,costo_insumos:2858},
+    {id:9,categoria:'Manos',nombre:'Esculpidas acrílicas',precio_ef:42000,precio_lista:50400,costo_insumos:6887},
+    {id:10,categoria:'Manos',nombre:'Soft gel',precio_ef:37000,precio_lista:44400,costo_insumos:1911},
+    {id:11,categoria:'Manos',nombre:'Service esculpidas',precio_ef:37000,precio_lista:44400,costo_insumos:755},
+    {id:12,categoria:'Manos',nombre:'Service esculpida x uña',precio_ef:4500,precio_lista:5400,costo_insumos:0},
+    {id:13,categoria:'Manos',nombre:'Service capping x uña',precio_ef:4000,precio_lista:4800,costo_insumos:0},
+    {id:14,categoria:'Manos',nombre:'Cambio de esmalte',precio_ef:20000,precio_lista:24000,costo_insumos:1163},
+    {id:15,categoria:'Manos',nombre:'Manicura para niñas',precio_ef:15000,precio_lista:18000,costo_insumos:977},
+    {id:16,categoria:'Manos',nombre:'Manicura para hombres',precio_ef:22000,precio_lista:26400,costo_insumos:977},
+    {id:17,categoria:'Pies',nombre:'Belleza de pies sin esmaltar',precio_ef:23000,precio_lista:27600,costo_insumos:1242},
+    {id:18,categoria:'Pies',nombre:'Belleza con esmalte tradicional',precio_ef:25000,precio_lista:30000,costo_insumos:2549},
+    {id:19,categoria:'Pies',nombre:'Belleza con esmalte semipermanente',precio_ef:29000,precio_lista:34800,costo_insumos:2881},
+    {id:20,categoria:'Pies',nombre:'Pedicuria sin esmaltar',precio_ef:28000,precio_lista:33600,costo_insumos:1896},
+    {id:21,categoria:'Pies',nombre:'Pedicuria con esmalte tradicional',precio_ef:34000,precio_lista:40800,costo_insumos:3085},
+    {id:22,categoria:'Pies',nombre:'Pedicuria con esmalte semipermanente',precio_ef:38000,precio_lista:45600,costo_insumos:4470},
+    {id:23,categoria:'Pies',nombre:'Reconstruccion por uña (pie)',precio_ef:5000,precio_lista:6000,costo_insumos:0},
+    {id:24,categoria:'Retiros',nombre:'Retiro de semipermanente',precio_ef:8000,precio_lista:9600,costo_insumos:742},
+    {id:25,categoria:'Retiros',nombre:'Retiro de capping',precio_ef:10000,precio_lista:12000,costo_insumos:742},
+    {id:26,categoria:'Retiros',nombre:'Retiro de esculpidas',precio_ef:14000,precio_lista:16800,costo_insumos:755},
+    {id:27,categoria:'Retiros',nombre:'Retiro total de semi',precio_ef:10000,precio_lista:12000,costo_insumos:742},
+    {id:28,categoria:'Cejas y Pestañas',nombre:'Lifting de pestañas + botox',precio_ef:32000,precio_lista:38400,costo_insumos:5992},
+    {id:29,categoria:'Cejas y Pestañas',nombre:'Perfilado de cejas',precio_ef:16000,precio_lista:19200,costo_insumos:946},
+    {id:30,categoria:'Cejas y Pestañas',nombre:'Perfilado de cejas + Henna',precio_ef:24000,precio_lista:28800,costo_insumos:1824},
+    {id:31,categoria:'Cejas y Pestañas',nombre:'Laminado de cejas + botox',precio_ef:32000,precio_lista:38400,costo_insumos:5261},
+    {id:32,categoria:'Cejas y Pestañas',nombre:'Tinte de pestañas',precio_ef:5000,precio_lista:6000,costo_insumos:91},
+    {id:33,categoria:'Cejas y Pestañas',nombre:'Retiro de pestañas',precio_ef:10000,precio_lista:12000,costo_insumos:0},
+    {id:34,categoria:'Combos',nombre:'Lifting + Perfilado',precio_ef:43000,precio_lista:51600,costo_insumos:6938},
+    {id:35,categoria:'Combos',nombre:'Laminado + Perfilado',precio_ef:39000,precio_lista:46800,costo_insumos:6207},
+    {id:36,categoria:'Combos',nombre:'Lifting + Laminado',precio_ef:58000,precio_lista:69600,costo_insumos:11253},
+    {id:37,categoria:'Combos',nombre:'Lifting + Laminado + Perfilado',precio_ef:72000,precio_lista:86400,costo_insumos:12199},
+    {id:38,categoria:'Pestañas tecnológicas',nombre:'3D - Volumen light',precio_ef:35000,precio_lista:42000,costo_insumos:9585},
+    {id:39,categoria:'Pestañas tecnológicas',nombre:'4D - Volumen medio',precio_ef:39000,precio_lista:46800,costo_insumos:9585},
+    {id:40,categoria:'Pestañas tecnológicas',nombre:'5D - Mega volumen',precio_ef:44000,precio_lista:52800,costo_insumos:9585},
+    {id:41,categoria:'Pestañas clásicas',nombre:'Clásicas PXP',precio_ef:36000,precio_lista:43200,costo_insumos:6345},
+    {id:42,categoria:'Pestañas clásicas',nombre:'Volumen Brasilero',precio_ef:40000,precio_lista:48000,costo_insumos:6491},
+    {id:43,categoria:'Pestañas clásicas',nombre:'Volumen ruso',precio_ef:45000,precio_lista:54000,costo_insumos:6491},
+    {id:44,categoria:'Service Pestañas clásicas',nombre:'Service Clásicas PXP',precio_ef:32400,precio_lista:38880,costo_insumos:6345},
+    {id:45,categoria:'Service Pestañas clásicas',nombre:'Service Volumen Brasilero',precio_ef:37000,precio_lista:44400,costo_insumos:6491},
+    {id:46,categoria:'Service Pestañas clásicas',nombre:'Service Volumen Ruso',precio_ef:40500,precio_lista:48600,costo_insumos:6491},
+    {id:47,categoria:'Service Pestañas tecnológicas',nombre:'Service 3D - Volumen light',precio_ef:31500,precio_lista:37800,costo_insumos:9585},
+    {id:48,categoria:'Service Pestañas tecnológicas',nombre:'Service 4D - Volumen medio',precio_ef:35100,precio_lista:42120,costo_insumos:9585},
+    {id:49,categoria:'Service Pestañas tecnológicas',nombre:'Service 5D - Mega volumen',precio_ef:39600,precio_lista:47520,costo_insumos:9585},
   ],
   turnos: [],
   adelantos: [],
@@ -81,6 +81,10 @@ await db.read();
 if (!db.data.nextId) db.data.nextId = defaultData.nextId;
 if (!db.data.chicas?.length) db.data.chicas = defaultData.chicas;
 if (!db.data.servicios?.length) db.data.servicios = defaultData.servicios;
+db.data.servicios.forEach(s => {
+  const def = defaultData.servicios.find(d => d.id === s.id);
+  if (def && s.costo_insumos === undefined) s.costo_insumos = def.costo_insumos;
+});
 if (!db.data.turnos) db.data.turnos = [];
 if (!db.data.adelantos) db.data.adelantos = [];
 if (!db.data.liquidaciones) db.data.liquidaciones = [];
@@ -111,17 +115,18 @@ app.delete('/api/chicas/:id', async (req, res) => {
 // SERVICIOS
 app.get('/api/servicios', (req, res) => res.json(db.data.servicios.sort((a,b)=>a.categoria.localeCompare(b.categoria)||a.nombre.localeCompare(b.nombre))));
 app.post('/api/servicios', async (req, res) => {
-  const { categoria, nombre, precio_ef, precio_lista } = req.body;
+  const { categoria, nombre, precio_ef, precio_lista, costo_insumos } = req.body;
   if (!nombre) return res.status(400).json({ error: 'Falta nombre' });
   const id = nextId('servicios');
-  db.data.servicios.push({ id, categoria: categoria||'Otros', nombre, precio_ef: precio_ef||0, precio_lista: precio_lista||precio_ef||0 });
+  db.data.servicios.push({ id, categoria: categoria||'Otros', nombre, precio_ef: precio_ef||0, precio_lista: precio_lista||precio_ef||0, costo_insumos: costo_insumos||0 });
   await db.write(); res.json({ id });
 });
 app.put('/api/servicios/:id', async (req, res) => {
-  const { precio_ef, precio_lista } = req.body;
+  const { precio_ef, precio_lista, costo_insumos } = req.body;
   const s = db.data.servicios.find(x=>x.id===parseInt(req.params.id));
   if (!s) return res.status(404).json({ error: 'No encontrado' });
   s.precio_ef = precio_ef; s.precio_lista = precio_lista;
+  if (costo_insumos !== undefined) s.costo_insumos = costo_insumos;
   await db.write(); res.json({ ok: true });
 });
 app.delete('/api/servicios/:id', async (req, res) => {
@@ -140,8 +145,12 @@ app.get('/api/turnos', (req, res) => {
 app.post('/api/turnos', async (req, res) => {
   const { chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen, obs, sena_monto, descuento_monto, descuento_motivo } = req.body;
   if (!chica||!clienta||!servicios?.length||!pago) return res.status(400).json({ error: 'Faltan campos' });
+  const costo_insumos = servicios.reduce((sum, s) => {
+    const srv = db.data.servicios.find(x => x.nombre === s.nombre);
+    return sum + (srv?.costo_insumos || s.costo_insumos || 0);
+  }, 0);
   const id = nextId('turnos');
-  db.data.turnos.push({ id, chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_monto:descuento_monto||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
+  db.data.turnos.push({ id, chica, clienta, servicios, pago, cobrado, base_comision, costo_insumos, fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_monto:descuento_monto||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
 app.delete('/api/turnos/:id', async (req, res) => {
@@ -228,6 +237,7 @@ app.get('/api/resumen', (req, res) => {
   const sum = (fn) => turnos.reduce((s,t)=>s+(fn(t)||0),0);
   const base_ef = sum(t=>t.base_comision);
   const cobrado = sum(t=>t.cobrado);
+  const costo_insumos = sum(t=>t.costo_insumos||0);
   const byChica = {};
   turnos.forEach(t => {
     if (!byChica[t.chica]) byChica[t.chica]={chica:t.chica,turnos:0,base_ef:0,cobrado:0};
@@ -244,8 +254,10 @@ app.get('/api/resumen', (req, res) => {
   else if (desde) gastos = gastos.filter(g=>g.fecha>=desde);
   const totalGastos = gastos.reduce((s,g)=>s+g.monto,0);
   const salon = cobrado - base_ef*COM;
+  const ganancia_real = salon - costo_insumos - totalGastos;
   res.json({
-    turnos: turnos.length, cobrado, comisiones: base_ef*COM, salon, gastos: totalGastos, neto: salon - totalGastos,
+    turnos: turnos.length, cobrado, comisiones: base_ef*COM, salon,
+    costo_insumos, gastos: totalGastos, ganancia_real,
     efectivo: sum(t=>t.pago==='efectivo'?t.cobrado:0),
     transferencia: sum(t=>t.pago==='transferencia'?t.cobrado:0),
     qr: sum(t=>t.pago==='qr'?t.cobrado:0),
