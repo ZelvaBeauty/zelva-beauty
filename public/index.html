@@ -113,7 +113,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .cat-otros{background:#f0efe9;color:#5f5f58}
 .insumo-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-border);gap:8px}
 .insumo-row:last-child{border-bottom:none}
-.insumo-edit{display:none;background:#F0F4FF;border-radius:var(--r);padding:10px;margin-top:6px;gap:8px;align-items:flex-end}
+.insumo-edit{display:none;background:#F0F4FF;border-radius:var(--r);padding:10px;margin-top:6px;gap:8px;align-items:flex-end;flex-wrap:wrap}
 .insumo-edit.open{display:flex}
 </style>
 </head>
@@ -333,8 +333,29 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 </div>
 
 <div id="panel-insumos" class="panel">
-  <div class="info-box info-purple"><i class="ti ti-info-circle" style="flex-shrink:0;font-size:16px"></i>Estos costos se usan para calcular la ganancia real en Caja. Actualizalos cuando cambien los precios de los proveedores.</div>
-  <div id="lista-insumos"></div>
+  <div class="info-box info-purple"><i class="ti ti-info-circle" style="flex-shrink:0;font-size:16px"></i>Actualizá los precios cuando compres a nuevo precio. Los costos por servicio se usan para calcular la ganancia real en Caja.</div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-plus"></i> Agregar insumo</div>
+    <div class="g2">
+      <div class="field"><label>Categoría</label>
+        <select id="ins-cat">
+          <option value="Uñas">Uñas</option>
+          <option value="Pestañas y cejas">Pestañas y cejas</option>
+          <option value="Descartables">Descartables</option>
+          <option value="Otros">Otros</option>
+        </select>
+      </div>
+      <div class="field"><label>Nombre</label><input type="text" id="ins-nom" placeholder="Ej: Esmalte OPI 15ml"></div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Proveedor</label><input type="text" id="ins-prov" placeholder="Ej: La Manola"></div>
+      <div class="field"><label>Precio unitario ($)</label><input type="number" id="ins-precio" placeholder="0"></div>
+    </div>
+    <button class="btn-sm btn-purple" onclick="addInsumo()" style="width:100%;justify-content:center;padding:10px"><i class="ti ti-plus"></i> Agregar insumo</button>
+  </div>
+  <div id="lista-insumos-tabla"></div>
+  <div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px">Costo de insumos por servicio</div>
+  <div id="lista-costos-servicios"></div>
 </div>
 
 <div id="panel-config" class="panel">
@@ -366,58 +387,12 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 <script>
 const COM = 0.37;
 const fmt = n => '$' + Math.round(n).toLocaleString('es-AR');
+const fmtDec = n => '$' + (Math.round(n*100)/100).toLocaleString('es-AR');
 const today = () => { const d = new Date(); return [d.getDate().toString().padStart(2,'0'),(d.getMonth()+1).toString().padStart(2,'0'),d.getFullYear()].join('/'); };
 const toISO = s => { const p = s.split('/'); return `${p[2]}-${p[1]}-${p[0]}`; };
 const fromISO = s => { if (!s) return ''; const p = s.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; };
 const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const CAT_BADGE = {Alquiler:'cat-alquiler',Insumos:'cat-insumos',Impuestos:'cat-impuestos',Servicios:'cat-servicios',Sueldos:'cat-sueldos',Otros:'cat-otros'};
-const PROVEEDORES = {
-  'Manicura sin esmaltar':'La Manola / Nail Show',
-  'Esmaltado tradicional':'La Manola / Nail Show',
-  'Esmaltado semipermanente':'RIMERA 15 / CHARM LIMIT',
-  'Nivelacion en gel':'Nail Show / Jennifer B',
-  'Capping dipping':'Nail Show',
-  'Capping en perla':'Nail Show / Jennifer B',
-  'Capping en polygel':'Nail Show / Jennifer B',
-  'Esculpidas en poly':'Nail Show / Jennifer B',
-  'Esculpidas acrílicas':'La Manola / Nail Show',
-  'Soft gel':'Nail Show / Jennifer B',
-  'Service esculpidas':'Nail Show',
-  'Cambio de esmalte':'La Manola',
-  'Manicura para niñas':'La Manola',
-  'Manicura para hombres':'La Manola',
-  'Belleza de pies sin esmaltar':'La Manola',
-  'Belleza con esmalte tradicional':'La Manola',
-  'Belleza con esmalte semipermanente':'RIMERA 15',
-  'Pedicuria sin esmaltar':'La Manola',
-  'Pedicuria con esmalte tradicional':'La Manola',
-  'Pedicuria con esmalte semipermanente':'RIMERA 15',
-  'Retiro de semipermanente':'Neoclean',
-  'Retiro de capping':'Neoclean',
-  'Retiro de esculpidas':'Neoclean',
-  'Retiro total de semi':'Neoclean',
-  'Lifting de pestañas + botox':'Ese Beauty / La Lupita',
-  'Perfilado de cejas':'La Lupita',
-  'Perfilado de cejas + Henna':'La Lupita',
-  'Laminado de cejas + botox':'Ese Beauty / La Lupita',
-  'Tinte de pestañas':'La Lupita',
-  'Lifting + Perfilado':'Ese Beauty / La Lupita',
-  'Laminado + Perfilado':'Ese Beauty / La Lupita',
-  'Lifting + Laminado':'Ese Beauty / La Lupita',
-  'Lifting + Laminado + Perfilado':'Ese Beauty / La Lupita',
-  'Clásicas PXP':'Jennifer B / Ese Beauty',
-  'Volumen Brasilero':'Jennifer B / Ese Beauty',
-  'Volumen ruso':'Jennifer B / Ese Beauty',
-  'Service Clásicas PXP':'Jennifer B / Ese Beauty',
-  'Service Volumen Brasilero':'Jennifer B / Ese Beauty',
-  'Service Volumen Ruso':'Jennifer B / Ese Beauty',
-  '3D - Volumen light':'Jennifer B / Ese Beauty',
-  '4D - Volumen medio':'Jennifer B / Ese Beauty',
-  '5D - Mega volumen':'Jennifer B / Ese Beauty',
-  'Service 3D - Volumen light':'Jennifer B / Ese Beauty',
-  'Service 4D - Volumen medio':'Jennifer B / Ese Beauty',
-  'Service 5D - Mega volumen':'Jennifer B / Ese Beauty',
-};
 
 let periodos = { turnos:'hoy', com:'hoy', caja:'hoy', ranking:'mes', gastos:'mes' };
 let serviciosCache = [];
@@ -904,46 +879,92 @@ async function renderRanking() {
 }
 
 async function renderInsumos() {
-  const servicios = await api('GET','/api/servicios');
+  const [insumos, servicios] = await Promise.all([api('GET','/api/insumos'), api('GET','/api/servicios')]);
   serviciosCache = servicios;
   const cats = {};
-  servicios.forEach(s => { if (!cats[s.categoria]) cats[s.categoria]=[]; cats[s.categoria].push(s); });
-  document.getElementById('lista-insumos').innerHTML = Object.entries(cats).map(([cat,srvs])=>`
+  insumos.forEach(i => { if (!cats[i.categoria]) cats[i.categoria]=[]; cats[i.categoria].push(i); });
+  document.getElementById('lista-insumos-tabla').innerHTML = Object.entries(cats).map(([cat,items])=>`
     <div class="card">
       <div class="card-title"><i class="ti ti-box"></i> ${cat}</div>
-      ${srvs.map(s=>`
+      ${items.map(i=>`
         <div class="insumo-row" style="flex-direction:column;align-items:stretch;gap:4px">
           <div style="display:flex;align-items:center;gap:8px">
             <div style="flex:1">
-              <div style="font-size:13px;font-weight:500">${s.nombre}</div>
-              <div style="font-size:12px;color:var(--text-3);margin-top:2px">${PROVEEDORES[s.nombre]||'—'}</div>
+              <div style="font-size:13px;font-weight:500">${i.nombre}</div>
+              <div style="font-size:12px;color:var(--text-3)">${i.proveedor||'—'}</div>
             </div>
             <div style="text-align:right;margin-right:8px">
-              <div style="font-size:13px;font-weight:600;color:var(--coral)">${fmt(s.costo_insumos||0)}</div>
+              <div style="font-size:14px;font-weight:600;color:var(--teal)">${fmtDec(i.precio_unitario||0)}</div>
+              <div style="font-size:11px;color:var(--text-3)">por unidad</div>
+            </div>
+            <button class="btn-sm btn-edit" onclick="toggleInsumoEdit(${i.id})"><i class="ti ti-pencil"></i></button>
+            <button class="btn-sm btn-danger" onclick="delInsumo(${i.id})" style="padding:4px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>
+          </div>
+          <div class="insumo-edit" id="insumo-edit-${i.id}">
+            <div class="field" style="margin:0;flex:2;min-width:120px"><label>Nombre</label><input type="text" id="insumo-nom-${i.id}" value="${i.nombre}"></div>
+            <div class="field" style="margin:0;flex:1;min-width:100px"><label>Proveedor</label><input type="text" id="insumo-prov-${i.id}" value="${i.proveedor||''}"></div>
+            <div class="field" style="margin:0;flex:1;min-width:80px"><label>Precio ($)</label><input type="number" id="insumo-val-${i.id}" value="${i.precio_unitario||0}"></div>
+            <button class="btn-sm btn-purple" onclick="saveInsumo(${i.id})" style="align-self:flex-end"><i class="ti ti-check"></i> Guardar</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+
+  const scats = {};
+  servicios.forEach(s => { if (!scats[s.categoria]) scats[s.categoria]=[]; scats[s.categoria].push(s); });
+  document.getElementById('lista-costos-servicios').innerHTML = Object.entries(scats).map(([cat,srvs])=>`
+    <div class="card">
+      <div class="card-title"><i class="ti ti-scissors"></i> ${cat}</div>
+      ${srvs.map(s=>`
+        <div class="insumo-row" style="flex-direction:column;align-items:stretch;gap:4px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="flex:1"><div style="font-size:13px;font-weight:500">${s.nombre}</div></div>
+            <div style="text-align:right;margin-right:8px">
+              <div style="font-size:14px;font-weight:600;color:var(--coral)">${fmt(s.costo_insumos||0)}</div>
               <div style="font-size:11px;color:var(--text-3)">costo insumos</div>
             </div>
-            <button class="btn-sm btn-edit" onclick="toggleInsumoEdit(${s.id})"><i class="ti ti-pencil"></i></button>
+            <button class="btn-sm btn-edit" onclick="toggleServicioCosto(${s.id})"><i class="ti ti-pencil"></i></button>
           </div>
-          <div class="insumo-edit" id="insumo-edit-${s.id}">
-            <div class="field" style="margin:0;flex:1">
-              <label>Nuevo costo de insumos ($)</label>
-              <input type="number" id="insumo-val-${s.id}" value="${s.costo_insumos||0}">
-            </div>
-            <button class="btn-sm btn-purple" onclick="saveInsumo(${s.id})" style="align-self:flex-end"><i class="ti ti-check"></i> Guardar</button>
+          <div class="insumo-edit" id="scosto-edit-${s.id}">
+            <div class="field" style="margin:0;flex:1"><label>Nuevo costo de insumos ($)</label><input type="number" id="scosto-val-${s.id}" value="${s.costo_insumos||0}"></div>
+            <button class="btn-sm btn-purple" onclick="saveServicioCosto(${s.id})" style="align-self:flex-end"><i class="ti ti-check"></i> Guardar</button>
           </div>
         </div>`).join('')}
     </div>`).join('');
 }
 
-function toggleInsumoEdit(id) {
-  document.getElementById(`insumo-edit-${id}`).classList.toggle('open');
-}
+function toggleInsumoEdit(id) { document.getElementById(`insumo-edit-${id}`).classList.toggle('open'); }
+function toggleServicioCosto(id) { document.getElementById(`scosto-edit-${id}`).classList.toggle('open'); }
 
 async function saveInsumo(id) {
-  const costo_insumos = parseFloat(document.getElementById(`insumo-val-${id}`).value)||0;
+  const nombre = document.getElementById(`insumo-nom-${id}`).value;
+  const proveedor = document.getElementById(`insumo-prov-${id}`).value;
+  const precio_unitario = parseFloat(document.getElementById(`insumo-val-${id}`).value)||0;
+  await api('PUT',`/api/insumos/${id}`,{nombre, proveedor, precio_unitario});
+  document.getElementById(`insumo-edit-${id}`).classList.remove('open');
+  renderInsumos();
+}
+
+async function delInsumo(id) {
+  if (!confirm('¿Eliminar este insumo?')) return;
+  await api('DELETE',`/api/insumos/${id}`); renderInsumos();
+}
+
+async function addInsumo() {
+  const categoria = document.getElementById('ins-cat').value;
+  const nombre = document.getElementById('ins-nom').value.trim();
+  const proveedor = document.getElementById('ins-prov').value.trim();
+  const precio_unitario = parseFloat(document.getElementById('ins-precio').value)||0;
+  if (!nombre) return;
+  await api('POST','/api/insumos',{categoria, nombre, proveedor, precio_unitario});
+  ['ins-nom','ins-prov','ins-precio'].forEach(id=>document.getElementById(id).value='');
+  renderInsumos();
+}
+
+async function saveServicioCosto(id) {
+  const costo_insumos = parseFloat(document.getElementById(`scosto-val-${id}`).value)||0;
   const srv = serviciosCache.find(s=>s.id===id);
   await api('PUT',`/api/servicios/${id}`,{precio_ef:srv?.precio_ef||0, precio_lista:srv?.precio_lista||0, costo_insumos});
-  document.getElementById(`insumo-edit-${id}`).classList.remove('open');
+  document.getElementById(`scosto-edit-${id}`).classList.remove('open');
   renderInsumos();
 }
 
