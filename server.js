@@ -68,6 +68,14 @@ const defaultData = {
     {id:47,categoria:'Service Pestañas tecnológicas',nombre:'Service 3D - Volumen light',precio_ef:31500,precio_lista:37800,costo_insumos:9585},
     {id:48,categoria:'Service Pestañas tecnológicas',nombre:'Service 4D - Volumen medio',precio_ef:35100,precio_lista:42120,costo_insumos:9585},
     {id:49,categoria:'Service Pestañas tecnológicas',nombre:'Service 5D - Mega volumen',precio_ef:39600,precio_lista:47520,costo_insumos:9585},
+    {id:50,categoria:'Cejas y Pestañas',nombre:'Nutrición de pestañas o cejas',precio_ef:20000,precio_lista:24000,costo_insumos:0},
+    {id:51,categoria:'Deco',nombre:'French',precio_ef:4000,precio_lista:4800,costo_insumos:0},
+    {id:52,categoria:'Deco',nombre:'Doble french',precio_ef:6000,precio_lista:7200,costo_insumos:0},
+    {id:53,categoria:'Deco',nombre:'Baby boomer (acrílico)',precio_ef:9000,precio_lista:10800,costo_insumos:0},
+    {id:54,categoria:'Deco',nombre:'Baby boomer (color)',precio_ef:7000,precio_lista:8400,costo_insumos:0},
+    {id:55,categoria:'Deco',nombre:'Full deco / Extra alto',precio_ef:14000,precio_lista:16800,costo_insumos:0},
+    {id:56,categoria:'Deco',nombre:'Cromado',precio_ef:5000,precio_lista:6000,costo_insumos:0},
+    {id:57,categoria:'Deco',nombre:'Ojo de gato',precio_ef:5000,precio_lista:6000,costo_insumos:0},
   ],
   insumos: [
     {id:1,categoria:'Uñas',nombre:'Ablandador Las Varano 1L',proveedor:'La Manola',precio_unitario:13.9},
@@ -145,7 +153,7 @@ const defaultData = {
   adelantos: [],
   liquidaciones: [],
   gastos: [],
-  nextId: { chicas: 8, servicios: 50, turnos: 1, adelantos: 1, liquidaciones: 1, gastos: 1, insumos: 71 }
+  nextId: { chicas: 8, servicios: 58, turnos: 1, adelantos: 1, liquidaciones: 1, gastos: 1, insumos: 71 }
 };
 
 const db = new Low(adapter, defaultData);
@@ -165,6 +173,15 @@ if (!db.data.nextId.liquidaciones) db.data.nextId.liquidaciones = 1;
 if (!db.data.nextId.gastos) db.data.nextId.gastos = 1;
 if (!db.data.nextId.insumos) db.data.nextId.insumos = 71;
 
+// Agregar servicios nuevos si no existen
+const serviciosNuevos = defaultData.servicios.filter(d => d.id >= 50);
+serviciosNuevos.forEach(nuevo => {
+  if (!db.data.servicios.find(s => s.id === nuevo.id)) {
+    db.data.servicios.push(nuevo);
+  }
+});
+
+// Actualizar costo_insumos en servicios existentes si falta
 db.data.servicios.forEach(s => {
   const def = defaultData.servicios.find(d => d.id === s.id);
   if (def && s.costo_insumos === undefined) s.costo_insumos = def.costo_insumos;
@@ -243,14 +260,14 @@ app.get('/api/turnos', (req, res) => {
   res.json([...turnos].sort((a,b)=>b.creado_at.localeCompare(a.creado_at)));
 });
 app.post('/api/turnos', async (req, res) => {
-  const { chica, clienta, servicios, pago, cobrado, base_comision, fecha, origen, obs, sena_monto, descuento_monto, descuento_motivo } = req.body;
+  const { chica, clienta, servicios, pago, pago2, monto_pago1, monto_pago2, cobrado, base_comision, fecha, origen, obs, sena_monto, descuento_monto, descuento_motivo } = req.body;
   if (!chica||!clienta||!servicios?.length||!pago) return res.status(400).json({ error: 'Faltan campos' });
   const costo_insumos = servicios.reduce((sum, s) => {
     const srv = db.data.servicios.find(x => x.nombre === s.nombre);
     return sum + (srv?.costo_insumos || s.costo_insumos || 0);
   }, 0);
   const id = nextId('turnos');
-  db.data.turnos.push({ id, chica, clienta, servicios, pago, cobrado, base_comision, costo_insumos, fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_monto:descuento_monto||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
+  db.data.turnos.push({ id, chica, clienta, servicios, pago, pago2:pago2||null, monto_pago1:monto_pago1||null, monto_pago2:monto_pago2||null, cobrado, base_comision, costo_insumos, fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_monto:descuento_monto||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
 app.delete('/api/turnos/:id', async (req, res) => {
@@ -359,11 +376,11 @@ app.get('/api/resumen', (req, res) => {
     turnos: turnos.length, cobrado, comisiones: base_ef*COM, salon,
     costo_insumos, gastos: totalGastos, ganancia_real,
     efectivo: sum(t=>t.pago==='efectivo'?t.cobrado:0),
-    transferencia: sum(t=>t.pago==='transferencia'?t.cobrado:0),
-    qr: sum(t=>t.pago==='qr'?t.cobrado:0),
-    debito: sum(t=>t.pago==='debito'?t.cobrado:0),
-    credito: sum(t=>t.pago==='credito'?t.cobrado:0),
-    openpay: sum(t=>t.pago==='openpay'?t.cobrado:0),
+    transferencia: sum(t=>(t.pago==='transferencia'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='transferencia'?(t.monto_pago2||0):0)),
+    qr: sum(t=>(t.pago==='qr'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='qr'?(t.monto_pago2||0):0)),
+    debito: sum(t=>(t.pago==='debito'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='debito'?(t.monto_pago2||0):0)),
+    credito: sum(t=>(t.pago==='credito'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='credito'?(t.monto_pago2||0):0)),
+    openpay: sum(t=>(t.pago==='openpay'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='openpay'?(t.monto_pago2||0):0)),
     online: turnos.filter(t=>t.origen==='online').length,
     porChica: Object.values(byChica).map(c=>({...c,comision:c.base_ef*COM})).sort((a,b)=>a.chica.localeCompare(b.chica)),
     rankingServicios: Object.values(srvCount).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10)
