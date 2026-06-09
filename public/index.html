@@ -165,12 +165,54 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <button class="pago-btn" onclick="selectPago('credito',this)"><i class="ti ti-credit-card"></i><br>Crédito</button>
       <button class="pago-btn" onclick="selectPago('openpay',this)"><i class="ti ti-device-mobile"></i><br>OpenPay</button>
     </div>
+    <!-- PAGO MIXTO -->
+    <div class="toggle-box" style="background:#F0F4FF;border:1px solid #AFA9EC">
+      <label class="toggle-lbl"><input type="checkbox" id="mixto-check" onchange="toggleBox('mixto-check','mixto-body')" style="accent-color:var(--purple)"><span style="color:var(--purple-dark)">Pago con dos medios</span></label>
+      <div class="toggle-body" id="mixto-body">
+        <div class="g2" style="margin-top:10px">
+          <div class="field" style="margin:0">
+            <label>Primer medio</label>
+            <select id="pago2-medio1" onchange="updateTotal()">
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia">Transferencia</option>
+              <option value="qr">QR</option>
+              <option value="debito">Débito</option>
+              <option value="credito">Crédito</option>
+              <option value="openpay">OpenPay</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Monto ($)</label>
+            <input type="number" id="pago2-monto1" placeholder="0" oninput="updateTotal()">
+          </div>
+        </div>
+        <div class="g2" style="margin-top:8px">
+          <div class="field" style="margin:0">
+            <label>Segundo medio</label>
+            <select id="pago2-medio2" onchange="updateTotal()">
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia" selected>Transferencia</option>
+              <option value="qr">QR</option>
+              <option value="debito">Débito</option>
+              <option value="credito">Crédito</option>
+              <option value="openpay">OpenPay</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0">
+            <label>Monto ($)</label>
+            <input type="number" id="pago2-monto2" placeholder="0" oninput="updateTotal()">
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- SEÑA -->
     <div class="toggle-box" style="background:var(--gray-surface)">
       <label class="toggle-lbl"><input type="checkbox" id="sena-check" onchange="toggleBox('sena-check','sena-body')" style="accent-color:var(--purple)"><span>La clienta ya dejó una seña</span></label>
       <div class="toggle-body" id="sena-body">
         <div class="field" style="margin-top:10px;margin-bottom:0"><label>Monto de la seña ($)</label><input type="number" id="sena-monto" placeholder="0" oninput="updateTotal()"></div>
       </div>
     </div>
+    <!-- DESCUENTO -->
     <div class="toggle-box" style="background:#FAECE7">
       <label class="toggle-lbl"><input type="checkbox" id="desc-check" onchange="toggleBox('desc-check','desc-body')" style="accent-color:#993C1D"><span style="color:#993C1D">Aplicar descuento especial</span></label>
       <div class="toggle-body" id="desc-body">
@@ -182,6 +224,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     </div>
     <div class="total-preview">
       <div class="total-row"><span style="color:var(--text-2)">Subtotal servicios</span><span id="preview-subtotal">$0</span></div>
+      <div class="total-row" id="row-pago1" style="display:none"><span id="preview-pago1-label" style="color:var(--teal)"></span><span id="preview-pago1" style="color:var(--teal)">$0</span></div>
+      <div class="total-row" id="row-pago2" style="display:none"><span id="preview-pago2-label" style="color:#0C447C"></span><span id="preview-pago2" style="color:#0C447C">$0</span></div>
       <div class="total-row" id="row-sena" style="display:none"><span style="color:var(--teal)"><i class="ti ti-minus" style="font-size:11px"></i> Seña</span><span id="preview-sena" style="color:var(--teal)">-$0</span></div>
       <div class="total-row" id="row-desc" style="display:none"><span style="color:var(--coral)"><i class="ti ti-minus" style="font-size:11px"></i> Descuento</span><span id="preview-desc" style="color:var(--coral)">-$0</span></div>
       <div class="total-row final"><span>Total a cobrar</span><span id="preview-total" class="mv-purple">$0</span></div>
@@ -393,6 +437,7 @@ const toISO = s => { const p = s.split('/'); return `${p[2]}-${p[1]}-${p[0]}`; }
 const fromISO = s => { if (!s) return ''; const p = s.split('-'); return `${p[2]}/${p[1]}/${p[0]}`; };
 const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const CAT_BADGE = {Alquiler:'cat-alquiler',Insumos:'cat-insumos',Impuestos:'cat-impuestos',Servicios:'cat-servicios',Sueldos:'cat-sueldos',Otros:'cat-otros'};
+const PAGO_LABEL = {efectivo:'Efectivo',transferencia:'Transferencia',qr:'QR',debito:'Débito',credito:'Crédito',openpay:'OpenPay'};
 
 let periodos = { turnos:'hoy', com:'hoy', caja:'hoy', ranking:'mes', gastos:'mes' };
 let serviciosCache = [];
@@ -410,10 +455,12 @@ async function api(method, url, body) {
   return (await fetch(url, opts)).json();
 }
 
-function badgePago(p) {
-  const m = {efectivo:'b-ef',transferencia:'b-tr',qr:'b-qr',debito:'b-deb',credito:'b-cred',openpay:'b-open'};
-  const l = {efectivo:'Efectivo',transferencia:'Transferencia',qr:'QR',debito:'Débito',credito:'Crédito',openpay:'OpenPay'};
-  return `<span class="badge ${m[p]||'b-ef'}">${l[p]||p}</span>`;
+function badgePago(p, p2, m1, m2) {
+  const mc = {efectivo:'b-ef',transferencia:'b-tr',qr:'b-qr',debito:'b-deb',credito:'b-cred',openpay:'b-open'};
+  if (p2) {
+    return `<span class="badge ${mc[p]||'b-ef'}">${PAGO_LABEL[p]} ${fmt(m1||0)}</span> <span class="badge ${mc[p2]||'b-ef'}">${PAGO_LABEL[p2]} ${fmt(m2||0)}</span>`;
+  }
+  return `<span class="badge ${mc[p]||'b-ef'}">${PAGO_LABEL[p]||p}</span>`;
 }
 
 function getRange(p) {
@@ -466,6 +513,7 @@ function toggleBox(checkId, bodyId) {
   if (!checked) {
     if (bodyId==='sena-body') document.getElementById('sena-monto').value='';
     if (bodyId==='desc-body') { document.getElementById('desc-monto').value=''; document.getElementById('desc-motivo').value=''; }
+    if (bodyId==='mixto-body') { document.getElementById('pago2-monto1').value=''; document.getElementById('pago2-monto2').value=''; }
   }
   updateTotal();
 }
@@ -477,10 +525,30 @@ function updateTotal() {
   const subtotal = srvTotal + adicional;
   const sena = parseFloat(document.getElementById('sena-monto').value)||0;
   const desc = parseFloat(document.getElementById('desc-monto').value)||0;
-  const total = Math.max(0, subtotal - sena - desc);
+  const mixto = document.getElementById('mixto-check').checked;
   const baseComision = selectedSrvs.reduce((s,x) => s+x.precio_ef, 0) + adicional;
+
+  let cobrado;
+  if (mixto) {
+    const m1 = parseFloat(document.getElementById('pago2-monto1').value)||0;
+    const m2 = parseFloat(document.getElementById('pago2-monto2').value)||0;
+    cobrado = Math.max(0, (m1+m2) - sena - desc);
+    const med1 = document.getElementById('pago2-medio1').value;
+    const med2 = document.getElementById('pago2-medio2').value;
+    document.getElementById('row-pago1').style.display = m1>0?'flex':'none';
+    document.getElementById('preview-pago1-label').textContent = PAGO_LABEL[med1];
+    document.getElementById('preview-pago1').textContent = fmt(m1);
+    document.getElementById('row-pago2').style.display = m2>0?'flex':'none';
+    document.getElementById('preview-pago2-label').textContent = PAGO_LABEL[med2];
+    document.getElementById('preview-pago2').textContent = fmt(m2);
+  } else {
+    cobrado = Math.max(0, subtotal - sena - desc);
+    document.getElementById('row-pago1').style.display = 'none';
+    document.getElementById('row-pago2').style.display = 'none';
+  }
+
   document.getElementById('preview-subtotal').textContent = fmt(subtotal);
-  document.getElementById('preview-total').textContent = fmt(total);
+  document.getElementById('preview-total').textContent = fmt(cobrado);
   document.getElementById('preview-com').textContent = baseComision>0 ? `Comisión a pagar: ${fmt(baseComision*COM)} (sobre ${fmt(baseComision)})` : '';
   document.getElementById('row-sena').style.display = sena>0?'flex':'none';
   if (sena>0) document.getElementById('preview-sena').textContent = `-${fmt(sena)}`;
@@ -509,12 +577,12 @@ function buildPicker(servicios) {
         <span class="srv-item-prices">Ef: ${fmt(s.precio_ef)}<br>Lista: ${fmt(s.precio_lista)}</span>
       </div>`).join('')}</div>`).join('');
   const adicionalHTML = `
-    <div class="cat-header" onclick="toggleCat(this)"><span>✦ Adicional / Deco</span><i class="ti ti-chevron-down" style="font-size:14px"></i></div>
+    <div class="cat-header" onclick="toggleCat(this)"><span>✦ Adicional deco (monto libre)</span><i class="ti ti-chevron-down" style="font-size:14px"></i></div>
     <div class="cat-body"><div class="adicional-box">
-      <div style="font-size:13px;color:var(--text-2);margin-bottom:8px">Cargá manualmente el monto del adicional o deco</div>
+      <div style="font-size:13px;color:var(--text-2);margin-bottom:8px">Para diseños personalizados — ingresá el monto manualmente</div>
       <div class="g2">
-        <div class="field" style="margin:0"><label>Monto ($)</label><input type="number" id="adicional-monto" placeholder="0" oninput="updateTotal()"></div>
-        <div class="field" style="margin:0"><label>Descripción</label><input type="text" id="adicional-desc" placeholder="Ej: deco navideña..."></div>
+        <div class="field" style="margin:0"><label>Monto ef. ($)</label><input type="number" id="adicional-monto" placeholder="0" oninput="updateTotal()"></div>
+        <div class="field" style="margin:0"><label>Descripción</label><input type="text" id="adicional-desc" placeholder="Ej: diseño personalizado..."></div>
       </div>
     </div></div>`;
   document.getElementById('srv-picker').innerHTML = pickerHTML + adicionalHTML;
@@ -550,7 +618,7 @@ function renderSelectedSrvs() {
   const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
   const adicionalDescVal = document.getElementById('adicional-desc')?.value||'';
   const items = [...selectedSrvs];
-  if (adicional>0) items.push({id:'adicional', nombre:adicionalDescVal||'Adicional / Deco', precio_ef:adicional, precio_lista:adicional, isAdicional:true});
+  if (adicional>0) items.push({id:'adicional', nombre:adicionalDescVal||'Adicional deco', precio_ef:adicional, precio_lista:adicional, isAdicional:true});
   if (!items.length) { cont.style.display='none'; return; }
   cont.style.display='flex';
   cont.innerHTML = items.map(s=>`
@@ -572,24 +640,42 @@ async function registrar() {
   const descMotivo = document.getElementById('desc-motivo').value.trim();
   const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
   const adicionalDescVal = document.getElementById('adicional-desc')?.value.trim()||'';
+  const mixto = document.getElementById('mixto-check').checked;
   const msg = document.getElementById('reg-msg');
+
   if (!chica||!clienta||(!selectedSrvs.length&&!adicional)) {
     msg.className='msg show err'; msg.textContent='Completá profesional, clienta y al menos un servicio.'; return;
   }
+
   const isEf = pagoActual==='efectivo';
   const srvTotal = selectedSrvs.reduce((s,x)=>s+(isEf?x.precio_ef:x.precio_lista),0);
   const subtotal = srvTotal + adicional;
-  const cobrado = Math.max(0, subtotal - sena - descMonto);
   const base_comision = selectedSrvs.reduce((s,x)=>s+x.precio_ef,0) + adicional;
+
+  let cobrado, pago, pago2=null, monto_pago1=null, monto_pago2=null;
+  if (mixto) {
+    monto_pago1 = parseFloat(document.getElementById('pago2-monto1').value)||0;
+    monto_pago2 = parseFloat(document.getElementById('pago2-monto2').value)||0;
+    pago = document.getElementById('pago2-medio1').value;
+    pago2 = document.getElementById('pago2-medio2').value;
+    cobrado = Math.max(0, (monto_pago1+monto_pago2) - sena - descMonto);
+  } else {
+    pago = pagoActual;
+    cobrado = Math.max(0, subtotal - sena - descMonto);
+  }
+
   const servicios = selectedSrvs.map(s=>({nombre:s.nombre, precio_ef:s.precio_ef, precio_lista:s.precio_lista}));
-  if (adicional>0) servicios.push({nombre:adicionalDescVal||'Adicional / Deco', precio_ef:adicional, precio_lista:adicional});
-  await api('POST','/api/turnos',{chica, clienta, pago:pagoActual, cobrado, base_comision, fecha, origen, obs, sena_monto:sena, descuento_monto:descMonto, descuento_motivo:descMotivo, servicios});
+  if (adicional>0) servicios.push({nombre:adicionalDescVal||'Adicional deco', precio_ef:adicional, precio_lista:adicional});
+
+  await api('POST','/api/turnos',{chica, clienta, pago, pago2, monto_pago1, monto_pago2, cobrado, base_comision, fecha, origen, obs, sena_monto:sena, descuento_monto:descMonto, descuento_motivo:descMotivo, servicios});
+
   selectedSrvs=[]; refreshPicker(); renderSelectedSrvs(); updateTotal();
-  ['reg-clienta','reg-obs','sena-monto','desc-monto','desc-motivo','adicional-monto','adicional-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['sena-check','desc-check'].forEach(id=>document.getElementById(id).checked=false);
-  ['sena-body','desc-body'].forEach(id=>document.getElementById(id).classList.remove('open'));
+  ['reg-clienta','reg-obs','sena-monto','desc-monto','desc-motivo','adicional-monto','adicional-desc','pago2-monto1','pago2-monto2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['sena-check','desc-check','mixto-check'].forEach(id=>document.getElementById(id).checked=false);
+  ['sena-body','desc-body','mixto-body'].forEach(id=>document.getElementById(id).classList.remove('open'));
   pagoActual='efectivo';
   document.querySelectorAll('.pago-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+
   msg.className='msg show ok';
   msg.textContent=`Turno de ${chica} registrado — cobrado ${fmt(cobrado)}${sena?` · seña ${fmt(sena)}`:''}${descMonto?` · desc. ${fmt(descMonto)}`:''}`;
   setTimeout(()=>{msg.className='msg'; msg.textContent='';},4000);
@@ -619,7 +705,7 @@ async function renderTurnos() {
       </div>
       <div class="turno-srvs">${(t.servicios||[]).map(s=>`<span class="srv-tag">${s.servicio||s.nombre}</span>`).join('')}</div>
       <div class="turno-footer">
-        ${badgePago(t.pago)}
+        ${badgePago(t.pago, t.pago2, t.monto_pago1, t.monto_pago2)}
         <div style="font-size:12px;color:var(--text-2)">Base com: ${fmt(t.base_comision)}</div>
         <div style="font-weight:700;font-size:15px">${fmt(t.cobrado)}</div>
       </div>
@@ -908,7 +994,6 @@ async function renderInsumos() {
           </div>
         </div>`).join('')}
     </div>`).join('');
-
   const scats = {};
   servicios.forEach(s => { if (!scats[s.categoria]) scats[s.categoria]=[]; scats[s.categoria].push(s); });
   document.getElementById('lista-costos-servicios').innerHTML = Object.entries(scats).map(([cat,srvs])=>`
@@ -925,7 +1010,7 @@ async function renderInsumos() {
             <button class="btn-sm btn-edit" onclick="toggleServicioCosto(${s.id})"><i class="ti ti-pencil"></i></button>
           </div>
           <div class="insumo-edit" id="scosto-edit-${s.id}">
-            <div class="field" style="margin:0;flex:1"><label>Nuevo costo de insumos ($)</label><input type="number" id="scosto-val-${s.id}" value="${s.costo_insumos||0}"></div>
+            <div class="field" style="margin:0;flex:1"><label>Nuevo costo ($)</label><input type="number" id="scosto-val-${s.id}" value="${s.costo_insumos||0}"></div>
             <button class="btn-sm btn-purple" onclick="saveServicioCosto(${s.id})" style="align-self:flex-end"><i class="ti ti-check"></i> Guardar</button>
           </div>
         </div>`).join('')}
@@ -1036,10 +1121,10 @@ async function delServicio(id) {
 
 async function exportCSV() {
   const turnos = await api('GET','/api/turnos');
-  const rows=[['Fecha','Profesional','Clienta','Servicios','Cobrado','Medio pago','Base comisión','Comisión (37%)','Costo insumos','Para salón','Descuento','Seña','Origen','Observación']];
+  const rows=[['Fecha','Profesional','Clienta','Servicios','Cobrado','Medio pago','Medio pago 2','Monto pago 1','Monto pago 2','Base comisión','Comisión (37%)','Costo insumos','Para salón','Descuento','Seña','Origen','Observación']];
   turnos.forEach(t=>{
     const srvs=(t.servicios||[]).map(s=>s.servicio||s.nombre).join(' + ');
-    rows.push([t.fecha,t.chica,t.clienta,`"${srvs}"`,t.cobrado,t.pago,t.base_comision,Math.round(t.base_comision*0.37),t.costo_insumos||0,Math.round(t.cobrado-t.base_comision*0.37-(t.costo_insumos||0)),t.descuento_monto||0,t.sena_monto||0,t.origen,t.obs||'']);
+    rows.push([t.fecha,t.chica,t.clienta,`"${srvs}"`,t.cobrado,t.pago,t.pago2||'',t.monto_pago1||'',t.monto_pago2||'',t.base_comision,Math.round(t.base_comision*0.37),t.costo_insumos||0,Math.round(t.cobrado-t.base_comision*0.37-(t.costo_insumos||0)),t.descuento_monto||0,t.sena_monto||0,t.origen,t.obs||'']);
   });
   const csv='\uFEFF'+rows.map(r=>r.join(',')).join('\n');
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
