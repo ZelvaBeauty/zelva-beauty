@@ -149,11 +149,47 @@ const defaultData = {
     {id:69,categoria:'Descartables',nombre:'Cepillitos x50u',proveedor:'La Manola',precio_unitario:24},
     {id:70,categoria:'Descartables',nombre:'Wipes sin pelusa x1000u',proveedor:'La Manola',precio_unitario:2.2},
   ],
+  depi_servicios: [
+    {id:1,categoria:'Zonas individuales',nombre:'Bozo',precio_ef:7000,precio_lista:8100},
+    {id:2,categoria:'Zonas individuales',nombre:'Mentón',precio_ef:7000,precio_lista:8100},
+    {id:3,categoria:'Zonas individuales',nombre:'Patillas',precio_ef:7000,precio_lista:8100},
+    {id:4,categoria:'Zonas individuales',nombre:'Barbilla',precio_ef:7000,precio_lista:8100},
+    {id:5,categoria:'Zonas individuales',nombre:'Rostro completo',precio_ef:16000,precio_lista:18400},
+    {id:6,categoria:'Zonas individuales',nombre:'Nuca',precio_ef:7000,precio_lista:8100},
+    {id:7,categoria:'Zonas individuales',nombre:'Axilas',precio_ef:9500,precio_lista:11000},
+    {id:8,categoria:'Zonas individuales',nombre:'Areolas',precio_ef:7000,precio_lista:8100},
+    {id:9,categoria:'Zonas individuales',nombre:'Línea alba',precio_ef:7000,precio_lista:8100},
+    {id:10,categoria:'Zonas individuales',nombre:'Panza',precio_ef:9200,precio_lista:10600},
+    {id:11,categoria:'Zonas individuales',nombre:'Pecho',precio_ef:11000,precio_lista:12700},
+    {id:12,categoria:'Zonas individuales',nombre:'Espalda baja',precio_ef:10000,precio_lista:11500},
+    {id:13,categoria:'Zonas individuales',nombre:'Espalda completa',precio_ef:17500,precio_lista:20200},
+    {id:14,categoria:'Zonas individuales',nombre:'Medios brazos',precio_ef:10500,precio_lista:12100},
+    {id:15,categoria:'Zonas individuales',nombre:'Brazos completos',precio_ef:15000,precio_lista:17300},
+    {id:16,categoria:'Zonas individuales',nombre:'Manos',precio_ef:6000,precio_lista:6900},
+    {id:17,categoria:'Zonas individuales',nombre:'Cavado completo',precio_ef:17500,precio_lista:20200},
+    {id:18,categoria:'Zonas individuales',nombre:'Cavado profundo (labios)',precio_ef:10000,precio_lista:11500},
+    {id:19,categoria:'Zonas individuales',nombre:'Tira de cola',precio_ef:8000,precio_lista:9200},
+    {id:20,categoria:'Zonas individuales',nombre:'Pelvis',precio_ef:9000,precio_lista:10400},
+    {id:21,categoria:'Zonas individuales',nombre:'Media pierna',precio_ef:11500,precio_lista:13300},
+    {id:22,categoria:'Zonas individuales',nombre:'Pierna entera',precio_ef:17000,precio_lista:19600},
+    {id:23,categoria:'Zonas individuales',nombre:'Glúteos',precio_ef:9500,precio_lista:11000},
+    {id:24,categoria:'Zonas individuales',nombre:'Dedos pies',precio_ef:6000,precio_lista:6900},
+    {id:25,categoria:'Zonas individuales',nombre:'Empeine',precio_ef:6000,precio_lista:6900},
+    {id:26,categoria:'Combos',nombre:'Combo 1 - Axilas + Cavado completo + Pierna entera + Tira de cola',precio_ef:32000,precio_lista:36800},
+    {id:27,categoria:'Combos',nombre:'Combo 2 - Axilas + Cavado completo + ½ pierna + Tira de cola',precio_ef:27000,precio_lista:31100},
+    {id:28,categoria:'Combos',nombre:'Combo 3 - Axilas + Cavado completo',precio_ef:17000,precio_lista:19600},
+    {id:29,categoria:'Combos',nombre:'Combo 4 - Rostro + Axilas + Cavado completo + Pierna entera + Tira de cola',precio_ef:39000,precio_lista:44900},
+    {id:30,categoria:'Combos',nombre:'Combo 5 - Axilas + Cavado + Rostro',precio_ef:29000,precio_lista:33400},
+    {id:31,categoria:'Combos',nombre:'Cuerpo entero mujer',precio_ef:60000,precio_lista:69000},
+    {id:32,categoria:'Combos',nombre:'Cuerpo entero hombre',precio_ef:70000,precio_lista:80500},
+  ],
+  depi_turnos: [],
+  depi_jornadas: [],
   turnos: [],
   adelantos: [],
   liquidaciones: [],
   gastos: [],
-  nextId: { chicas: 8, servicios: 58, turnos: 1, adelantos: 1, liquidaciones: 1, gastos: 1, insumos: 71 }
+  nextId: { chicas:8, servicios:58, turnos:1, adelantos:1, liquidaciones:1, gastos:1, insumos:71, depi_turnos:1, depi_jornadas:1 }
 };
 
 const db = new Low(adapter, defaultData);
@@ -164,6 +200,9 @@ if (!db.data.nextId) db.data.nextId = { ...defaultData.nextId };
 if (!db.data.chicas?.length) db.data.chicas = defaultData.chicas;
 if (!db.data.servicios?.length) db.data.servicios = defaultData.servicios;
 if (!db.data.insumos?.length) db.data.insumos = defaultData.insumos;
+if (!db.data.depi_servicios?.length) db.data.depi_servicios = defaultData.depi_servicios;
+if (!db.data.depi_turnos) db.data.depi_turnos = [];
+if (!db.data.depi_jornadas) db.data.depi_jornadas = [];
 if (!db.data.turnos) db.data.turnos = [];
 if (!db.data.adelantos) db.data.adelantos = [];
 if (!db.data.liquidaciones) db.data.liquidaciones = [];
@@ -172,16 +211,14 @@ if (!db.data.nextId.adelantos) db.data.nextId.adelantos = 1;
 if (!db.data.nextId.liquidaciones) db.data.nextId.liquidaciones = 1;
 if (!db.data.nextId.gastos) db.data.nextId.gastos = 1;
 if (!db.data.nextId.insumos) db.data.nextId.insumos = 71;
+if (!db.data.nextId.depi_turnos) db.data.nextId.depi_turnos = 1;
+if (!db.data.nextId.depi_jornadas) db.data.nextId.depi_jornadas = 1;
 
 // Agregar servicios nuevos si no existen
 const serviciosNuevos = defaultData.servicios.filter(d => d.id >= 50);
 serviciosNuevos.forEach(nuevo => {
-  if (!db.data.servicios.find(s => s.id === nuevo.id)) {
-    db.data.servicios.push(nuevo);
-  }
+  if (!db.data.servicios.find(s => s.id === nuevo.id)) db.data.servicios.push(nuevo);
 });
-
-// Actualizar costo_insumos en servicios existentes si falta
 db.data.servicios.forEach(s => {
   const def = defaultData.servicios.find(d => d.id === s.id);
   if (def && s.costo_insumos === undefined) s.costo_insumos = def.costo_insumos;
@@ -251,7 +288,74 @@ app.delete('/api/insumos/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// TURNOS
+// DEPI SERVICIOS
+app.get('/api/depi-servicios', (req, res) => res.json(db.data.depi_servicios.sort((a,b)=>a.categoria.localeCompare(b.categoria)||a.nombre.localeCompare(b.nombre))));
+app.put('/api/depi-servicios/:id', async (req, res) => {
+  const s = db.data.depi_servicios.find(x=>x.id===parseInt(req.params.id));
+  if (!s) return res.status(404).json({ error: 'No encontrado' });
+  if (req.body.precio_ef !== undefined) s.precio_ef = req.body.precio_ef;
+  if (req.body.precio_lista !== undefined) s.precio_lista = req.body.precio_lista;
+  await db.write(); res.json({ ok: true });
+});
+
+// DEPI TURNOS
+app.get('/api/depi-turnos', (req, res) => {
+  const { jornada_id, fecha } = req.query;
+  let t = db.data.depi_turnos;
+  if (jornada_id) t = t.filter(x=>x.jornada_id===parseInt(jornada_id));
+  if (fecha) t = t.filter(x=>x.fecha===fecha);
+  res.json([...t].sort((a,b)=>b.creado_at.localeCompare(a.creado_at)));
+});
+app.post('/api/depi-turnos', async (req, res) => {
+  const { clienta, servicio, precio_ef, precio_lista, pago, sena, sena_fecha, fecha, obs, jornada_id } = req.body;
+  if (!clienta||!servicio) return res.status(400).json({ error: 'Faltan campos' });
+  const id = nextId('depi_turnos');
+  db.data.depi_turnos.push({ id, clienta, servicio, precio_ef, precio_lista, pago:pago||'efectivo', sena:sena||0, sena_fecha:sena_fecha||null, fecha, obs:obs||'', jornada_id:jornada_id||null, creado_at: new Date().toISOString() });
+  await db.write(); res.json({ id });
+});
+app.delete('/api/depi-turnos/:id', async (req, res) => {
+  db.data.depi_turnos = db.data.depi_turnos.filter(t=>t.id!==parseInt(req.params.id));
+  await db.write(); res.json({ ok: true });
+});
+
+// DEPI JORNADAS
+app.get('/api/depi-jornadas', (req, res) => res.json([...db.data.depi_jornadas].sort((a,b)=>b.fecha.localeCompare(a.fecha))));
+app.post('/api/depi-jornadas', async (req, res) => {
+  const { fecha, alquiler_maquina, horas_operadora, tarifa_operadora, viaticos, comida, obs } = req.body;
+  if (!fecha) return res.status(400).json({ error: 'Falta fecha' });
+  if (db.data.depi_jornadas.find(j=>j.fecha===fecha)) return res.status(409).json({ error: 'Ya existe jornada para esa fecha' });
+  const id = nextId('depi_jornadas');
+  db.data.depi_jornadas.push({ id, fecha, abierta:true, alquiler_maquina:alquiler_maquina||125000, horas_operadora:horas_operadora||0, tarifa_operadora:tarifa_operadora||7000, viaticos:viaticos||0, comida:comida||0, obs:obs||'', creado_at: new Date().toISOString() });
+  await db.write(); res.json({ id });
+});
+app.put('/api/depi-jornadas/:id', async (req, res) => {
+  const j = db.data.depi_jornadas.find(x=>x.id===parseInt(req.params.id));
+  if (!j) return res.status(404).json({ error: 'No encontrada' });
+  Object.assign(j, req.body);
+  await db.write(); res.json({ ok: true });
+});
+app.delete('/api/depi-jornadas/:id', async (req, res) => {
+  db.data.depi_jornadas = db.data.depi_jornadas.filter(j=>j.id!==parseInt(req.params.id));
+  await db.write(); res.json({ ok: true });
+});
+
+// DEPI RESUMEN por jornada
+app.get('/api/depi-resumen/:jornada_id', (req, res) => {
+  const jid = parseInt(req.params.jornada_id);
+  const jornada = db.data.depi_jornadas.find(j=>j.id===jid);
+  if (!jornada) return res.status(404).json({ error: 'No encontrada' });
+  const turnos = db.data.depi_turnos.filter(t=>t.jornada_id===jid);
+  const total_senas = turnos.reduce((s,t)=>s+(t.sena||0),0);
+  const total_ef = turnos.filter(t=>t.pago==='efectivo').reduce((s,t)=>s+(t.precio_ef-(t.sena||0)),0);
+  const total_transf = turnos.filter(t=>t.pago==='transferencia').reduce((s,t)=>s+(t.precio_ef-(t.sena||0)),0) + total_senas;
+  const total_cobrado = turnos.reduce((s,t)=>s+t.precio_ef,0);
+  const costo_operadora = jornada.horas_operadora * jornada.tarifa_operadora;
+  const total_costos = jornada.alquiler_maquina + costo_operadora + jornada.viaticos + jornada.comida;
+  const ganancia = total_cobrado - total_costos;
+  res.json({ jornada, turnos, total_senas, total_ef, total_transf, total_cobrado, costo_operadora, total_costos, ganancia });
+});
+
+// TURNOS SALON
 app.get('/api/turnos', (req, res) => {
   const { desde, hasta } = req.query;
   let turnos = db.data.turnos;
@@ -345,7 +449,7 @@ app.delete('/api/gastos/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// RESUMEN
+// RESUMEN SALON
 app.get('/api/resumen', (req, res) => {
   const { desde, hasta } = req.query;
   let turnos = db.data.turnos;
@@ -375,7 +479,7 @@ app.get('/api/resumen', (req, res) => {
   res.json({
     turnos: turnos.length, cobrado, comisiones: base_ef*COM, salon,
     costo_insumos, gastos: totalGastos, ganancia_real,
-    efectivo: sum(t=>t.pago==='efectivo'?t.cobrado:0),
+    efectivo: sum(t=>t.pago==='efectivo'?(t.monto_pago1||t.cobrado):0),
     transferencia: sum(t=>(t.pago==='transferencia'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='transferencia'?(t.monto_pago2||0):0)),
     qr: sum(t=>(t.pago==='qr'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='qr'?(t.monto_pago2||0):0)),
     debito: sum(t=>(t.pago==='debito'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='debito'?(t.monto_pago2||0):0)),
