@@ -36,7 +36,6 @@ input[type=text],input[type=number],select{width:100%;padding:9px 11px;border:1p
 input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83,74,183,.1)}
 .field{margin-bottom:10px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .btn{width:100%;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .btn:active{background:var(--purple-dark)}
 .btn-teal{width:100%;padding:12px;background:var(--teal);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
@@ -45,7 +44,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .btn-edit{background:#E6F1FB;color:#0C447C;border-color:#A8C8F0}
 .btn-success{background:var(--success-bg);color:var(--success-text);border-color:#7ECFB3}
 .btn-purple{background:var(--purple);color:#fff;border-color:var(--purple)}
-.btn-teal-sm{background:var(--teal-light);color:var(--teal);border-color:#7ECFB3}
+.btn-teal-sm{background:var(--teal-light);color:var(--teal);border-color:#7ECFB3;font-size:12px;padding:5px 10px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
 .btn-outline{background:#fff;color:var(--purple);border:1px solid var(--purple);width:100%;padding:10px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 .metrics-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
@@ -133,6 +132,10 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .resumen-row.total{font-weight:700;font-size:15px;padding-top:8px;border-top:1px solid #9FE1CB;margin-top:4px}
 .resumen-row.costo{color:var(--coral)}
 .resumen-row.ganancia{color:var(--teal);font-weight:700;font-size:16px}
+.depi-picker{border:1px solid #9FE1CB;border-radius:var(--r);overflow:hidden;margin-bottom:10px;max-height:300px;overflow-y:auto}
+.depi-srv-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-top:1px solid var(--gray-border);cursor:pointer}
+.depi-srv-item:hover{background:var(--teal-light)}
+.depi-srv-item.selected{background:var(--teal-light);border-left:3px solid var(--teal)}
 </style>
 </head>
 <body>
@@ -410,11 +413,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 <!-- DEPI DEFINITIVA -->
 <div id="panel-depi" class="panel">
   <div class="info-box info-teal"><i class="ti ti-bolt" style="flex-shrink:0;font-size:16px"></i>Caja separada para jornadas de Depilación Definitiva. No afecta la caja del salón.</div>
-
-  <!-- JORNADA ACTIVA O CREAR -->
   <div id="depi-jornada-activa"></div>
-
-  <!-- HISTORIAL -->
   <div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px">Historial de jornadas</div>
   <div id="depi-historial"></div>
 </div>
@@ -464,11 +463,11 @@ let pagoActual = 'efectivo';
 let liqData = null;
 let depiSrvCache = [];
 let jornadaActiva = null;
+let depiPagoActual = 'efectivo';
+let depiSrvSeleccionado = null;
 
-// Calcular tercer sabado del mes
 function tercerSabado() {
-  const d = new Date();
-  const y = d.getFullYear(), m = d.getMonth();
+  const d = new Date(); const y = d.getFullYear(), m = d.getMonth();
   let count = 0;
   for (let day = 1; day <= 31; day++) {
     const dt = new Date(y, m, day);
@@ -736,10 +735,7 @@ async function renderTurnos() {
     </div>`).join('');
 }
 
-async function delTurno(id) {
-  if (!confirm('¿Eliminar este turno?')) return;
-  await api('DELETE',`/api/turnos/${id}`); renderTurnos();
-}
+async function delTurno(id) { if (!confirm('¿Eliminar este turno?')) return; await api('DELETE',`/api/turnos/${id}`); renderTurnos(); }
 
 async function renderCom() {
   const range = getRange(periodos.com);
@@ -778,8 +774,7 @@ async function registrarAdelanto() {
   const d = new Date(); const pad = n=>n.toString().padStart(2,'0');
   const fecha = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   await api('POST','/api/adelantos',{chica, monto, fecha, obs});
-  document.getElementById('adel-monto').value='';
-  document.getElementById('adel-obs').value='';
+  document.getElementById('adel-monto').value=''; document.getElementById('adel-obs').value='';
   msg.className='msg show ok'; msg.textContent=`Adelanto de ${fmt(monto)} registrado para ${chica}`;
   setTimeout(()=>{msg.className='msg';},3000);
   renderAdelantos(); calcularLiquidacion();
@@ -789,11 +784,9 @@ async function calcularLiquidacion() {
   const chica = document.getElementById('liq-chica').value;
   const mes = parseInt(document.getElementById('liq-mes').value);
   if (!chica||!mes) { document.getElementById('liq-preview').style.display='none'; return; }
-  const d = new Date(); const anio = d.getFullYear();
-  const pad = n=>n.toString().padStart(2,'0');
+  const d = new Date(); const anio = d.getFullYear(); const pad = n=>n.toString().padStart(2,'0');
   const desde = `${anio}-${pad(mes)}-01`;
-  const ultimoDia = new Date(anio, mes, 0).getDate();
-  const hasta = `${anio}-${pad(mes)}-${ultimoDia}`;
+  const hasta = `${anio}-${pad(mes)}-${new Date(anio, mes, 0).getDate()}`;
   const [res, adelantos] = await Promise.all([
     api('GET',`/api/resumen?desde=${desde}&hasta=${hasta}`),
     api('GET',`/api/adelantos?chica=${encodeURIComponent(chica)}`)
@@ -823,8 +816,7 @@ async function guardarLiquidacion() {
   msg.className='msg show ok'; msg.textContent=`Liquidación de ${liqData.chica} (${MESES[liqData.mes]}) guardada — ${fmt(liqData.total)} a pagar`;
   setTimeout(()=>{msg.className='msg';},4000);
   document.getElementById('liq-preview').style.display='none';
-  liqData=null;
-  renderHistorialLiquidaciones(); renderAdelantos();
+  liqData=null; renderHistorialLiquidaciones(); renderAdelantos();
 }
 
 async function renderHistorialLiquidaciones() {
@@ -887,12 +879,9 @@ async function registrarGasto() {
   const msg = document.getElementById('gasto-msg');
   if (!monto) { msg.className='msg show err'; msg.textContent='Ingresá el monto del gasto.'; return; }
   await api('POST','/api/gastos',{categoria, monto, descripcion, fecha});
-  document.getElementById('gasto-monto').value='';
-  document.getElementById('gasto-desc').value='';
-  document.getElementById('gasto-fecha').value=today();
+  document.getElementById('gasto-monto').value=''; document.getElementById('gasto-desc').value=''; document.getElementById('gasto-fecha').value=today();
   msg.className='msg show ok'; msg.textContent=`Gasto de ${fmt(monto)} registrado (${categoria})`;
-  setTimeout(()=>{msg.className='msg';},3000);
-  renderGastos();
+  setTimeout(()=>{msg.className='msg';},3000); renderGastos();
 }
 
 async function renderGastos() {
@@ -1035,8 +1024,7 @@ async function saveInsumo(id) {
   const proveedor = document.getElementById(`insumo-prov-${id}`).value;
   const precio_unitario = parseFloat(document.getElementById(`insumo-val-${id}`).value)||0;
   await api('PUT',`/api/insumos/${id}`,{nombre, proveedor, precio_unitario});
-  document.getElementById(`insumo-edit-${id}`).classList.remove('open');
-  renderInsumos();
+  document.getElementById(`insumo-edit-${id}`).classList.remove('open'); renderInsumos();
 }
 
 async function delInsumo(id) { if (!confirm('¿Eliminar?')) return; await api('DELETE',`/api/insumos/${id}`); renderInsumos(); }
@@ -1056,36 +1044,23 @@ async function saveServicioCosto(id) {
   const costo_insumos = parseFloat(document.getElementById(`scosto-val-${id}`).value)||0;
   const srv = serviciosCache.find(s=>s.id===id);
   await api('PUT',`/api/servicios/${id}`,{precio_ef:srv?.precio_ef||0, precio_lista:srv?.precio_lista||0, costo_insumos});
-  document.getElementById(`scosto-edit-${id}`).classList.remove('open');
-  renderInsumos();
+  document.getElementById(`scosto-edit-${id}`).classList.remove('open'); renderInsumos();
 }
 
-// ==================== DEPI DEFINITIVA ====================
+// ==================== DEPI ====================
 
 async function renderDepi() {
   depiSrvCache = await api('GET','/api/depi-servicios');
   const jornadas = await api('GET','/api/depi-jornadas');
   jornadaActiva = jornadas.find(j=>j.abierta) || null;
   const cont = document.getElementById('depi-jornada-activa');
-
   if (!jornadaActiva) {
     const ts = tercerSabado();
     cont.innerHTML = `
       <div class="depi-card">
         <div class="card-title" style="color:var(--teal)"><i class="ti ti-calendar-plus"></i> Nueva jornada</div>
-        <div class="g2">
-          <div class="field"><label>Fecha de la jornada</label><input type="text" id="dj-fecha" value="${ts?fromISO(ts):today()}"></div>
-          <div class="field"><label>Alquiler máquina ($)</label><input type="number" id="dj-maquina" value="125000"></div>
-        </div>
-        <div class="g2">
-          <div class="field"><label>Tarifa operadora ($/hora)</label><input type="number" id="dj-tarifa" value="7000"></div>
-          <div class="field"><label>Horas operadora</label><input type="number" id="dj-horas" value="0"></div>
-        </div>
-        <div class="g2">
-          <div class="field"><label>Viáticos ($)</label><input type="number" id="dj-viaticos" value="0"></div>
-          <div class="field"><label>Comida ($)</label><input type="number" id="dj-comida" value="0"></div>
-        </div>
-        <div class="field"><label>Observación</label><input type="text" id="dj-obs" placeholder="Opcional..."></div>
+        <div class="field"><label>Fecha de la jornada</label><input type="text" id="dj-fecha" value="${ts?fromISO(ts):today()}"></div>
+        <div class="field"><label>Observación (opcional)</label><input type="text" id="dj-obs" placeholder="Ej: jornada especial..."></div>
         <button class="btn-teal" onclick="crearJornada()"><i class="ti ti-bolt"></i> Abrir jornada</button>
         <div class="msg" id="dj-msg"></div>
       </div>`;
@@ -1097,14 +1072,9 @@ async function renderDepi() {
 
 async function crearJornada() {
   const fecha = toISO(document.getElementById('dj-fecha').value||today());
-  const alquiler_maquina = parseFloat(document.getElementById('dj-maquina').value)||125000;
-  const tarifa_operadora = parseFloat(document.getElementById('dj-tarifa').value)||7000;
-  const horas_operadora = parseFloat(document.getElementById('dj-horas').value)||0;
-  const viaticos = parseFloat(document.getElementById('dj-viaticos').value)||0;
-  const comida = parseFloat(document.getElementById('dj-comida').value)||0;
   const obs = document.getElementById('dj-obs').value.trim();
   const msg = document.getElementById('dj-msg');
-  const res = await api('POST','/api/depi-jornadas',{fecha, alquiler_maquina, tarifa_operadora, horas_operadora, viaticos, comida, obs});
+  const res = await api('POST','/api/depi-jornadas',{fecha, obs, alquiler_maquina:0, horas_operadora:0, tarifa_operadora:7000, viaticos:0, comida:0});
   if (res.error) { msg.className='msg show err'; msg.textContent=res.error; return; }
   renderDepi();
 }
@@ -1114,6 +1084,18 @@ async function renderJornadaActiva() {
   const resumen = await api('GET',`/api/depi-resumen/${j.id}`);
   const turnos = resumen.turnos || [];
   const cont = document.getElementById('depi-jornada-activa');
+
+  // Build depi picker
+  const cats = {};
+  depiSrvCache.forEach(s => { if (!cats[s.categoria]) cats[s.categoria]=[]; cats[s.categoria].push(s); });
+  const pickerHTML = Object.entries(cats).map(([cat,srvs])=>`
+    <div class="cat-header" onclick="toggleCat(this)" style="background:#E1F5EE;color:var(--teal)"><span>${cat}</span><i class="ti ti-chevron-down" style="font-size:14px"></i></div>
+    <div class="cat-body">${srvs.map(s=>`
+      <div class="depi-srv-item" data-id="${s.id}" data-nombre="${s.nombre}" data-ef="${s.precio_ef}" data-lista="${s.precio_lista}" onclick="selectDepiSrv(this)">
+        <span style="font-size:13px;flex:1">${s.nombre}</span>
+        <span style="font-size:12px;color:var(--text-2)">Ef: ${fmt(s.precio_ef)} / Lista: ${fmt(s.precio_lista)}</span>
+      </div>`).join('')}</div>`).join('');
+
   cont.innerHTML = `
     <div class="depi-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -1121,77 +1103,54 @@ async function renderJornadaActiva() {
           <div class="card-title" style="color:var(--teal);margin-bottom:2px"><i class="ti ti-bolt"></i> Jornada activa — ${fromISO(j.fecha)}</div>
           <span class="badge b-abierta">Abierta</span>
         </div>
-        <button class="btn-sm btn-danger" onclick="cerrarJornada(${j.id})"><i class="ti ti-lock"></i> Cerrar jornada</button>
       </div>
 
-      <!-- Resumen ingresos -->
+      <!-- Resumen en tiempo real -->
       <div class="resumen-box">
-        <div class="resumen-row"><span>Señas cobradas (transferencia)</span><span style="color:var(--teal);font-weight:600">${fmt(resumen.total_senas)}</span></div>
-        <div class="resumen-row"><span>Cobrado hoy en efectivo</span><span style="color:var(--teal);font-weight:600">${fmt(resumen.total_ef)}</span></div>
-        <div class="resumen-row"><span>Cobrado hoy en transferencia</span><span style="color:var(--teal);font-weight:600">${fmt(resumen.total_transf - resumen.total_senas)}</span></div>
+        <div class="resumen-row"><span>Señas cobradas (transferencia anticipada)</span><span style="color:var(--teal);font-weight:600">${fmt(resumen.total_senas)}</span></div>
+        <div class="resumen-row"><span>Efectivo del día</span><span style="color:var(--teal);font-weight:600">${fmt(resumen.total_ef)}</span></div>
+        <div class="resumen-row"><span>Transferencia del día</span><span style="color:var(--teal);font-weight:600">${fmt(Math.max(0, resumen.total_transf - resumen.total_senas))}</span></div>
         <div class="resumen-row total"><span>Total ingresado</span><span>${fmt(resumen.total_cobrado)}</span></div>
-        <div style="height:8px"></div>
-        <div class="resumen-row costo"><span>Alquiler máquina</span><span>-${fmt(j.alquiler_maquina)}</span></div>
-        <div class="resumen-row costo"><span>Operadora (${j.horas_operadora}hs × ${fmt(j.tarifa_operadora)})</span><span>-${fmt(resumen.costo_operadora)}</span></div>
-        <div class="resumen-row costo"><span>Viáticos</span><span>-${fmt(j.viaticos)}</span></div>
-        <div class="resumen-row costo"><span>Comida</span><span>-${fmt(j.comida)}</span></div>
-        <div class="resumen-row total"><span>Total costos</span><span style="color:var(--coral)">-${fmt(resumen.total_costos)}</span></div>
-        <div style="border-top:1px solid #9FE1CB;margin:8px 0"></div>
-        <div class="resumen-row ganancia"><span>Ganancia neta</span><span>${fmt(resumen.ganancia)}</span></div>
       </div>
 
-      <!-- Editar costos -->
-      <div style="margin-bottom:12px">
-        <button class="btn-sm btn-teal-sm" onclick="toggleCostosEdit()" style="margin-bottom:8px"><i class="ti ti-pencil"></i> Editar costos del día</button>
-        <div id="costos-edit" style="display:none">
-          <div class="g2">
-            <div class="field"><label>Alquiler máquina ($)</label><input type="number" id="ce-maquina" value="${j.alquiler_maquina}"></div>
-            <div class="field"><label>Horas operadora</label><input type="number" id="ce-horas" value="${j.horas_operadora}"></div>
-          </div>
-          <div class="g2">
-            <div class="field"><label>Tarifa operadora ($/hora)</label><input type="number" id="ce-tarifa" value="${j.tarifa_operadora}"></div>
-            <div class="field"><label>Viáticos ($)</label><input type="number" id="ce-viaticos" value="${j.viaticos}"></div>
-          </div>
-          <div class="field"><label>Comida ($)</label><input type="number" id="ce-comida" value="${j.comida}"></div>
-          <button class="btn-sm btn-purple" onclick="guardarCostos(${j.id})"><i class="ti ti-check"></i> Guardar costos</button>
-        </div>
-      </div>
-
-      <!-- Registrar turno depi -->
-      <div style="border-top:1px solid var(--gray-border);padding-top:12px;margin-bottom:12px">
+      <!-- Registrar turno -->
+      <div style="border-top:1px solid #9FE1CB;padding-top:12px;margin-bottom:12px">
         <div class="card-title" style="color:var(--teal)"><i class="ti ti-plus"></i> Registrar turno</div>
-        <div class="g2">
-          <div class="field"><label>Clienta</label><input type="text" id="dt-clienta" placeholder="Nombre..."></div>
-          <div class="field"><label>Zona / Combo</label>
-            <select id="dt-servicio" onchange="updateDepiPreview()">
-              <option value="">Seleccionar...</option>
-              ${depiSrvCache.map(s=>`<option value="${s.id}" data-ef="${s.precio_ef}" data-lista="${s.precio_lista}">${s.nombre} — Ef: ${fmt(s.precio_ef)}</option>`).join('')}
-            </select>
-          </div>
+        <div class="field"><label>Clienta</label><input type="text" id="dt-clienta" placeholder="Nombre..."></div>
+
+        <!-- Picker de zonas -->
+        <label style="margin-bottom:6px;display:block">Zona / Combo</label>
+        <div class="depi-picker">${pickerHTML}</div>
+        <div id="depi-srv-selected" style="display:none;background:var(--teal-light);border:1px solid #9FE1CB;border-radius:var(--r);padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
+          <span id="depi-srv-nombre" style="font-size:13px;font-weight:500;color:var(--teal);flex:1"></span>
+          <span id="depi-srv-precio" style="font-size:14px;font-weight:700;color:var(--teal)"></span>
         </div>
+
+        <!-- Pago del saldo -->
+        <label style="margin-bottom:6px;display:block">Pago del saldo ese día</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+          <button class="pago-btn-depi active" id="dpago-ef" onclick="selectDepiPago('efectivo')"><i class="ti ti-cash"></i><br>Efectivo</button>
+          <button class="pago-btn-depi" id="dpago-tr" onclick="selectDepiPago('transferencia')"><i class="ti ti-arrows-exchange"></i><br>Transferencia</button>
+        </div>
+
         <div class="g2">
           <div class="field"><label>Seña ya cobrada ($)</label><input type="number" id="dt-sena" value="0" oninput="updateDepiPreview()"></div>
-          <div class="field"><label>Fecha seña</label><input type="text" id="dt-sena-fecha" placeholder="dd/mm/aaaa"></div>
+          <div class="field"><label>Fecha de la seña</label><input type="text" id="dt-sena-fecha" placeholder="dd/mm/aaaa"></div>
         </div>
-        <div style="margin-bottom:10px">
-          <label style="margin-bottom:6px;display:block">Pago del saldo ese día</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-            <button class="pago-btn-depi active" id="dpago-ef" onclick="selectDepipago('efectivo')"><i class="ti ti-cash"></i><br>Efectivo</button>
-            <button class="pago-btn-depi" id="dpago-tr" onclick="selectDepipago('transferencia')"><i class="ti ti-arrows-exchange"></i><br>Transferencia</button>
-          </div>
-        </div>
+
         <div class="total-preview" id="depi-preview" style="display:none">
-          <div class="total-row"><span style="color:var(--text-2)">Precio ef</span><span id="dp-total">$0</span></div>
-          <div class="total-row" style="color:var(--teal)"><span>− Seña</span><span id="dp-sena">-$0</span></div>
+          <div class="total-row"><span style="color:var(--text-2)">Precio</span><span id="dp-precio">$0</span></div>
+          <div class="total-row"><span style="color:var(--teal)">− Seña</span><span id="dp-sena-prev" style="color:var(--teal)">-$0</span></div>
           <div class="total-row final"><span>Saldo a cobrar hoy</span><span id="dp-saldo" style="color:var(--teal)">$0</span></div>
         </div>
-        <div class="field"><label>Observación</label><input type="text" id="dt-obs" placeholder="Opcional..."></div>
-        <button class="btn-teal" onclick="registrarTurnoDepi(${j.id})"><i class="ti ti-check"></i> Registrar</button>
+
+        <div class="field"><label>Observación (opcional)</label><input type="text" id="dt-obs" placeholder="Opcional..."></div>
+        <button class="btn-teal" onclick="registrarTurnoDepi(${j.id})"><i class="ti ti-check"></i> Registrar turno</button>
         <div class="msg" id="dt-msg"></div>
       </div>
 
-      <!-- Lista de turnos del día -->
-      <div style="border-top:1px solid var(--gray-border);padding-top:12px">
+      <!-- Lista turnos del día -->
+      <div style="border-top:1px solid #9FE1CB;padding-top:12px;margin-bottom:12px">
         <div class="card-title" style="color:var(--teal)"><i class="ti ti-list"></i> Turnos del día (${turnos.length})</div>
         ${!turnos.length ? '<div class="empty" style="padding:16px">Sin turnos aún</div>' :
           turnos.map(t=>`
@@ -1203,16 +1162,52 @@ async function renderJornadaActiva() {
               </div>
               <div style="text-align:right;margin-right:8px">
                 <div style="font-weight:700;color:var(--teal)">${fmt(t.precio_ef)}</div>
-                <span class="badge ${t.pago==='efectivo'?'b-ef':'b-tr'}" style="font-size:10px">${t.pago==='efectivo'?'Ef':'Transf'}</span>
+                <span class="badge ${t.pago==='efectivo'?'b-ef':'b-tr'}" style="font-size:10px">${t.pago==='efectivo'?'Efectivo':'Transf'}</span>
               </div>
               <button class="btn-sm btn-danger" onclick="delTurnoDepi(${t.id})" style="padding:4px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>
             </div>`).join('')}
       </div>
+
+      <!-- Cerrar jornada -->
+      <div style="border-top:1px solid #9FE1CB;padding-top:12px">
+        <div class="card-title" style="color:var(--coral)"><i class="ti ti-lock"></i> Cerrar jornada</div>
+        <div class="info-box" style="background:var(--coral-light);color:var(--coral)"><i class="ti ti-info-circle" style="flex-shrink:0"></i>Cargá los costos del día antes de cerrar.</div>
+        <div class="g2">
+          <div class="field"><label>Alquiler máquina ($)</label><input type="number" id="cj-maquina" value="125000"></div>
+          <div class="field"><label>Horas operadora</label><input type="number" id="cj-horas" value="0" oninput="updateCostoOperadora()"></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Tarifa operadora ($/hora)</label><input type="number" id="cj-tarifa" value="7000" oninput="updateCostoOperadora()"></div>
+          <div class="field"><label>Total operadora</label><input type="text" id="cj-total-op" value="$0" readonly style="background:var(--gray-surface);color:var(--teal);font-weight:600"></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Viáticos ($)</label><input type="number" id="cj-viaticos" value="0"></div>
+          <div class="field"><label>Comida ($)</label><input type="number" id="cj-comida" value="0"></div>
+        </div>
+        <button class="btn-sm btn-danger" onclick="cerrarJornada(${j.id})" style="width:100%;justify-content:center;padding:10px;margin-top:4px"><i class="ti ti-lock"></i> Cerrar jornada</button>
+      </div>
     </div>`;
+
+  // init depi srv selected display
+  document.getElementById('depi-srv-selected').style.display = 'none';
 }
 
-let depiPagoActual = 'efectivo';
-function selectDepipago(p) {
+function selectDepiSrv(el) {
+  document.querySelectorAll('.depi-srv-item').forEach(x=>x.classList.remove('selected'));
+  el.classList.add('selected');
+  depiSrvSeleccionado = {
+    id: parseInt(el.dataset.id),
+    nombre: el.dataset.nombre,
+    precio_ef: parseFloat(el.dataset.ef),
+    precio_lista: parseFloat(el.dataset.lista)
+  };
+  const selDiv = document.getElementById('depi-srv-selected');
+  selDiv.style.display = 'flex';
+  document.getElementById('depi-srv-nombre').textContent = depiSrvSeleccionado.nombre;
+  updateDepiPreview();
+}
+
+function selectDepiPago(p) {
   depiPagoActual = p;
   document.getElementById('dpago-ef').classList.toggle('active', p==='efectivo');
   document.getElementById('dpago-tr').classList.toggle('active', p==='transferencia');
@@ -1220,52 +1215,50 @@ function selectDepipago(p) {
 }
 
 function updateDepiPreview() {
-  const sel = document.getElementById('dt-servicio');
-  const opt = sel.options[sel.selectedIndex];
-  if (!opt?.value) { document.getElementById('depi-preview').style.display='none'; return; }
-  const ef = parseFloat(opt.dataset.ef)||0;
-  const sena = parseFloat(document.getElementById('dt-sena').value)||0;
-  const saldo = Math.max(0, ef - sena);
-  document.getElementById('depi-preview').style.display='block';
-  document.getElementById('dp-total').textContent = fmt(ef);
-  document.getElementById('dp-sena').textContent = `-${fmt(sena)}`;
-  document.getElementById('dp-saldo').textContent = fmt(saldo);
+  if (!depiSrvSeleccionado) return;
+  const isEf = depiPagoActual === 'efectivo';
+  const precio = isEf ? depiSrvSeleccionado.precio_ef : depiSrvSeleccionado.precio_lista;
+  const sena = parseFloat(document.getElementById('dt-sena')?.value)||0;
+  const saldo = Math.max(0, precio - sena);
+  document.getElementById('depi-srv-precio').textContent = fmt(precio);
+  const prev = document.getElementById('depi-preview');
+  if (prev) {
+    prev.style.display = 'block';
+    document.getElementById('dp-precio').textContent = fmt(precio);
+    document.getElementById('dp-sena-prev').textContent = `-${fmt(sena)}`;
+    document.getElementById('dp-saldo').textContent = fmt(saldo);
+  }
 }
 
-function toggleCostosEdit() {
-  const el = document.getElementById('costos-edit');
-  el.style.display = el.style.display==='none'?'block':'none';
-}
-
-async function guardarCostos(id) {
-  const alquiler_maquina = parseFloat(document.getElementById('ce-maquina').value)||0;
-  const horas_operadora = parseFloat(document.getElementById('ce-horas').value)||0;
-  const tarifa_operadora = parseFloat(document.getElementById('ce-tarifa').value)||7000;
-  const viaticos = parseFloat(document.getElementById('ce-viaticos').value)||0;
-  const comida = parseFloat(document.getElementById('ce-comida').value)||0;
-  await api('PUT',`/api/depi-jornadas/${id}`,{alquiler_maquina, horas_operadora, tarifa_operadora, viaticos, comida});
-  renderDepi();
+function updateCostoOperadora() {
+  const horas = parseFloat(document.getElementById('cj-horas')?.value)||0;
+  const tarifa = parseFloat(document.getElementById('cj-tarifa')?.value)||7000;
+  const total = document.getElementById('cj-total-op');
+  if (total) total.value = fmt(horas * tarifa);
 }
 
 async function registrarTurnoDepi(jornada_id) {
   const clienta = document.getElementById('dt-clienta').value.trim();
-  const sel = document.getElementById('dt-servicio');
-  const opt = sel.options[sel.selectedIndex];
   const sena = parseFloat(document.getElementById('dt-sena').value)||0;
   const sena_fecha_raw = document.getElementById('dt-sena-fecha').value.trim();
   const sena_fecha = sena_fecha_raw ? toISO(sena_fecha_raw) : null;
   const obs = document.getElementById('dt-obs').value.trim();
   const msg = document.getElementById('dt-msg');
-  if (!clienta||!opt?.value) { msg.className='msg show err'; msg.textContent='Completá clienta y zona.'; return; }
-  const srv = depiSrvCache.find(s=>s.id===parseInt(opt.value));
+  if (!clienta || !depiSrvSeleccionado) { msg.className='msg show err'; msg.textContent='Completá clienta y zona.'; return; }
   const d = new Date(); const pad = n=>n.toString().padStart(2,'0');
   const fecha = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-  await api('POST','/api/depi-turnos',{clienta, servicio:srv.nombre, precio_ef:srv.precio_ef, precio_lista:srv.precio_lista, pago:depiPagoActual, sena, sena_fecha, fecha, obs, jornada_id});
+  await api('POST','/api/depi-turnos',{
+    clienta, servicio:depiSrvSeleccionado.nombre,
+    precio_ef:depiSrvSeleccionado.precio_ef, precio_lista:depiSrvSeleccionado.precio_lista,
+    pago:depiPagoActual, sena, sena_fecha, fecha, obs, jornada_id
+  });
   document.getElementById('dt-clienta').value='';
-  document.getElementById('dt-servicio').value='';
   document.getElementById('dt-sena').value='0';
   document.getElementById('dt-sena-fecha').value='';
   document.getElementById('dt-obs').value='';
+  document.querySelectorAll('.depi-srv-item').forEach(x=>x.classList.remove('selected'));
+  depiSrvSeleccionado = null;
+  document.getElementById('depi-srv-selected').style.display='none';
   document.getElementById('depi-preview').style.display='none';
   msg.className='msg show ok'; msg.textContent=`Turno de ${clienta} registrado`;
   setTimeout(()=>{msg.className='msg';},3000);
@@ -1278,8 +1271,14 @@ async function delTurnoDepi(id) {
 }
 
 async function cerrarJornada(id) {
-  if (!confirm('¿Cerrar esta jornada? Quedará en el historial.')) return;
-  await api('PUT',`/api/depi-jornadas/${id}`,{abierta:false}); renderDepi();
+  if (!confirm('¿Cerrar la jornada? Quedará guardada en el historial.')) return;
+  const alquiler_maquina = parseFloat(document.getElementById('cj-maquina').value)||0;
+  const horas_operadora = parseFloat(document.getElementById('cj-horas').value)||0;
+  const tarifa_operadora = parseFloat(document.getElementById('cj-tarifa').value)||7000;
+  const viaticos = parseFloat(document.getElementById('cj-viaticos').value)||0;
+  const comida = parseFloat(document.getElementById('cj-comida').value)||0;
+  await api('PUT',`/api/depi-jornadas/${id}`,{abierta:false, alquiler_maquina, horas_operadora, tarifa_operadora, viaticos, comida});
+  renderDepi();
 }
 
 function renderHistorialDepi(jornadas) {
@@ -1287,7 +1286,7 @@ function renderHistorialDepi(jornadas) {
   const el = document.getElementById('depi-historial');
   if (!cerradas.length) { el.innerHTML='<div class="empty">No hay jornadas anteriores</div>'; return; }
   el.innerHTML = cerradas.map(j=>`
-    <div class="jornada-hist" id="jhist-${j.id}">
+    <div class="jornada-hist">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div>
           <div style="font-weight:600">${fromISO(j.fecha)}</div>
@@ -1312,12 +1311,13 @@ async function verResumenHistorial(id) {
     <div class="resumen-box" style="margin-top:8px">
       <div class="resumen-row"><span>Señas</span><span style="color:var(--teal)">${fmt(res.total_senas)}</span></div>
       <div class="resumen-row"><span>Efectivo día</span><span style="color:var(--teal)">${fmt(res.total_ef)}</span></div>
-      <div class="resumen-row"><span>Transferencia día</span><span style="color:var(--teal)">${fmt(res.total_transf - res.total_senas)}</span></div>
+      <div class="resumen-row"><span>Transferencia día</span><span style="color:var(--teal)">${fmt(Math.max(0,res.total_transf - res.total_senas))}</span></div>
       <div class="resumen-row total"><span>Total cobrado</span><span>${fmt(res.total_cobrado)}</span></div>
       <div style="height:4px"></div>
       <div class="resumen-row costo"><span>Máquina</span><span>-${fmt(j.alquiler_maquina)}</span></div>
-      <div class="resumen-row costo"><span>Operadora (${j.horas_operadora}hs)</span><span>-${fmt(res.costo_operadora)}</span></div>
+      <div class="resumen-row costo"><span>Operadora (${j.horas_operadora}hs × ${fmt(j.tarifa_operadora)})</span><span>-${fmt(res.costo_operadora)}</span></div>
       <div class="resumen-row costo"><span>Viáticos + Comida</span><span>-${fmt(j.viaticos+j.comida)}</span></div>
+      <div class="resumen-row total" style="border-color:#9FE1CB"><span>Total costos</span><span style="color:var(--coral)">-${fmt(res.total_costos)}</span></div>
       <div class="resumen-row ganancia"><span>Ganancia neta</span><span>${fmt(res.ganancia)}</span></div>
     </div>
     <div style="font-size:12px;color:var(--text-2);margin-top:8px">${res.turnos.length} turnos · ${res.turnos.map(t=>t.clienta).join(', ')}</div>`;
