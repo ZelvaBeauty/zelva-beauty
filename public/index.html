@@ -26,6 +26,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tabs::-webkit-scrollbar{display:none}
 .tab{padding:11px 13px;font-size:12px;font-weight:500;color:var(--text-2);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:4px}
 .tab.active{color:var(--purple);border-bottom-color:var(--purple)}
+.tab.depi-tab{color:#0F6E56}
+.tab.depi-tab.active{color:#0F6E56;border-bottom-color:#0F6E56}
 .panel{display:none;padding:14px;max-width:720px;margin:0 auto}.panel.active{display:block}
 .card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--rlg);padding:14px;margin-bottom:12px}
 .card-title{font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
@@ -34,13 +36,16 @@ input[type=text],input[type=number],select{width:100%;padding:9px 11px;border:1p
 input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83,74,183,.1)}
 .field{margin-bottom:10px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
 .btn{width:100%;padding:12px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .btn:active{background:var(--purple-dark)}
+.btn-teal{width:100%;padding:12px;background:var(--teal);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .btn-sm{font-size:12px;padding:5px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--gray-border);background:var(--gray-surface);color:var(--text);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
 .btn-danger{background:var(--danger-bg);color:var(--danger-text);border-color:var(--danger-border)}
 .btn-edit{background:#E6F1FB;color:#0C447C;border-color:#A8C8F0}
 .btn-success{background:var(--success-bg);color:var(--success-text);border-color:#7ECFB3}
 .btn-purple{background:var(--purple);color:#fff;border-color:var(--purple)}
+.btn-teal-sm{background:var(--teal-light);color:var(--teal);border-color:#7ECFB3}
 .btn-outline{background:#fff;color:var(--purple);border:1px solid var(--purple);width:100%;padding:10px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
 .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
 .metrics-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
@@ -57,8 +62,10 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .b-ef{background:#E1F5EE;color:#085041}.b-tr{background:#E6F1FB;color:#0C447C}.b-qr{background:#EEEDFE;color:#3C3489}
 .b-deb{background:#FAEEDA;color:#633806}.b-cred{background:#FAECE7;color:#712B13}.b-open{background:#F1EFE8;color:#444441}
 .b-online{background:#E1F5EE;color:#085041}.b-pagada{background:#E1F5EE;color:#085041}.b-pendiente{background:#FAEEDA;color:#633806}
+.b-abierta{background:#E1F5EE;color:#085041}.b-cerrada{background:var(--gray-surface);color:var(--text-2)}
 .info-box{border-radius:var(--r);padding:10px 12px;font-size:13px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
 .info-amber{background:var(--amber-light);color:var(--amber)}.info-purple{background:var(--purple-light);color:var(--purple-dark)}
+.info-teal{background:var(--teal-light);color:var(--teal)}
 .msg{font-size:13px;text-align:center;margin-top:8px;padding:7px;border-radius:var(--r);display:none}
 .msg.show{display:block}.msg.ok{background:var(--success-bg);color:var(--success-text)}.msg.err{background:var(--danger-bg);color:var(--danger-text)}
 .srv-picker{border:1px solid var(--gray-border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;max-height:340px;overflow-y:auto}
@@ -92,6 +99,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .pago-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
 .pago-btn{padding:8px 6px;border:1px solid var(--gray-border);border-radius:var(--r);background:#fff;font-size:12px;font-weight:500;cursor:pointer;text-align:center;color:var(--text-2)}
 .pago-btn.active{border-color:var(--purple);background:var(--purple-light);color:var(--purple-dark)}
+.pago-btn-depi{padding:8px 6px;border:1px solid var(--gray-border);border-radius:var(--r);background:#fff;font-size:12px;font-weight:500;cursor:pointer;text-align:center;color:var(--text-2)}
+.pago-btn-depi.active{border-color:var(--teal);background:var(--teal-light);color:var(--teal)}
 .list-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--gray-border);gap:8px}
 .list-item:last-child{border-bottom:none}
 .pago-desglose{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
@@ -115,6 +124,15 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .insumo-row:last-child{border-bottom:none}
 .insumo-edit{display:none;background:#F0F4FF;border-radius:var(--r);padding:10px;margin-top:6px;gap:8px;align-items:flex-end;flex-wrap:wrap}
 .insumo-edit.open{display:flex}
+.depi-card{background:#fff;border:1px solid #9FE1CB;border-radius:var(--rlg);padding:14px;margin-bottom:12px}
+.depi-turno-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-border);gap:8px}
+.depi-turno-item:last-child{border-bottom:none}
+.jornada-hist{background:#fff;border:1px solid var(--gray-border);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.resumen-box{background:var(--teal-light);border-radius:var(--r);padding:12px;margin-bottom:12px}
+.resumen-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0}
+.resumen-row.total{font-weight:700;font-size:15px;padding-top:8px;border-top:1px solid #9FE1CB;margin-top:4px}
+.resumen-row.costo{color:var(--coral)}
+.resumen-row.ganancia{color:var(--teal);font-weight:700;font-size:16px}
 </style>
 </head>
 <body>
@@ -131,9 +149,11 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <button class="tab" onclick="showTab('caja',this)"><i class="ti ti-chart-bar"></i> Caja</button>
   <button class="tab" onclick="showTab('ranking',this)"><i class="ti ti-trophy"></i> Ranking</button>
   <button class="tab" onclick="showTab('insumos',this)"><i class="ti ti-box"></i> Insumos</button>
+  <button class="tab depi-tab" onclick="showTab('depi',this)"><i class="ti ti-bolt"></i> Depi</button>
   <button class="tab" onclick="showTab('config',this)"><i class="ti ti-settings"></i> Config</button>
 </div>
 
+<!-- REGISTRAR -->
 <div id="panel-registro" class="panel active">
   <div class="info-box info-amber"><i class="ti ti-info-circle" style="flex-shrink:0;font-size:16px"></i>La comisión (37%) se calcula siempre sobre el precio en efectivo, sin importar descuentos ni medio de pago.</div>
   <div class="card">
@@ -165,54 +185,37 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <button class="pago-btn" onclick="selectPago('credito',this)"><i class="ti ti-credit-card"></i><br>Crédito</button>
       <button class="pago-btn" onclick="selectPago('openpay',this)"><i class="ti ti-device-mobile"></i><br>OpenPay</button>
     </div>
-    <!-- PAGO MIXTO -->
     <div class="toggle-box" style="background:#F0F4FF;border:1px solid #AFA9EC">
       <label class="toggle-lbl"><input type="checkbox" id="mixto-check" onchange="toggleBox('mixto-check','mixto-body')" style="accent-color:var(--purple)"><span style="color:var(--purple-dark)">Pago con dos medios</span></label>
       <div class="toggle-body" id="mixto-body">
         <div class="g2" style="margin-top:10px">
-          <div class="field" style="margin:0">
-            <label>Primer medio</label>
+          <div class="field" style="margin:0"><label>Primer medio</label>
             <select id="pago2-medio1" onchange="updateTotal()">
-              <option value="efectivo">Efectivo</option>
-              <option value="transferencia">Transferencia</option>
-              <option value="qr">QR</option>
-              <option value="debito">Débito</option>
-              <option value="credito">Crédito</option>
-              <option value="openpay">OpenPay</option>
+              <option value="efectivo">Efectivo</option><option value="transferencia">Transferencia</option>
+              <option value="qr">QR</option><option value="debito">Débito</option>
+              <option value="credito">Crédito</option><option value="openpay">OpenPay</option>
             </select>
           </div>
-          <div class="field" style="margin:0">
-            <label>Monto ($)</label>
-            <input type="number" id="pago2-monto1" placeholder="0" oninput="updateTotal()">
-          </div>
+          <div class="field" style="margin:0"><label>Monto ($)</label><input type="number" id="pago2-monto1" placeholder="0" oninput="updateTotal()"></div>
         </div>
         <div class="g2" style="margin-top:8px">
-          <div class="field" style="margin:0">
-            <label>Segundo medio</label>
+          <div class="field" style="margin:0"><label>Segundo medio</label>
             <select id="pago2-medio2" onchange="updateTotal()">
-              <option value="efectivo">Efectivo</option>
-              <option value="transferencia" selected>Transferencia</option>
-              <option value="qr">QR</option>
-              <option value="debito">Débito</option>
-              <option value="credito">Crédito</option>
-              <option value="openpay">OpenPay</option>
+              <option value="efectivo">Efectivo</option><option value="transferencia" selected>Transferencia</option>
+              <option value="qr">QR</option><option value="debito">Débito</option>
+              <option value="credito">Crédito</option><option value="openpay">OpenPay</option>
             </select>
           </div>
-          <div class="field" style="margin:0">
-            <label>Monto ($)</label>
-            <input type="number" id="pago2-monto2" placeholder="0" oninput="updateTotal()">
-          </div>
+          <div class="field" style="margin:0"><label>Monto ($)</label><input type="number" id="pago2-monto2" placeholder="0" oninput="updateTotal()"></div>
         </div>
       </div>
     </div>
-    <!-- SEÑA -->
     <div class="toggle-box" style="background:var(--gray-surface)">
       <label class="toggle-lbl"><input type="checkbox" id="sena-check" onchange="toggleBox('sena-check','sena-body')" style="accent-color:var(--purple)"><span>La clienta ya dejó una seña</span></label>
       <div class="toggle-body" id="sena-body">
         <div class="field" style="margin-top:10px;margin-bottom:0"><label>Monto de la seña ($)</label><input type="number" id="sena-monto" placeholder="0" oninput="updateTotal()"></div>
       </div>
     </div>
-    <!-- DESCUENTO -->
     <div class="toggle-box" style="background:#FAECE7">
       <label class="toggle-lbl"><input type="checkbox" id="desc-check" onchange="toggleBox('desc-check','desc-body')" style="accent-color:#993C1D"><span style="color:#993C1D">Aplicar descuento especial</span></label>
       <div class="toggle-body" id="desc-body">
@@ -237,6 +240,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   </div>
 </div>
 
+<!-- TURNOS -->
 <div id="panel-turnos" class="panel">
   <div class="metrics" id="met-turnos"></div>
   <div class="period-row">
@@ -248,6 +252,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <div id="lista-turnos"></div>
 </div>
 
+<!-- COMISIONES -->
 <div id="panel-comisiones" class="panel">
   <div class="info-box info-purple"><i class="ti ti-calculator" style="flex-shrink:0;font-size:16px"></i>Base: precio efectivo × 37%. El medio de pago y los descuentos no afectan la comisión.</div>
   <div class="period-row">
@@ -259,6 +264,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <div class="card" style="padding:0 14px"><div id="lista-com"></div></div>
 </div>
 
+<!-- LIQUIDACIONES -->
 <div id="panel-liquidaciones" class="panel">
   <div class="card">
     <div class="card-title"><i class="ti ti-cash"></i> Registrar adelanto</div>
@@ -312,18 +318,16 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   </div>
 </div>
 
+<!-- GASTOS -->
 <div id="panel-gastos" class="panel">
   <div class="card">
     <div class="card-title"><i class="ti ti-minus"></i> Registrar gasto</div>
     <div class="g2">
       <div class="field"><label>Categoría</label>
         <select id="gasto-cat">
-          <option value="Alquiler">Alquiler</option>
-          <option value="Insumos">Insumos</option>
-          <option value="Impuestos">Impuestos</option>
-          <option value="Servicios">Servicios (luz, agua, internet)</option>
-          <option value="Sueldos">Sueldos fijos</option>
-          <option value="Otros">Otros</option>
+          <option value="Alquiler">Alquiler</option><option value="Insumos">Insumos</option>
+          <option value="Impuestos">Impuestos</option><option value="Servicios">Servicios (luz, agua, internet)</option>
+          <option value="Sueldos">Sueldos fijos</option><option value="Otros">Otros</option>
         </select>
       </div>
       <div class="field"><label>Monto ($)</label><input type="number" id="gasto-monto" placeholder="0"></div>
@@ -344,6 +348,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <div class="card" style="padding:0 14px"><div id="lista-gastos"></div></div>
 </div>
 
+<!-- CAJA -->
 <div id="panel-caja" class="panel">
   <div class="period-row">
     <button class="pbtn active" onclick="setPeriod('caja','hoy',this)">Hoy</button>
@@ -360,6 +365,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <button class="btn-outline" onclick="exportCSV()" style="margin-top:4px"><i class="ti ti-download"></i> Descargar Excel / CSV</button>
 </div>
 
+<!-- RANKING -->
 <div id="panel-ranking" class="panel">
   <div class="period-row">
     <button class="pbtn active" onclick="setPeriod('ranking','mes',this)">Este mes</button>
@@ -376,6 +382,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   </div>
 </div>
 
+<!-- INSUMOS -->
 <div id="panel-insumos" class="panel">
   <div class="info-box info-purple"><i class="ti ti-info-circle" style="flex-shrink:0;font-size:16px"></i>Actualizá los precios cuando compres a nuevo precio. Los costos por servicio se usan para calcular la ganancia real en Caja.</div>
   <div class="card">
@@ -383,10 +390,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     <div class="g2">
       <div class="field"><label>Categoría</label>
         <select id="ins-cat">
-          <option value="Uñas">Uñas</option>
-          <option value="Pestañas y cejas">Pestañas y cejas</option>
-          <option value="Descartables">Descartables</option>
-          <option value="Otros">Otros</option>
+          <option value="Uñas">Uñas</option><option value="Pestañas y cejas">Pestañas y cejas</option>
+          <option value="Descartables">Descartables</option><option value="Otros">Otros</option>
         </select>
       </div>
       <div class="field"><label>Nombre</label><input type="text" id="ins-nom" placeholder="Ej: Esmalte OPI 15ml"></div>
@@ -402,6 +407,19 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <div id="lista-costos-servicios"></div>
 </div>
 
+<!-- DEPI DEFINITIVA -->
+<div id="panel-depi" class="panel">
+  <div class="info-box info-teal"><i class="ti ti-bolt" style="flex-shrink:0;font-size:16px"></i>Caja separada para jornadas de Depilación Definitiva. No afecta la caja del salón.</div>
+
+  <!-- JORNADA ACTIVA O CREAR -->
+  <div id="depi-jornada-activa"></div>
+
+  <!-- HISTORIAL -->
+  <div style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px">Historial de jornadas</div>
+  <div id="depi-historial"></div>
+</div>
+
+<!-- CONFIG -->
 <div id="panel-config" class="panel">
   <div class="card">
     <div class="card-title"><i class="ti ti-users"></i> Profesionales</div>
@@ -444,6 +462,20 @@ let serviciosCache = [];
 let selectedSrvs = [];
 let pagoActual = 'efectivo';
 let liqData = null;
+let depiSrvCache = [];
+let jornadaActiva = null;
+
+// Calcular tercer sabado del mes
+function tercerSabado() {
+  const d = new Date();
+  const y = d.getFullYear(), m = d.getMonth();
+  let count = 0;
+  for (let day = 1; day <= 31; day++) {
+    const dt = new Date(y, m, day);
+    if (dt.getMonth() !== m) break;
+    if (dt.getDay() === 6) { count++; if (count === 3) return `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; }
+  }
+}
 
 document.getElementById('reg-fecha').value = today();
 document.getElementById('liq-mes').value = new Date().getMonth()+1;
@@ -457,9 +489,7 @@ async function api(method, url, body) {
 
 function badgePago(p, p2, m1, m2) {
   const mc = {efectivo:'b-ef',transferencia:'b-tr',qr:'b-qr',debito:'b-deb',credito:'b-cred',openpay:'b-open'};
-  if (p2) {
-    return `<span class="badge ${mc[p]||'b-ef'}">${PAGO_LABEL[p]} ${fmt(m1||0)}</span> <span class="badge ${mc[p2]||'b-ef'}">${PAGO_LABEL[p2]} ${fmt(m2||0)}</span>`;
-  }
+  if (p2) return `<span class="badge ${mc[p]||'b-ef'}">${PAGO_LABEL[p]} ${fmt(m1||0)}</span> <span class="badge ${mc[p2]||'b-ef'}">${PAGO_LABEL[p2]} ${fmt(m2||0)}</span>`;
   return `<span class="badge ${mc[p]||'b-ef'}">${PAGO_LABEL[p]||p}</span>`;
 }
 
@@ -485,6 +515,7 @@ function showTab(name, el) {
   if (name==='liquidaciones') initLiquidaciones();
   if (name==='gastos') renderGastos();
   if (name==='insumos') renderInsumos();
+  if (name==='depi') renderDepi();
   if (name==='config') renderConfig();
 }
 
@@ -527,7 +558,6 @@ function updateTotal() {
   const desc = parseFloat(document.getElementById('desc-monto').value)||0;
   const mixto = document.getElementById('mixto-check').checked;
   const baseComision = selectedSrvs.reduce((s,x) => s+x.precio_ef, 0) + adicional;
-
   let cobrado;
   if (mixto) {
     const m1 = parseFloat(document.getElementById('pago2-monto1').value)||0;
@@ -546,7 +576,6 @@ function updateTotal() {
     document.getElementById('row-pago1').style.display = 'none';
     document.getElementById('row-pago2').style.display = 'none';
   }
-
   document.getElementById('preview-subtotal').textContent = fmt(subtotal);
   document.getElementById('preview-total').textContent = fmt(cobrado);
   document.getElementById('preview-com').textContent = baseComision>0 ? `Comisión a pagar: ${fmt(baseComision*COM)} (sobre ${fmt(baseComision)})` : '';
@@ -642,16 +671,13 @@ async function registrar() {
   const adicionalDescVal = document.getElementById('adicional-desc')?.value.trim()||'';
   const mixto = document.getElementById('mixto-check').checked;
   const msg = document.getElementById('reg-msg');
-
   if (!chica||!clienta||(!selectedSrvs.length&&!adicional)) {
     msg.className='msg show err'; msg.textContent='Completá profesional, clienta y al menos un servicio.'; return;
   }
-
   const isEf = pagoActual==='efectivo';
   const srvTotal = selectedSrvs.reduce((s,x)=>s+(isEf?x.precio_ef:x.precio_lista),0);
   const subtotal = srvTotal + adicional;
   const base_comision = selectedSrvs.reduce((s,x)=>s+x.precio_ef,0) + adicional;
-
   let cobrado, pago, pago2=null, monto_pago1=null, monto_pago2=null;
   if (mixto) {
     monto_pago1 = parseFloat(document.getElementById('pago2-monto1').value)||0;
@@ -663,19 +689,15 @@ async function registrar() {
     pago = pagoActual;
     cobrado = Math.max(0, subtotal - sena - descMonto);
   }
-
   const servicios = selectedSrvs.map(s=>({nombre:s.nombre, precio_ef:s.precio_ef, precio_lista:s.precio_lista}));
   if (adicional>0) servicios.push({nombre:adicionalDescVal||'Adicional deco', precio_ef:adicional, precio_lista:adicional});
-
   await api('POST','/api/turnos',{chica, clienta, pago, pago2, monto_pago1, monto_pago2, cobrado, base_comision, fecha, origen, obs, sena_monto:sena, descuento_monto:descMonto, descuento_motivo:descMotivo, servicios});
-
   selectedSrvs=[]; refreshPicker(); renderSelectedSrvs(); updateTotal();
   ['reg-clienta','reg-obs','sena-monto','desc-monto','desc-motivo','adicional-monto','adicional-desc','pago2-monto1','pago2-monto2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['sena-check','desc-check','mixto-check'].forEach(id=>document.getElementById(id).checked=false);
   ['sena-body','desc-body','mixto-body'].forEach(id=>document.getElementById(id).classList.remove('open'));
   pagoActual='efectivo';
   document.querySelectorAll('.pago-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
-
   msg.className='msg show ok';
   msg.textContent=`Turno de ${chica} registrado — cobrado ${fmt(cobrado)}${sena?` · seña ${fmt(sena)}`:''}${descMonto?` · desc. ${fmt(descMonto)}`:''}`;
   setTimeout(()=>{msg.className='msg'; msg.textContent='';},4000);
@@ -744,8 +766,7 @@ async function initLiquidaciones() {
   });
   const af = document.getElementById('adel-filtro');
   if (af) af.innerHTML = '<option value="">Todas</option>' + chicas.map(c=>`<option>${c.nombre}</option>`).join('');
-  renderHistorialLiquidaciones();
-  renderAdelantos();
+  renderHistorialLiquidaciones(); renderAdelantos();
 }
 
 async function registrarAdelanto() {
@@ -831,13 +852,8 @@ async function renderHistorialLiquidaciones() {
       </div>`).join('');
 }
 
-async function marcarPagada(id) {
-  await api('PUT',`/api/liquidaciones/${id}`,{pagada:true}); renderHistorialLiquidaciones();
-}
-async function delLiquidacion(id) {
-  if (!confirm('¿Eliminar esta liquidación?')) return;
-  await api('DELETE',`/api/liquidaciones/${id}`); renderHistorialLiquidaciones();
-}
+async function marcarPagada(id) { await api('PUT',`/api/liquidaciones/${id}`,{pagada:true}); renderHistorialLiquidaciones(); }
+async function delLiquidacion(id) { if (!confirm('¿Eliminar?')) return; await api('DELETE',`/api/liquidaciones/${id}`); renderHistorialLiquidaciones(); }
 
 async function renderAdelantos() {
   const chica = document.getElementById('adel-filtro')?.value||'';
@@ -861,10 +877,7 @@ async function renderAdelantos() {
     </div>`).join('');
 }
 
-async function delAdelanto(id) {
-  if (!confirm('¿Eliminar este adelanto?')) return;
-  await api('DELETE',`/api/adelantos/${id}`); renderAdelantos();
-}
+async function delAdelanto(id) { if (!confirm('¿Eliminar?')) return; await api('DELETE',`/api/adelantos/${id}`); renderAdelantos(); }
 
 async function registrarGasto() {
   const categoria = document.getElementById('gasto-cat').value;
@@ -905,10 +918,7 @@ async function renderGastos() {
     </div>`).join('');
 }
 
-async function delGasto(id) {
-  if (!confirm('¿Eliminar este gasto?')) return;
-  await api('DELETE',`/api/gastos/${id}`); renderGastos();
-}
+async function delGasto(id) { if (!confirm('¿Eliminar?')) return; await api('DELETE',`/api/gastos/${id}`); renderGastos(); }
 
 async function renderCaja() {
   const range = getRange(periodos.caja);
@@ -1029,10 +1039,7 @@ async function saveInsumo(id) {
   renderInsumos();
 }
 
-async function delInsumo(id) {
-  if (!confirm('¿Eliminar este insumo?')) return;
-  await api('DELETE',`/api/insumos/${id}`); renderInsumos();
-}
+async function delInsumo(id) { if (!confirm('¿Eliminar?')) return; await api('DELETE',`/api/insumos/${id}`); renderInsumos(); }
 
 async function addInsumo() {
   const categoria = document.getElementById('ins-cat').value;
@@ -1053,6 +1060,278 @@ async function saveServicioCosto(id) {
   renderInsumos();
 }
 
+// ==================== DEPI DEFINITIVA ====================
+
+async function renderDepi() {
+  depiSrvCache = await api('GET','/api/depi-servicios');
+  const jornadas = await api('GET','/api/depi-jornadas');
+  jornadaActiva = jornadas.find(j=>j.abierta) || null;
+  const cont = document.getElementById('depi-jornada-activa');
+
+  if (!jornadaActiva) {
+    const ts = tercerSabado();
+    cont.innerHTML = `
+      <div class="depi-card">
+        <div class="card-title" style="color:var(--teal)"><i class="ti ti-calendar-plus"></i> Nueva jornada</div>
+        <div class="g2">
+          <div class="field"><label>Fecha de la jornada</label><input type="text" id="dj-fecha" value="${ts?fromISO(ts):today()}"></div>
+          <div class="field"><label>Alquiler máquina ($)</label><input type="number" id="dj-maquina" value="125000"></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Tarifa operadora ($/hora)</label><input type="number" id="dj-tarifa" value="7000"></div>
+          <div class="field"><label>Horas operadora</label><input type="number" id="dj-horas" value="0"></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Viáticos ($)</label><input type="number" id="dj-viaticos" value="0"></div>
+          <div class="field"><label>Comida ($)</label><input type="number" id="dj-comida" value="0"></div>
+        </div>
+        <div class="field"><label>Observación</label><input type="text" id="dj-obs" placeholder="Opcional..."></div>
+        <button class="btn-teal" onclick="crearJornada()"><i class="ti ti-bolt"></i> Abrir jornada</button>
+        <div class="msg" id="dj-msg"></div>
+      </div>`;
+  } else {
+    await renderJornadaActiva();
+  }
+  renderHistorialDepi(jornadas);
+}
+
+async function crearJornada() {
+  const fecha = toISO(document.getElementById('dj-fecha').value||today());
+  const alquiler_maquina = parseFloat(document.getElementById('dj-maquina').value)||125000;
+  const tarifa_operadora = parseFloat(document.getElementById('dj-tarifa').value)||7000;
+  const horas_operadora = parseFloat(document.getElementById('dj-horas').value)||0;
+  const viaticos = parseFloat(document.getElementById('dj-viaticos').value)||0;
+  const comida = parseFloat(document.getElementById('dj-comida').value)||0;
+  const obs = document.getElementById('dj-obs').value.trim();
+  const msg = document.getElementById('dj-msg');
+  const res = await api('POST','/api/depi-jornadas',{fecha, alquiler_maquina, tarifa_operadora, horas_operadora, viaticos, comida, obs});
+  if (res.error) { msg.className='msg show err'; msg.textContent=res.error; return; }
+  renderDepi();
+}
+
+async function renderJornadaActiva() {
+  const j = jornadaActiva;
+  const resumen = await api('GET',`/api/depi-resumen/${j.id}`);
+  const turnos = resumen.turnos || [];
+  const cont = document.getElementById('depi-jornada-activa');
+  cont.innerHTML = `
+    <div class="depi-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div class="card-title" style="color:var(--teal);margin-bottom:2px"><i class="ti ti-bolt"></i> Jornada activa — ${fromISO(j.fecha)}</div>
+          <span class="badge b-abierta">Abierta</span>
+        </div>
+        <button class="btn-sm btn-danger" onclick="cerrarJornada(${j.id})"><i class="ti ti-lock"></i> Cerrar jornada</button>
+      </div>
+
+      <!-- Resumen ingresos -->
+      <div class="resumen-box">
+        <div class="resumen-row"><span>Señas cobradas (transferencia)</span><span style="color:var(--teal);font-weight:600">${fmt(resumen.total_senas)}</span></div>
+        <div class="resumen-row"><span>Cobrado hoy en efectivo</span><span style="color:var(--teal);font-weight:600">${fmt(resumen.total_ef)}</span></div>
+        <div class="resumen-row"><span>Cobrado hoy en transferencia</span><span style="color:var(--teal);font-weight:600">${fmt(resumen.total_transf - resumen.total_senas)}</span></div>
+        <div class="resumen-row total"><span>Total ingresado</span><span>${fmt(resumen.total_cobrado)}</span></div>
+        <div style="height:8px"></div>
+        <div class="resumen-row costo"><span>Alquiler máquina</span><span>-${fmt(j.alquiler_maquina)}</span></div>
+        <div class="resumen-row costo"><span>Operadora (${j.horas_operadora}hs × ${fmt(j.tarifa_operadora)})</span><span>-${fmt(resumen.costo_operadora)}</span></div>
+        <div class="resumen-row costo"><span>Viáticos</span><span>-${fmt(j.viaticos)}</span></div>
+        <div class="resumen-row costo"><span>Comida</span><span>-${fmt(j.comida)}</span></div>
+        <div class="resumen-row total"><span>Total costos</span><span style="color:var(--coral)">-${fmt(resumen.total_costos)}</span></div>
+        <div style="border-top:1px solid #9FE1CB;margin:8px 0"></div>
+        <div class="resumen-row ganancia"><span>Ganancia neta</span><span>${fmt(resumen.ganancia)}</span></div>
+      </div>
+
+      <!-- Editar costos -->
+      <div style="margin-bottom:12px">
+        <button class="btn-sm btn-teal-sm" onclick="toggleCostosEdit()" style="margin-bottom:8px"><i class="ti ti-pencil"></i> Editar costos del día</button>
+        <div id="costos-edit" style="display:none">
+          <div class="g2">
+            <div class="field"><label>Alquiler máquina ($)</label><input type="number" id="ce-maquina" value="${j.alquiler_maquina}"></div>
+            <div class="field"><label>Horas operadora</label><input type="number" id="ce-horas" value="${j.horas_operadora}"></div>
+          </div>
+          <div class="g2">
+            <div class="field"><label>Tarifa operadora ($/hora)</label><input type="number" id="ce-tarifa" value="${j.tarifa_operadora}"></div>
+            <div class="field"><label>Viáticos ($)</label><input type="number" id="ce-viaticos" value="${j.viaticos}"></div>
+          </div>
+          <div class="field"><label>Comida ($)</label><input type="number" id="ce-comida" value="${j.comida}"></div>
+          <button class="btn-sm btn-purple" onclick="guardarCostos(${j.id})"><i class="ti ti-check"></i> Guardar costos</button>
+        </div>
+      </div>
+
+      <!-- Registrar turno depi -->
+      <div style="border-top:1px solid var(--gray-border);padding-top:12px;margin-bottom:12px">
+        <div class="card-title" style="color:var(--teal)"><i class="ti ti-plus"></i> Registrar turno</div>
+        <div class="g2">
+          <div class="field"><label>Clienta</label><input type="text" id="dt-clienta" placeholder="Nombre..."></div>
+          <div class="field"><label>Zona / Combo</label>
+            <select id="dt-servicio" onchange="updateDepiPreview()">
+              <option value="">Seleccionar...</option>
+              ${depiSrvCache.map(s=>`<option value="${s.id}" data-ef="${s.precio_ef}" data-lista="${s.precio_lista}">${s.nombre} — Ef: ${fmt(s.precio_ef)}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Seña ya cobrada ($)</label><input type="number" id="dt-sena" value="0" oninput="updateDepiPreview()"></div>
+          <div class="field"><label>Fecha seña</label><input type="text" id="dt-sena-fecha" placeholder="dd/mm/aaaa"></div>
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="margin-bottom:6px;display:block">Pago del saldo ese día</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <button class="pago-btn-depi active" id="dpago-ef" onclick="selectDepipago('efectivo')"><i class="ti ti-cash"></i><br>Efectivo</button>
+            <button class="pago-btn-depi" id="dpago-tr" onclick="selectDepipago('transferencia')"><i class="ti ti-arrows-exchange"></i><br>Transferencia</button>
+          </div>
+        </div>
+        <div class="total-preview" id="depi-preview" style="display:none">
+          <div class="total-row"><span style="color:var(--text-2)">Precio ef</span><span id="dp-total">$0</span></div>
+          <div class="total-row" style="color:var(--teal)"><span>− Seña</span><span id="dp-sena">-$0</span></div>
+          <div class="total-row final"><span>Saldo a cobrar hoy</span><span id="dp-saldo" style="color:var(--teal)">$0</span></div>
+        </div>
+        <div class="field"><label>Observación</label><input type="text" id="dt-obs" placeholder="Opcional..."></div>
+        <button class="btn-teal" onclick="registrarTurnoDepi(${j.id})"><i class="ti ti-check"></i> Registrar</button>
+        <div class="msg" id="dt-msg"></div>
+      </div>
+
+      <!-- Lista de turnos del día -->
+      <div style="border-top:1px solid var(--gray-border);padding-top:12px">
+        <div class="card-title" style="color:var(--teal)"><i class="ti ti-list"></i> Turnos del día (${turnos.length})</div>
+        ${!turnos.length ? '<div class="empty" style="padding:16px">Sin turnos aún</div>' :
+          turnos.map(t=>`
+            <div class="depi-turno-item">
+              <div style="flex:1">
+                <div style="font-weight:600;font-size:13px">${t.clienta}</div>
+                <div style="font-size:12px;color:var(--text-2)">${t.servicio}</div>
+                ${t.sena?`<div style="font-size:11px;color:var(--teal)">Seña: ${fmt(t.sena)}${t.sena_fecha?' ('+fromISO(t.sena_fecha)+')':''}</div>`:''}
+              </div>
+              <div style="text-align:right;margin-right:8px">
+                <div style="font-weight:700;color:var(--teal)">${fmt(t.precio_ef)}</div>
+                <span class="badge ${t.pago==='efectivo'?'b-ef':'b-tr'}" style="font-size:10px">${t.pago==='efectivo'?'Ef':'Transf'}</span>
+              </div>
+              <button class="btn-sm btn-danger" onclick="delTurnoDepi(${t.id})" style="padding:4px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>
+            </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+let depiPagoActual = 'efectivo';
+function selectDepipago(p) {
+  depiPagoActual = p;
+  document.getElementById('dpago-ef').classList.toggle('active', p==='efectivo');
+  document.getElementById('dpago-tr').classList.toggle('active', p==='transferencia');
+  updateDepiPreview();
+}
+
+function updateDepiPreview() {
+  const sel = document.getElementById('dt-servicio');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt?.value) { document.getElementById('depi-preview').style.display='none'; return; }
+  const ef = parseFloat(opt.dataset.ef)||0;
+  const sena = parseFloat(document.getElementById('dt-sena').value)||0;
+  const saldo = Math.max(0, ef - sena);
+  document.getElementById('depi-preview').style.display='block';
+  document.getElementById('dp-total').textContent = fmt(ef);
+  document.getElementById('dp-sena').textContent = `-${fmt(sena)}`;
+  document.getElementById('dp-saldo').textContent = fmt(saldo);
+}
+
+function toggleCostosEdit() {
+  const el = document.getElementById('costos-edit');
+  el.style.display = el.style.display==='none'?'block':'none';
+}
+
+async function guardarCostos(id) {
+  const alquiler_maquina = parseFloat(document.getElementById('ce-maquina').value)||0;
+  const horas_operadora = parseFloat(document.getElementById('ce-horas').value)||0;
+  const tarifa_operadora = parseFloat(document.getElementById('ce-tarifa').value)||7000;
+  const viaticos = parseFloat(document.getElementById('ce-viaticos').value)||0;
+  const comida = parseFloat(document.getElementById('ce-comida').value)||0;
+  await api('PUT',`/api/depi-jornadas/${id}`,{alquiler_maquina, horas_operadora, tarifa_operadora, viaticos, comida});
+  renderDepi();
+}
+
+async function registrarTurnoDepi(jornada_id) {
+  const clienta = document.getElementById('dt-clienta').value.trim();
+  const sel = document.getElementById('dt-servicio');
+  const opt = sel.options[sel.selectedIndex];
+  const sena = parseFloat(document.getElementById('dt-sena').value)||0;
+  const sena_fecha_raw = document.getElementById('dt-sena-fecha').value.trim();
+  const sena_fecha = sena_fecha_raw ? toISO(sena_fecha_raw) : null;
+  const obs = document.getElementById('dt-obs').value.trim();
+  const msg = document.getElementById('dt-msg');
+  if (!clienta||!opt?.value) { msg.className='msg show err'; msg.textContent='Completá clienta y zona.'; return; }
+  const srv = depiSrvCache.find(s=>s.id===parseInt(opt.value));
+  const d = new Date(); const pad = n=>n.toString().padStart(2,'0');
+  const fecha = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  await api('POST','/api/depi-turnos',{clienta, servicio:srv.nombre, precio_ef:srv.precio_ef, precio_lista:srv.precio_lista, pago:depiPagoActual, sena, sena_fecha, fecha, obs, jornada_id});
+  document.getElementById('dt-clienta').value='';
+  document.getElementById('dt-servicio').value='';
+  document.getElementById('dt-sena').value='0';
+  document.getElementById('dt-sena-fecha').value='';
+  document.getElementById('dt-obs').value='';
+  document.getElementById('depi-preview').style.display='none';
+  msg.className='msg show ok'; msg.textContent=`Turno de ${clienta} registrado`;
+  setTimeout(()=>{msg.className='msg';},3000);
+  renderDepi();
+}
+
+async function delTurnoDepi(id) {
+  if (!confirm('¿Eliminar este turno?')) return;
+  await api('DELETE',`/api/depi-turnos/${id}`); renderDepi();
+}
+
+async function cerrarJornada(id) {
+  if (!confirm('¿Cerrar esta jornada? Quedará en el historial.')) return;
+  await api('PUT',`/api/depi-jornadas/${id}`,{abierta:false}); renderDepi();
+}
+
+function renderHistorialDepi(jornadas) {
+  const cerradas = jornadas.filter(j=>!j.abierta);
+  const el = document.getElementById('depi-historial');
+  if (!cerradas.length) { el.innerHTML='<div class="empty">No hay jornadas anteriores</div>'; return; }
+  el.innerHTML = cerradas.map(j=>`
+    <div class="jornada-hist" id="jhist-${j.id}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div style="font-weight:600">${fromISO(j.fecha)}</div>
+          <span class="badge b-cerrada">Cerrada</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm btn-teal-sm" onclick="verResumenHistorial(${j.id})"><i class="ti ti-eye"></i> Ver</button>
+          <button class="btn-sm btn-danger" onclick="delJornada(${j.id})" style="padding:4px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>
+        </div>
+      </div>
+      <div id="jhist-detalle-${j.id}" style="display:none"></div>
+    </div>`).join('');
+}
+
+async function verResumenHistorial(id) {
+  const el = document.getElementById(`jhist-detalle-${id}`);
+  if (el.style.display==='block') { el.style.display='none'; return; }
+  const res = await api('GET',`/api/depi-resumen/${id}`);
+  const j = res.jornada;
+  el.style.display='block';
+  el.innerHTML = `
+    <div class="resumen-box" style="margin-top:8px">
+      <div class="resumen-row"><span>Señas</span><span style="color:var(--teal)">${fmt(res.total_senas)}</span></div>
+      <div class="resumen-row"><span>Efectivo día</span><span style="color:var(--teal)">${fmt(res.total_ef)}</span></div>
+      <div class="resumen-row"><span>Transferencia día</span><span style="color:var(--teal)">${fmt(res.total_transf - res.total_senas)}</span></div>
+      <div class="resumen-row total"><span>Total cobrado</span><span>${fmt(res.total_cobrado)}</span></div>
+      <div style="height:4px"></div>
+      <div class="resumen-row costo"><span>Máquina</span><span>-${fmt(j.alquiler_maquina)}</span></div>
+      <div class="resumen-row costo"><span>Operadora (${j.horas_operadora}hs)</span><span>-${fmt(res.costo_operadora)}</span></div>
+      <div class="resumen-row costo"><span>Viáticos + Comida</span><span>-${fmt(j.viaticos+j.comida)}</span></div>
+      <div class="resumen-row ganancia"><span>Ganancia neta</span><span>${fmt(res.ganancia)}</span></div>
+    </div>
+    <div style="font-size:12px;color:var(--text-2);margin-top:8px">${res.turnos.length} turnos · ${res.turnos.map(t=>t.clienta).join(', ')}</div>`;
+}
+
+async function delJornada(id) {
+  if (!confirm('¿Eliminar esta jornada y todos sus turnos?')) return;
+  const turnos = await api('GET',`/api/depi-turnos?jornada_id=${id}`);
+  for (const t of turnos) await api('DELETE',`/api/depi-turnos/${t.id}`);
+  await api('DELETE',`/api/depi-jornadas/${id}`);
+  renderDepi();
+}
+
+// CONFIG
 async function renderConfig() {
   const [chicas, servicios] = await Promise.all([api('GET','/api/chicas'), api('GET','/api/servicios')]);
   serviciosCache = servicios;
@@ -1100,10 +1379,7 @@ async function addChica() {
   await api('POST','/api/chicas',{nombre:v});
   document.getElementById('inp-chica').value=''; renderConfig();
 }
-async function delChica(id) {
-  if (!confirm('¿Eliminar profesional?')) return;
-  await api('DELETE',`/api/chicas/${id}`); renderConfig();
-}
+async function delChica(id) { if (!confirm('¿Eliminar?')) return; await api('DELETE',`/api/chicas/${id}`); renderConfig(); }
 async function addServicio() {
   const cat = document.getElementById('inp-srv-cat').value.trim()||'Otros';
   const n = document.getElementById('inp-srv-nom').value.trim();
@@ -1114,10 +1390,7 @@ async function addServicio() {
   ['inp-srv-cat','inp-srv-nom','inp-srv-ef','inp-srv-lista'].forEach(id=>document.getElementById(id).value='');
   renderConfig(); loadSelects();
 }
-async function delServicio(id) {
-  if (!confirm('¿Eliminar servicio?')) return;
-  await api('DELETE',`/api/servicios/${id}`); renderConfig(); loadSelects();
-}
+async function delServicio(id) { if (!confirm('¿Eliminar?')) return; await api('DELETE',`/api/servicios/${id}`); renderConfig(); loadSelects(); }
 
 async function exportCSV() {
   const turnos = await api('GET','/api/turnos');
