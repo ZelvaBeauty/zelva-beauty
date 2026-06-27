@@ -131,6 +131,18 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .depi-srv-item.selected{background:var(--teal-light);border-left:3px solid var(--teal)}
 .depi-selected-srvs{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
 .depi-selected-srv{background:var(--teal-light);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;font-size:12px;color:var(--text-2)}
+.cal-day:hover{background:var(--gray-surface)}
+.cal-day.has-data{background:var(--gray-surface);border:1px solid var(--gray-border);font-weight:600;color:var(--text)}
+.cal-day.selected{background:var(--purple);color:#fff;border:none}
+.cal-day.selected .cal-dot{background:rgba(255,255,255,0.6)}
+.cal-day.today{border:2px solid var(--purple)}
+.cal-day.today.selected{border:none}
+.cal-dot{width:4px;height:4px;border-radius:50%;background:var(--teal);margin-top:1px}
+.cal-empty{aspect-ratio:1}
+.dia-detalle-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-border);font-size:13px}
+.dia-detalle-row:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -344,9 +356,9 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 
 <div id="panel-caja" class="panel">
   <div class="period-row">
-    <button class="pbtn active" onclick="setPeriod('caja','hoy',this)">Hoy</button>
+    <button class="pbtn active" onclick="setPeriod('caja','mes',this)">Este mes</button>
     <button class="pbtn" onclick="setPeriod('caja','semana',this)">Esta semana</button>
-    <button class="pbtn" onclick="setPeriod('caja','mes',this)">Este mes</button>
+    <button class="pbtn" onclick="setPeriod('caja','hoy',this)">Hoy</button>
     <button class="pbtn" onclick="setPeriod('caja','todos',this)">Todos</button>
   </div>
   <div class="metrics-6" id="caja-top"></div>
@@ -355,6 +367,32 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     <div class="pago-desglose" id="caja-pago"></div>
   </div>
   <div class="card" style="padding:0 14px"><div id="caja-chicas"></div></div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-calendar"></i> Ver dia a dia</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <button class="btn-sm" onclick="calCambiarMes(-1)"><i class="ti ti-chevron-left"></i></button>
+      <span style="font-weight:600;font-size:14px" id="cal-titulo"></span>
+      <button class="btn-sm" onclick="calCambiarMes(1)"><i class="ti ti-chevron-right"></i></button>
+    </div>
+    <div class="cal-grid" style="margin-bottom:4px">
+      <div style="text-align:center;font-size:11px;color:var(--text-3);font-weight:600;padding:4px 0">L</div>
+      <div style="text-align:center;font-size:11px;color:var(--text-3);font-weight:600;padding:4px 0">M</div>
+      <div style="text-align:center;font-size:11px;color:var(--text-3);font-weight:600;padding:4px 0">M</div>
+      <div style="text-align:center;font-size:11px;color:var(--text-3);font-weight:600;padding:4px 0">J</div>
+      <div style="text-align:center;font-size:11px;color:var(--text-3);font-weight:600;padding:4px 0">V</div>
+      <div style="text-align:center;font-size:11px;color:var(--text-3);font-weight:600;padding:4px 0">S</div>
+      <div style="text-align:center;font-size:11px;color:var(--text-3);font-weight:600;padding:4px 0">D</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:10px;font-size:11px;color:var(--text-3)">
+      <span><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);margin-right:3px;vertical-align:middle"></span>Con actividad</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--purple);margin-right:3px;vertical-align:middle"></span>Seleccionado</span>
+    </div>
+  </div>
+  <div class="card" id="caja-dia-detalle" style="display:none;border-color:var(--purple-mid)">
+    <div class="card-title" style="color:var(--purple)"><i class="ti ti-calendar-event"></i> <span id="caja-dia-titulo"></span></div>
+    <div id="caja-dia-contenido"></div>
+  </div>
   <button class="btn-outline" onclick="exportCSV()" style="margin-top:4px"><i class="ti ti-download"></i> Descargar Excel / CSV</button>
 </div>
 
@@ -433,7 +471,7 @@ const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agos
 const CAT_BADGE = {Alquiler:'cat-alquiler',Insumos:'cat-insumos',Impuestos:'cat-impuestos',Servicios:'cat-servicios',Sueldos:'cat-sueldos',Otros:'cat-otros'};
 const PAGO_LABEL = {efectivo:'Efectivo',transferencia:'Transferencia',qr:'QR',debito:'Debito',credito:'Credito',openpay:'OpenPay'};
 
-let periodos = { turnos:'hoy', com:'hoy', caja:'hoy', ranking:'mes', gastos:'mes' };
+let periodos = { turnos:'hoy', com:'hoy', caja:'mes', ranking:'mes', gastos:'mes' };
 let serviciosCache = [];
 let selectedSrvs = [];
 let pagoActual = 'efectivo';
@@ -442,6 +480,10 @@ let depiSrvCache = [];
 let jornadaActiva = null;
 let depiPagoActual = 'efectivo';
 let depiSelectedSrvs = [];
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calTurnosCache = [];
+let calDiaSeleccionado = null;
 
 function tercerSabado() {
   const d = new Date(); const y = d.getFullYear(), m = d.getMonth();
@@ -881,6 +923,138 @@ async function renderCaja() {
       '<div class="avatar">'+c.chica.substring(0,2).toUpperCase()+'</div>'+
       '<div><div style="font-weight:600">'+c.chica+'</div><div style="font-size:12px;color:var(--text-2)">'+c.turnos+' turnos · cobrado '+fmt(c.cobrado)+'</div></div></div>'+
       '<div style="text-align:right"><div style="font-weight:700;color:var(--purple)">'+fmt(c.comision)+'</div><div style="font-size:11px;color:var(--text-2)">comision</div></div></div>').join('');
+  await cargarCalendario();
+}
+
+async function cargarCalendario() {
+  const pad = n => n.toString().padStart(2,'0');
+  const desde = calYear+'-'+pad(calMonth+1)+'-01';
+  const ultimoDia = new Date(calYear, calMonth+1, 0).getDate();
+  const hasta = calYear+'-'+pad(calMonth+1)+'-'+ultimoDia;
+  calTurnosCache = await api('GET','/api/turnos?desde='+desde+'&hasta='+hasta);
+  renderCalendario();
+}
+
+function renderCalendario() {
+  const pad = n => n.toString().padStart(2,'0');
+  const hoy = new Date();
+  const hoyISO = hoy.getFullYear()+'-'+pad(hoy.getMonth()+1)+'-'+pad(hoy.getDate());
+  document.getElementById('cal-titulo').textContent = MESES[calMonth+1]+' '+calYear;
+  const porDia = {};
+  calTurnosCache.forEach(t => { if (!porDia[t.fecha]) porDia[t.fecha]=[]; porDia[t.fecha].push(t); });
+  const primerDia = new Date(calYear, calMonth, 1).getDay();
+  const offsetLunes = primerDia === 0 ? 6 : primerDia - 1;
+  const diasEnMes = new Date(calYear, calMonth+1, 0).getDate();
+  let html = '';
+  for (let i = 0; i < offsetLunes; i++) html += '<div class="cal-empty"></div>';
+  for (let d = 1; d <= diasEnMes; d++) {
+    const isoFecha = calYear+'-'+pad(calMonth+1)+'-'+pad(d);
+    const tieneData = !!porDia[isoFecha]?.length;
+    const esHoy = isoFecha === hoyISO;
+    const esSeleccionado = isoFecha === calDiaSeleccionado;
+    let cls = 'cal-day';
+    if (esSeleccionado) cls += ' selected';
+    else if (tieneData) cls += ' has-data';
+    if (esHoy && !esSeleccionado) cls += ' today';
+    html += '<div class="'+cls+'" onclick="seleccionarDia(\''+isoFecha+'\')">'+
+      '<span>'+d+'</span>'+
+      (tieneData ? '<div class="cal-dot"></div>' : '')+
+      '</div>';
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+}
+
+function seleccionarDia(fecha) {
+  if (calDiaSeleccionado === fecha) {
+    calDiaSeleccionado = null;
+    renderCalendario();
+    document.getElementById('caja-dia-detalle').style.display='none';
+    return;
+  }
+  calDiaSeleccionado = fecha;
+  renderCalendario();
+  mostrarDetalleDia(fecha);
+}
+
+function mostrarDetalleDia(fecha) {
+  const turnos = calTurnosCache.filter(t => t.fecha === fecha);
+  const detalle = document.getElementById('caja-dia-detalle');
+  const partes = fecha.split('-');
+  const nombreDia = new Date(parseInt(partes[0]), parseInt(partes[1])-1, parseInt(partes[2]))
+    .toLocaleDateString('es-AR', {weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('caja-dia-titulo').textContent = nombreDia.charAt(0).toUpperCase() + nombreDia.slice(1);
+
+  if (!turnos.length) {
+    document.getElementById('caja-dia-contenido').innerHTML =
+      '<div class="empty" style="padding:20px">Sin turnos este dia</div>';
+    detalle.style.display='block';
+    return;
+  }
+
+  const cobrado = turnos.reduce((s,t)=>s+t.cobrado,0);
+  const base_ef = turnos.reduce((s,t)=>s+t.base_comision,0);
+  const comisiones = base_ef * COM;
+  const salon = cobrado - comisiones;
+  const senas = turnos.reduce((s,t)=>s+(t.sena_monto||0),0);
+  const totalReal = cobrado + senas;
+  const turnos_con_sena = turnos.filter(t=>(t.sena_monto||0)>0).length;
+
+  // efectivo del día (incluyendo mixto)
+  const efectivo = turnos.reduce((s,t)=>{
+    if (t.pago2) {
+      let ef = 0;
+      if (t.pago==='efectivo') ef += t.monto_pago1||0;
+      if (t.pago2==='efectivo') ef += t.monto_pago2||0;
+      return s + ef;
+    }
+    return t.pago==='efectivo' ? s+t.cobrado : s;
+  },0);
+  const otros = cobrado - efectivo;
+
+  document.getElementById('caja-dia-contenido').innerHTML =
+    // métricas principales
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
+    '<div class="metric"><div class="metric-label">Total servicios</div><div class="metric-value mv-purple">'+fmt(cobrado)+'</div><div style="font-size:11px;color:var(--text-3);margin-top:2px">'+turnos.length+' turno'+(turnos.length!==1?'s':'')+'</div></div>'+
+    '<div class="metric" style="background:var(--teal-light)"><div class="metric-label" style="color:var(--teal)">Para el salon</div><div class="metric-value mv-teal">'+fmt(salon)+'</div></div>'+
+    '</div>'+
+    // desglose medios de pago
+    '<div style="border-top:1px solid var(--gray-border);padding-top:10px;margin-bottom:10px">'+
+    '<div class="dia-detalle-row">'+
+    '<span style="display:flex;align-items:center;gap:6px"><i class="ti ti-cash" style="font-size:14px;color:var(--teal)"></i><span class="badge b-ef">Efectivo</span></span>'+
+    '<span style="font-weight:600">'+fmt(efectivo)+'</span></div>'+
+    '<div class="dia-detalle-row">'+
+    '<span style="display:flex;align-items:center;gap:6px"><i class="ti ti-arrows-exchange" style="font-size:14px;color:#0C447C"></i><span class="badge b-tr">Otros medios</span></span>'+
+    '<span style="font-weight:600">'+fmt(otros)+'</span></div>'+
+    // señas
+    (senas > 0 ?
+    '<div class="dia-detalle-row">'+
+    '<span style="display:flex;align-items:center;gap:6px"><i class="ti ti-receipt" style="font-size:14px;color:var(--amber)"></i>'+
+    '<span class="badge" style="background:var(--amber-light);color:var(--amber)">Senas ('+turnos_con_sena+' turno'+(turnos_con_sena!==1?'s':'')+')</span></span>'+
+    '<span style="font-weight:600;color:var(--amber)">'+fmt(senas)+'</span></div>' : '')+
+    // total real si hay señas
+    (senas > 0 ?
+    '<div class="dia-detalle-row" style="border-top:1px solid var(--gray-border);margin-top:4px;padding-top:8px">'+
+    '<span style="color:var(--text-2);font-size:12px">Total real del dia (cobrado + senas)</span>'+
+    '<span style="font-weight:700;color:var(--purple)">'+fmt(totalReal)+'</span></div>' : '')+
+    '</div>'+
+    // comisiones
+    '<div style="border-top:1px solid var(--gray-border);padding-top:10px">'+
+    '<div class="dia-detalle-row">'+
+    '<span style="color:var(--text-2)">Comisiones (37%)</span>'+
+    '<span style="font-weight:600;color:var(--amber)">-'+fmt(comisiones)+'</span></div>'+
+    '</div>';
+
+  detalle.style.display='block';
+  detalle.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+async function calCambiarMes(delta) {
+  calMonth += delta;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  calDiaSeleccionado = null;
+  document.getElementById('caja-dia-detalle').style.display='none';
+  await cargarCalendario();
 }
 
 async function renderRanking() {
@@ -1140,7 +1314,6 @@ async function registrarTurnoDepi(jornada_id) {
   const obs = document.getElementById('dt-obs').value.trim();
   const msg = document.getElementById('dt-msg');
   if (!clienta || !depiSelectedSrvs.length) { msg.className='msg show err'; msg.textContent='Completa clienta y selecciona al menos una zona.'; return; }
-  const isEf = depiPagoActual === 'efectivo';
   const precio_ef = depiSelectedSrvs.reduce((s,x)=>s+x.precio_ef,0);
   const precio_lista = depiSelectedSrvs.reduce((s,x)=>s+x.precio_lista,0);
   const servicio = depiSelectedSrvs.length===1 ? depiSelectedSrvs[0].nombre : depiSelectedSrvs.map(s=>s.nombre).join(' + ');
