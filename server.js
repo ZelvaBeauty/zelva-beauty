@@ -26,10 +26,11 @@ const defaultData = {
     {id:5,categoria:'Manos',nombre:'Capping dipping',precio_ef:30000,precio_lista:36000,costo_insumos:3268},
     {id:6,categoria:'Manos',nombre:'Capping en perla',precio_ef:39000,precio_lista:46800,costo_insumos:2444},
     {id:7,categoria:'Manos',nombre:'Capping en polygel',precio_ef:38000,precio_lista:45600,costo_insumos:2444},
-    {id:8,categoria:'Manos',nombre:'Esculpidas en poly',precio_ef:40000,precio_lista:48000,costo_insumos:2858},
-    {id:9,categoria:'Manos',nombre:'Esculpidas acrílicas',precio_ef:42000,precio_lista:50400,costo_insumos:6887},
+    {id:8,categoria:'Manos',nombre:'Esculpidas en poly',precio_ef:42000,precio_lista:50400,costo_insumos:2858},
+    {id:9,categoria:'Manos',nombre:'Esculpidas acrílicas',precio_ef:44000,precio_lista:52800,costo_insumos:6887},
     {id:10,categoria:'Manos',nombre:'Soft gel',precio_ef:37000,precio_lista:44400,costo_insumos:1911},
-    {id:11,categoria:'Manos',nombre:'Service esculpidas',precio_ef:37000,precio_lista:44400,costo_insumos:755},
+    {id:11,categoria:'Manos',nombre:'Service esculpidas en poly',precio_ef:40000,precio_lista:48000,costo_insumos:755},
+    {id:58,categoria:'Manos',nombre:'Service esculpidas acrílico',precio_ef:42000,precio_lista:50400,costo_insumos:755},
     {id:12,categoria:'Manos',nombre:'Service esculpida x uña',precio_ef:4500,precio_lista:5400,costo_insumos:0},
     {id:13,categoria:'Manos',nombre:'Service capping x uña',precio_ef:4000,precio_lista:4800,costo_insumos:0},
     {id:14,categoria:'Manos',nombre:'Cambio de esmalte',precio_ef:20000,precio_lista:24000,costo_insumos:1163},
@@ -189,7 +190,7 @@ const defaultData = {
   adelantos: [],
   liquidaciones: [],
   gastos: [],
-  nextId: { chicas:8, servicios:58, turnos:1, adelantos:1, liquidaciones:1, gastos:1, insumos:71, depi_turnos:1, depi_jornadas:1 }
+  nextId: { chicas:8, servicios:59, turnos:1, adelantos:1, liquidaciones:1, gastos:1, insumos:71, depi_turnos:1, depi_jornadas:1 }
 };
 
 const db = new Low(adapter, defaultData);
@@ -214,11 +215,29 @@ if (!db.data.nextId.insumos) db.data.nextId.insumos = 71;
 if (!db.data.nextId.depi_turnos) db.data.nextId.depi_turnos = 1;
 if (!db.data.nextId.depi_jornadas) db.data.nextId.depi_jornadas = 1;
 
-// Agregar servicios nuevos si no existen
-const serviciosNuevos = defaultData.servicios.filter(d => d.id >= 50);
-serviciosNuevos.forEach(nuevo => {
-  if (!db.data.servicios.find(s => s.id === nuevo.id)) db.data.servicios.push(nuevo);
+// Agregar servicios nuevos por id si no existen
+const serviciosNuevosIds = [50,51,52,53,54,55,56,57,58];
+serviciosNuevosIds.forEach(idNuevo => {
+  const nuevo = defaultData.servicios.find(d => d.id === idNuevo);
+  if (nuevo && !db.data.servicios.find(s => s.id === nuevo.id)) {
+    db.data.servicios.push(nuevo);
+  }
 });
+
+// Reemplazar "Service esculpidas" genérico (id 11, precio 37000) por los dos nuevos si todavía existe el viejo
+const servicioViejo = db.data.servicios.find(s => s.id === 11 && s.precio_ef === 37000 && s.nombre === 'Service esculpidas');
+if (servicioViejo) {
+  servicioViejo.nombre = 'Service esculpidas en poly';
+  servicioViejo.precio_ef = 40000;
+  servicioViejo.precio_lista = 48000;
+}
+
+// Actualizar precios de Esculpidas en poly y Esculpidas acrílicas si están en el valor viejo
+const escPoly = db.data.servicios.find(s => s.id === 8);
+if (escPoly && escPoly.precio_ef === 40000) { escPoly.precio_ef = 42000; escPoly.precio_lista = 50400; }
+const escAcr = db.data.servicios.find(s => s.id === 9);
+if (escAcr && escAcr.precio_ef === 42000) { escAcr.precio_ef = 44000; escAcr.precio_lista = 52800; }
+
 db.data.servicios.forEach(s => {
   const def = defaultData.servicios.find(d => d.id === s.id);
   if (def && s.costo_insumos === undefined) s.costo_insumos = def.costo_insumos;
@@ -229,7 +248,6 @@ await db.write();
 const nextId = (key) => { const id = db.data.nextId[key]++; db.write(); return id; };
 const COM = 0.37;
 
-// CHICAS
 app.get('/api/chicas', (req, res) => res.json(db.data.chicas.sort((a,b)=>a.nombre.localeCompare(b.nombre))));
 app.post('/api/chicas', async (req, res) => {
   const { nombre } = req.body;
@@ -244,7 +262,6 @@ app.delete('/api/chicas/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// SERVICIOS
 app.get('/api/servicios', (req, res) => res.json(db.data.servicios.sort((a,b)=>a.categoria.localeCompare(b.categoria)||a.nombre.localeCompare(b.nombre))));
 app.post('/api/servicios', async (req, res) => {
   const { categoria, nombre, precio_ef, precio_lista, costo_insumos } = req.body;
@@ -266,7 +283,6 @@ app.delete('/api/servicios/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// INSUMOS
 app.get('/api/insumos', (req, res) => res.json(db.data.insumos.sort((a,b)=>a.categoria.localeCompare(b.categoria)||a.nombre.localeCompare(b.nombre))));
 app.post('/api/insumos', async (req, res) => {
   const { categoria, nombre, proveedor, precio_unitario } = req.body;
@@ -288,7 +304,6 @@ app.delete('/api/insumos/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// DEPI SERVICIOS
 app.get('/api/depi-servicios', (req, res) => res.json(db.data.depi_servicios.sort((a,b)=>a.categoria.localeCompare(b.categoria)||a.nombre.localeCompare(b.nombre))));
 app.put('/api/depi-servicios/:id', async (req, res) => {
   const s = db.data.depi_servicios.find(x=>x.id===parseInt(req.params.id));
@@ -298,7 +313,6 @@ app.put('/api/depi-servicios/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// DEPI TURNOS
 app.get('/api/depi-turnos', (req, res) => {
   const { jornada_id, fecha } = req.query;
   let t = db.data.depi_turnos;
@@ -318,14 +332,13 @@ app.delete('/api/depi-turnos/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// DEPI JORNADAS
 app.get('/api/depi-jornadas', (req, res) => res.json([...db.data.depi_jornadas].sort((a,b)=>b.fecha.localeCompare(a.fecha))));
 app.post('/api/depi-jornadas', async (req, res) => {
   const { fecha, alquiler_maquina, horas_operadora, tarifa_operadora, viaticos, comida, obs } = req.body;
   if (!fecha) return res.status(400).json({ error: 'Falta fecha' });
   if (db.data.depi_jornadas.find(j=>j.fecha===fecha)) return res.status(409).json({ error: 'Ya existe jornada para esa fecha' });
   const id = nextId('depi_jornadas');
-  db.data.depi_jornadas.push({ id, fecha, abierta:true, alquiler_maquina:alquiler_maquina||125000, horas_operadora:horas_operadora||0, tarifa_operadora:tarifa_operadora||7000, viaticos:viaticos||0, comida:comida||0, obs:obs||'', creado_at: new Date().toISOString() });
+  db.data.depi_jornadas.push({ id, fecha, abierta:true, alquiler_maquina:alquiler_maquina||0, horas_operadora:horas_operadora||0, tarifa_operadora:tarifa_operadora||7000, viaticos:viaticos||0, comida:comida||0, obs:obs||'', creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
 app.put('/api/depi-jornadas/:id', async (req, res) => {
@@ -339,7 +352,6 @@ app.delete('/api/depi-jornadas/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// DEPI RESUMEN por jornada
 app.get('/api/depi-resumen/:jornada_id', (req, res) => {
   const jid = parseInt(req.params.jornada_id);
   const jornada = db.data.depi_jornadas.find(j=>j.id===jid);
@@ -355,7 +367,6 @@ app.get('/api/depi-resumen/:jornada_id', (req, res) => {
   res.json({ jornada, turnos, total_senas, total_ef, total_transf, total_cobrado, costo_operadora, total_costos, ganancia });
 });
 
-// TURNOS SALON
 app.get('/api/turnos', (req, res) => {
   const { desde, hasta } = req.query;
   let turnos = db.data.turnos;
@@ -379,7 +390,6 @@ app.delete('/api/turnos/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// ADELANTOS
 app.get('/api/adelantos', (req, res) => {
   const { chica } = req.query;
   let a = db.data.adelantos;
@@ -404,7 +414,6 @@ app.delete('/api/adelantos/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// LIQUIDACIONES
 app.get('/api/liquidaciones', (req, res) => res.json([...db.data.liquidaciones].sort((a,b)=>b.creado_at.localeCompare(a.creado_at))));
 app.post('/api/liquidaciones', async (req, res) => {
   const { chica, desde, hasta, comisiones, adelantosMonto, adelantosIds, total } = req.body;
@@ -429,7 +438,6 @@ app.delete('/api/liquidaciones/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// GASTOS
 app.get('/api/gastos', (req, res) => {
   const { desde, hasta } = req.query;
   let gastos = db.data.gastos||[];
@@ -449,7 +457,6 @@ app.delete('/api/gastos/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
-// RESUMEN SALON
 app.get('/api/resumen', (req, res) => {
   const { desde, hasta } = req.query;
   let turnos = db.data.turnos;
