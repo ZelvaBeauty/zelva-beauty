@@ -277,6 +277,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     </div>
   </div>
   <div id="lista-turnos"></div>
+  <button class="btn-outline" onclick="exportTurnosMes()" style="margin-top:4px"><i class="ti ti-download"></i> Descargar reporte del periodo</button>
 </div>
 
 <div id="panel-comisiones" class="panel">
@@ -429,7 +430,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     <div class="card-title" style="color:var(--purple)"><i class="ti ti-calendar-event"></i> <span id="caja-dia-titulo"></span></div>
     <div id="caja-dia-contenido"></div>
   </div>
-  <button class="btn-outline" onclick="exportCSV()" style="margin-top:4px"><i class="ti ti-download"></i> Descargar Excel / CSV</button>
+  <button class="btn-outline" onclick="exportCSV()" style="margin-top:4px"><i class="ti ti-download"></i> Descargar Excel / CSV completo</button>
 </div>
 
 <div id="panel-ranking" class="panel">
@@ -556,7 +557,7 @@ function getRange(p, tab) {
   if (p==='semana') { const m=new Date(d); m.setHours(0,0,0,0); const day=m.getDay(); m.setDate(m.getDate()-(day===0?6:day-1)); return {desde:f(m),hasta:f(d)}; }
   if (p==='mes') { return {desde:d.getFullYear()+'-'+pad(d.getMonth()+1)+'-01',hasta:f(d)}; }
   if (p==='mesElegido') {
-    const prefix = tab==='com' ? 'com' : 'turnos';
+    const prefix = tab==='com'?'com':'turnos';
     const mes = parseInt(document.getElementById(prefix+'-mes-num')?.value||(d.getMonth()+1));
     const anio = parseInt(document.getElementById(prefix+'-mes-anio')?.value||d.getFullYear());
     const ultimoDia = new Date(anio, mes, 0).getDate();
@@ -588,14 +589,14 @@ function setPeriod(tab, p, el) {
   document.querySelectorAll('#panel-'+pid+' .pbtn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
   if (tab==='com') {
-    const sel = document.getElementById('com-mes-selector');
-    if (sel) sel.style.display = p==='mesElegido'?'block':'none';
-    if (p==='mesElegido') { const mn=document.getElementById('com-mes-num'); if(mn&&!mn.value) mn.value=new Date().getMonth()+1; }
+    const sel=document.getElementById('com-mes-selector');
+    if(sel) sel.style.display=p==='mesElegido'?'block':'none';
+    if(p==='mesElegido'){const mn=document.getElementById('com-mes-num');if(mn&&!mn.value)mn.value=new Date().getMonth()+1;}
   }
   if (tab==='turnos') {
-    const sel = document.getElementById('turnos-mes-selector');
-    if (sel) sel.style.display = p==='mesElegido'?'block':'none';
-    if (p==='mesElegido') { const mn=document.getElementById('turnos-mes-num'); if(mn&&!mn.value) mn.value=new Date().getMonth()+1; }
+    const sel=document.getElementById('turnos-mes-selector');
+    if(sel) sel.style.display=p==='mesElegido'?'block':'none';
+    if(p==='mesElegido'){const mn=document.getElementById('turnos-mes-num');if(mn&&!mn.value)mn.value=new Date().getMonth()+1;}
   }
   if (tab==='turnos') renderTurnos();
   if (tab==='com') renderCom();
@@ -626,100 +627,100 @@ function toggleBox(checkId, bodyId) {
 }
 
 function updateTotal() {
-  const isEf = pagoActual === 'efectivo';
-  const srvTotal = selectedSrvs.reduce((s,x) => s+(isEf?x.precio_ef:x.precio_lista), 0);
+  const isEf = pagoActual==='efectivo';
+  const srvTotal = selectedSrvs.reduce((s,x)=>s+(isEf?x.precio_ef:x.precio_lista),0);
   const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
-  const subtotal = srvTotal + adicional;
+  const subtotal = srvTotal+adicional;
   const sena = parseFloat(document.getElementById('sena-monto').value)||0;
   const desc = parseFloat(document.getElementById('desc-monto').value)||0;
   const mixto = document.getElementById('mixto-check')?.checked||false;
-  const baseComision = selectedSrvs.reduce((s,x) => s+x.precio_ef, 0) + adicional;
+  const baseComision = selectedSrvs.reduce((s,x)=>s+x.precio_ef,0)+adicional;
   let totalMostrar;
   if (mixto) {
     const m1=parseFloat(document.getElementById('pago2-monto1')?.value)||0;
     const m2=parseFloat(document.getElementById('pago2-monto2')?.value)||0;
-    totalMostrar = m1+m2;
+    totalMostrar=m1+m2;
     const med1=document.getElementById('pago2-medio1')?.value;
     const med2=document.getElementById('pago2-medio2')?.value;
-    const rp1=document.getElementById('row-pago1'); const rp2=document.getElementById('row-pago2');
+    const rp1=document.getElementById('row-pago1');const rp2=document.getElementById('row-pago2');
     if(rp1){rp1.style.display=m1>0?'flex':'none';document.getElementById('preview-pago1-label').textContent=PAGO_LABEL[med1]||med1;document.getElementById('preview-pago1').textContent=fmt(m1);}
     if(rp2){rp2.style.display=m2>0?'flex':'none';document.getElementById('preview-pago2-label').textContent=PAGO_LABEL[med2]||med2;document.getElementById('preview-pago2').textContent=fmt(m2);}
   } else {
-    totalMostrar = Math.max(0, subtotal - sena - desc);
-    const rp1=document.getElementById('row-pago1'); const rp2=document.getElementById('row-pago2');
-    if(rp1) rp1.style.display='none'; if(rp2) rp2.style.display='none';
+    totalMostrar=Math.max(0,subtotal-sena-desc);
+    const rp1=document.getElementById('row-pago1');const rp2=document.getElementById('row-pago2');
+    if(rp1)rp1.style.display='none';if(rp2)rp2.style.display='none';
   }
-  document.getElementById('preview-subtotal').textContent = fmt(subtotal);
-  document.getElementById('preview-total').textContent = fmt(totalMostrar);
-  document.getElementById('preview-com').textContent = baseComision>0?'Comision a pagar: '+fmt(baseComision*COM)+' (sobre '+fmt(baseComision)+')':'';
-  document.getElementById('row-sena').style.display = sena>0?'flex':'none';
-  if (sena>0) document.getElementById('preview-sena').textContent = '-'+fmt(sena);
-  document.getElementById('row-desc').style.display = desc>0?'flex':'none';
-  if (desc>0) document.getElementById('preview-desc').textContent = '-'+fmt(desc);
+  document.getElementById('preview-subtotal').textContent=fmt(subtotal);
+  document.getElementById('preview-total').textContent=fmt(totalMostrar);
+  document.getElementById('preview-com').textContent=baseComision>0?'Comision a pagar: '+fmt(baseComision*COM)+' (sobre '+fmt(baseComision)+')':'';
+  document.getElementById('row-sena').style.display=sena>0?'flex':'none';
+  if(sena>0)document.getElementById('preview-sena').textContent='-'+fmt(sena);
+  document.getElementById('row-desc').style.display=desc>0?'flex':'none';
+  if(desc>0)document.getElementById('preview-desc').textContent='-'+fmt(desc);
 }
 
 async function loadSelects() {
-  const [chicas, servicios] = await Promise.all([api('GET','/api/chicas'), api('GET','/api/servicios')]);
-  serviciosCache = servicios;
-  const sc = document.getElementById('reg-chica'); const vc = sc.value;
-  sc.innerHTML = '<option value="">Seleccionar...</option>' + chicas.map(c=>'<option>'+c.nombre+'</option>').join('');
-  if (vc) sc.value = vc;
+  const [chicas,servicios]=await Promise.all([api('GET','/api/chicas'),api('GET','/api/servicios')]);
+  serviciosCache=servicios;
+  const sc=document.getElementById('reg-chica');const vc=sc.value;
+  sc.innerHTML='<option value="">Seleccionar...</option>'+chicas.map(c=>'<option>'+c.nombre+'</option>').join('');
+  if(vc)sc.value=vc;
   buildPicker(servicios);
 }
 
 function buildPicker(servicios) {
-  const cats = {};
-  servicios.forEach(s => { if (!cats[s.categoria]) cats[s.categoria]=[]; cats[s.categoria].push(s); });
-  const pickerHTML = Object.entries(cats).map(([cat,srvs]) =>
+  const cats={};
+  servicios.forEach(s=>{if(!cats[s.categoria])cats[s.categoria]=[];cats[s.categoria].push(s);});
+  const pickerHTML=Object.entries(cats).map(([cat,srvs])=>
     '<div class="cat-header" onclick="toggleCat(this)"><span>'+cat+'</span><i class="ti ti-chevron-down" style="font-size:14px"></i></div>'+
     '<div class="cat-body">'+srvs.map(s=>
       '<div class="srv-item" data-id="'+s.id+'" data-nombre="'+s.nombre+'" data-ef="'+s.precio_ef+'" data-lista="'+s.precio_lista+'" onclick="toggleSrv(this)">'+
       '<span class="srv-item-name">'+s.nombre+'</span>'+
       '<span class="srv-item-prices">Ef: '+fmt(s.precio_ef)+'<br>Lista: '+fmt(s.precio_lista)+'</span></div>').join('')+'</div>').join('');
-  const adicionalHTML =
+  const adicionalHTML=
     '<div class="cat-header" onclick="toggleCat(this)"><span>Adicional deco (monto libre)</span><i class="ti ti-chevron-down" style="font-size:14px"></i></div>'+
     '<div class="cat-body"><div class="adicional-box">'+
     '<div style="font-size:13px;color:var(--text-2);margin-bottom:8px">Para disenos personalizados</div>'+
     '<div class="g2"><div class="field" style="margin:0"><label>Monto ef. ($)</label><input type="number" id="adicional-monto" placeholder="0" oninput="updateTotal()"></div>'+
     '<div class="field" style="margin:0"><label>Descripcion</label><input type="text" id="adicional-desc" placeholder="Ej: diseno personalizado..."></div></div>'+
     '</div></div>';
-  document.getElementById('srv-picker').innerHTML = pickerHTML + adicionalHTML;
+  document.getElementById('srv-picker').innerHTML=pickerHTML+adicionalHTML;
   refreshPicker();
 }
 
 function toggleCat(el) {
-  const body = el.nextElementSibling;
+  const body=el.nextElementSibling;
   body.classList.toggle('open');
-  el.querySelector('i').style.transform = body.classList.contains('open')?'rotate(180deg)':'';
+  el.querySelector('i').style.transform=body.classList.contains('open')?'rotate(180deg)':'';
 }
 
 function toggleSrv(el) {
-  const id = parseInt(el.dataset.id);
-  const idx = selectedSrvs.findIndex(s=>s.id===id);
-  if (idx>=0) selectedSrvs.splice(idx,1);
-  else selectedSrvs.push({id, nombre:el.dataset.nombre, precio_ef:parseFloat(el.dataset.ef), precio_lista:parseFloat(el.dataset.lista)});
-  refreshPicker(); renderSelectedSrvs(); updateTotal();
+  const id=parseInt(el.dataset.id);
+  const idx=selectedSrvs.findIndex(s=>s.id===id);
+  if(idx>=0)selectedSrvs.splice(idx,1);
+  else selectedSrvs.push({id,nombre:el.dataset.nombre,precio_ef:parseFloat(el.dataset.ef),precio_lista:parseFloat(el.dataset.lista)});
+  refreshPicker();renderSelectedSrvs();updateTotal();
 }
 
 function refreshPicker() {
-  document.querySelectorAll('.srv-item').forEach(el => el.classList.toggle('selected', selectedSrvs.some(s=>s.id===parseInt(el.dataset.id))));
+  document.querySelectorAll('.srv-item').forEach(el=>el.classList.toggle('selected',selectedSrvs.some(s=>s.id===parseInt(el.dataset.id))));
 }
 
 function removeSrv(id) {
-  selectedSrvs = selectedSrvs.filter(s=>s.id!==id);
-  refreshPicker(); renderSelectedSrvs(); updateTotal();
+  selectedSrvs=selectedSrvs.filter(s=>s.id!==id);
+  refreshPicker();renderSelectedSrvs();updateTotal();
 }
 
 function renderSelectedSrvs() {
-  const cont = document.getElementById('selected-srvs');
-  const isEf = pagoActual==='efectivo';
-  const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
-  const adicionalDescVal = document.getElementById('adicional-desc')?.value||'';
-  const items = [...selectedSrvs];
-  if (adicional>0) items.push({id:'adicional', nombre:adicionalDescVal||'Adicional deco', precio_ef:adicional, precio_lista:adicional, isAdicional:true});
-  if (!items.length) { cont.style.display='none'; return; }
+  const cont=document.getElementById('selected-srvs');
+  const isEf=pagoActual==='efectivo';
+  const adicional=parseFloat(document.getElementById('adicional-monto')?.value)||0;
+  const adicionalDescVal=document.getElementById('adicional-desc')?.value||'';
+  const items=[...selectedSrvs];
+  if(adicional>0)items.push({id:'adicional',nombre:adicionalDescVal||'Adicional deco',precio_ef:adicional,precio_lista:adicional,isAdicional:true});
+  if(!items.length){cont.style.display='none';return;}
   cont.style.display='flex';
-  cont.innerHTML = items.map(s=>
+  cont.innerHTML=items.map(s=>
     '<div class="selected-srv" style="'+(s.isAdicional?'background:#FFFBF0;border:1px solid #F5DFA0':'')+'">'+
     '<span class="selected-srv-name">'+s.nombre+'</span>'+
     '<span class="selected-srv-price">'+fmt(s.isAdicional?s.precio_ef:(isEf?s.precio_ef:s.precio_lista))+'</span>'+
@@ -728,29 +729,27 @@ function renderSelectedSrvs() {
 }
 
 async function registrar() {
-  const chica = document.getElementById('reg-chica').value;
-  const clienta = document.getElementById('reg-clienta').value.trim();
-  const fecha = toISO(document.getElementById('reg-fecha').value||today());
-  const origen = document.getElementById('reg-origen').value;
-  const obs = document.getElementById('reg-obs').value.trim();
-  const sena = parseFloat(document.getElementById('sena-monto').value)||0;
-  const descMonto = parseFloat(document.getElementById('desc-monto').value)||0;
-  const descMotivo = document.getElementById('desc-motivo').value.trim();
-  const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
-  const adicionalDescVal = document.getElementById('adicional-desc')?.value.trim()||'';
-  const mixto = document.getElementById('mixto-check')?.checked||false;
-  const msg = document.getElementById('reg-msg');
-  if (!chica||!clienta||(!selectedSrvs.length&&!adicional)) {
-    msg.className='msg show err'; msg.textContent='Completa profesional, clienta y al menos un servicio.'; return;
-  }
-  const isEf = pagoActual==='efectivo';
-  const srvTotal = selectedSrvs.reduce((s,x)=>s+(isEf?x.precio_ef:x.precio_lista),0);
-  const subtotal = srvTotal + adicional;
-  const base_comision = selectedSrvs.reduce((s,x)=>s+x.precio_ef,0) + adicional;
-  const servicios = selectedSrvs.map(s=>({nombre:s.nombre, precio_ef:s.precio_ef, precio_lista:s.precio_lista}));
-  if (adicional>0) servicios.push({nombre:adicionalDescVal||'Adicional deco', precio_ef:adicional, precio_lista:adicional});
-  let cobrado, pago, pago2=null, monto_pago1=null, monto_pago2=null;
-  if (mixto) {
+  const chica=document.getElementById('reg-chica').value;
+  const clienta=document.getElementById('reg-clienta').value.trim();
+  const fecha=toISO(document.getElementById('reg-fecha').value||today());
+  const origen=document.getElementById('reg-origen').value;
+  const obs=document.getElementById('reg-obs').value.trim();
+  const sena=parseFloat(document.getElementById('sena-monto').value)||0;
+  const descMonto=parseFloat(document.getElementById('desc-monto').value)||0;
+  const descMotivo=document.getElementById('desc-motivo').value.trim();
+  const adicional=parseFloat(document.getElementById('adicional-monto')?.value)||0;
+  const adicionalDescVal=document.getElementById('adicional-desc')?.value.trim()||'';
+  const mixto=document.getElementById('mixto-check')?.checked||false;
+  const msg=document.getElementById('reg-msg');
+  if(!chica||!clienta||(!selectedSrvs.length&&!adicional)){msg.className='msg show err';msg.textContent='Completa profesional, clienta y al menos un servicio.';return;}
+  const isEf=pagoActual==='efectivo';
+  const srvTotal=selectedSrvs.reduce((s,x)=>s+(isEf?x.precio_ef:x.precio_lista),0);
+  const subtotal=srvTotal+adicional;
+  const base_comision=selectedSrvs.reduce((s,x)=>s+x.precio_ef,0)+adicional;
+  const servicios=selectedSrvs.map(s=>({nombre:s.nombre,precio_ef:s.precio_ef,precio_lista:s.precio_lista}));
+  if(adicional>0)servicios.push({nombre:adicionalDescVal||'Adicional deco',precio_ef:adicional,precio_lista:adicional});
+  let cobrado,pago,pago2=null,monto_pago1=null,monto_pago2=null;
+  if(mixto){
     monto_pago1=parseFloat(document.getElementById('pago2-monto1').value)||0;
     monto_pago2=parseFloat(document.getElementById('pago2-monto2').value)||0;
     pago=document.getElementById('pago2-medio1').value;
@@ -758,10 +757,10 @@ async function registrar() {
     cobrado=monto_pago1+monto_pago2;
   } else {
     pago=pagoActual;
-    cobrado=Math.max(0, subtotal - sena - descMonto);
+    cobrado=Math.max(0,subtotal-sena-descMonto);
   }
-  await api('POST','/api/turnos',{chica, clienta, pago, pago2, monto_pago1, monto_pago2, cobrado, base_comision, fecha, origen, obs, sena_monto:sena, descuento_monto:descMonto, descuento_motivo:descMotivo, servicios});
-  selectedSrvs=[]; refreshPicker(); renderSelectedSrvs(); updateTotal();
+  await api('POST','/api/turnos',{chica,clienta,pago,pago2,monto_pago1,monto_pago2,cobrado,base_comision,fecha,origen,obs,sena_monto:sena,descuento_monto:descMonto,descuento_motivo:descMotivo,servicios});
+  selectedSrvs=[];refreshPicker();renderSelectedSrvs();updateTotal();
   ['reg-clienta','reg-obs','sena-monto','desc-monto','desc-motivo','adicional-monto','adicional-desc','pago2-monto1','pago2-monto2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['sena-check','desc-check','mixto-check'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
   ['sena-body','desc-body','mixto-body'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('open');});
@@ -769,20 +768,20 @@ async function registrar() {
   document.querySelectorAll('.pago-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
   msg.className='msg show ok';
   msg.textContent='Turno de '+chica+' registrado - cobrado '+fmt(cobrado)+(sena?' · sena '+fmt(sena):'')+(descMonto?' · desc. '+fmt(descMonto):'');
-  setTimeout(()=>{msg.className='msg'; msg.textContent='';},4000);
+  setTimeout(()=>{msg.className='msg';msg.textContent='';},4000);
 }
 
 async function renderTurnos() {
-  const range = getRange(periodos.turnos, 'turnos');
-  const [res,turnos] = await Promise.all([api('GET','/api/resumen?'+new URLSearchParams(range)), api('GET','/api/turnos?'+new URLSearchParams(range))]);
+  const range=getRange(periodos.turnos,'turnos');
+  const [res,turnos]=await Promise.all([api('GET','/api/resumen?'+new URLSearchParams(range)),api('GET','/api/turnos?'+new URLSearchParams(range))]);
   document.getElementById('met-turnos').innerHTML=
     '<div class="metric"><div class="metric-label">Turnos</div><div class="metric-value">'+res.turnos+'</div></div>'+
     '<div class="metric"><div class="metric-label">Total cobrado</div><div class="metric-value mv-purple">'+fmt(res.cobrado)+'</div></div>'+
     '<div class="metric"><div class="metric-label">Efectivo</div><div class="metric-value mv-teal">'+fmt(res.efectivo)+'</div></div>'+
     '<div class="metric"><div class="metric-label">Digital</div><div class="metric-value mv-amber">'+fmt((res.transferencia||0)+(res.qr||0)+(res.debito||0)+(res.credito||0)+(res.openpay||0))+'</div></div>';
-  const lista = document.getElementById('lista-turnos');
-  if (!turnos.length) { lista.innerHTML='<div class="empty">No hay turnos en este periodo</div>'; return; }
-  lista.innerHTML = turnos.map(t=>
+  const lista=document.getElementById('lista-turnos');
+  if(!turnos.length){lista.innerHTML='<div class="empty">No hay turnos en este periodo</div>';return;}
+  lista.innerHTML=turnos.map(t=>
     '<div class="turno-card">'+
     '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px">'+
     '<div style="display:flex;align-items:center;gap:8px;flex:1">'+
@@ -800,92 +799,147 @@ async function renderTurnos() {
     '</div>').join('');
 }
 
-async function delTurno(id) { if (!confirm('Eliminar este turno?')) return; await api('DELETE','/api/turnos/'+id); renderTurnos(); }
+async function delTurno(id){if(!confirm('Eliminar este turno?'))return;await api('DELETE','/api/turnos/'+id);renderTurnos();}
+
+function exportTurnosMes() {
+  const range=getRange(periodos.turnos,'turnos');
+  let periodo='periodo';
+  if(periodos.turnos==='mesElegido'){
+    const mn=parseInt(document.getElementById('turnos-mes-num')?.value||new Date().getMonth()+1);
+    const ay=parseInt(document.getElementById('turnos-mes-anio')?.value||new Date().getFullYear());
+    periodo=MESES[mn]+'_'+ay;
+  } else if(periodos.turnos==='mes'){periodo=MESES[new Date().getMonth()+1]+'_'+new Date().getFullYear();}
+  else if(periodos.turnos==='hoy'){periodo='hoy';}
+  else if(periodos.turnos==='semana'){periodo='semana';}
+  else{periodo='todos';}
+  api('GET','/api/turnos?'+new URLSearchParams(range)).then(turnos=>{
+    if(!turnos.length){alert('No hay turnos en este periodo');return;}
+    const rows=[['Fecha','Clienta','Empleada','Servicio','Cobrado','Medio de pago','Sena','Descuento']];
+    turnos.forEach(t=>{
+      const srvs=(t.servicios||[]).map(s=>s.servicio||s.nombre).join(' + ');
+      const pago=t.pago2?(PAGO_LABEL[t.pago]||t.pago)+' $'+(t.monto_pago1||0)+' + '+(PAGO_LABEL[t.pago2]||t.pago2)+' $'+(t.monto_pago2||0):(PAGO_LABEL[t.pago]||t.pago);
+      rows.push([fromISO(t.fecha),t.clienta,t.chica,'"'+srvs+'"',t.cobrado,pago,t.sena_monto||0,t.descuento_monto||0]);
+    });
+    const totalCobrado=turnos.reduce((s,t)=>s+t.cobrado,0);
+    rows.push(['TOTAL','','','',totalCobrado,'','','']);
+    const csv='\uFEFF'+rows.map(r=>r.join(',')).join('\n');
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    const a=document.createElement('a');a.href=url;a.download='turnos_'+periodo+'.csv';a.click();URL.revokeObjectURL(url);
+  });
+}
 
 async function renderCom() {
-  const range = getRange(periodos.com, 'com');
-  const [res, turnos] = await Promise.all([
+  const range=getRange(periodos.com,'com');
+  const [res,turnos]=await Promise.all([
     api('GET','/api/resumen?'+new URLSearchParams(range)),
     api('GET','/api/turnos?'+new URLSearchParams(range))
   ]);
-  comTurnosCache = turnos;
-  const lista = document.getElementById('lista-com');
-  if (!res.porChica?.length) { lista.innerHTML='<div class="empty" style="padding:2rem">No hay turnos en este periodo</div>'; return; }
-  let tituloPeriodo = '';
-  if (periodos.com==='mesElegido') {
+  comTurnosCache=turnos;
+  const lista=document.getElementById('lista-com');
+  if(!res.porChica?.length){lista.innerHTML='<div class="empty" style="padding:2rem">No hay turnos en este periodo</div>';return;}
+  let tituloPeriodo='';
+  if(periodos.com==='mesElegido'){
     const mn=parseInt(document.getElementById('com-mes-num')?.value||new Date().getMonth()+1);
     const ay=parseInt(document.getElementById('com-mes-anio')?.value||new Date().getFullYear());
     tituloPeriodo=MESES[mn]+' '+ay;
-  } else if (periodos.com==='mes') { tituloPeriodo=MESES[new Date().getMonth()+1]+' '+new Date().getFullYear(); }
-  else if (periodos.com==='hoy') { tituloPeriodo='Hoy'; }
-  else if (periodos.com==='semana') { tituloPeriodo='Esta semana'; }
-  else { tituloPeriodo='Todos los turnos'; }
-  lista.innerHTML =
+  } else if(periodos.com==='mes'){tituloPeriodo=MESES[new Date().getMonth()+1]+' '+new Date().getFullYear();}
+  else if(periodos.com==='hoy'){tituloPeriodo='Hoy';}
+  else if(periodos.com==='semana'){tituloPeriodo='Esta semana';}
+  else{tituloPeriodo='Todos los turnos';}
+  lista.innerHTML=
     '<div style="font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;padding:12px 0 8px">'+tituloPeriodo+'</div>'+
     res.porChica.map(c=>{
-      const abierto = comExpandida===c.chica;
-      return '<div class="chica-com-row" style="flex-direction:column;align-items:stretch;border-bottom:'+(abierto?'none':'1px solid var(--gray-border)')+'">' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:10px 0" onclick="toggleComChica(\''+c.chica.replace(/'/g,"\\'")+'\')">' +
-      '<div style="display:flex;align-items:center;gap:10px">' +
-      '<div class="avatar" style="width:36px;height:36px;font-size:13px">'+c.chica.substring(0,2).toUpperCase()+'</div>' +
-      '<div><div style="font-weight:600;font-size:14px">'+c.chica+'</div>' +
-      '<div style="font-size:12px;color:var(--text-2)">'+c.turnos+' turno'+(c.turnos!==1?'s':'')+' · cobrado '+fmt(c.cobrado)+'</div></div></div>' +
-      '<div style="display:flex;align-items:center;gap:8px">' +
-      '<div style="text-align:right"><div style="font-size:20px;font-weight:700;color:var(--purple)">'+fmt(c.comision)+'</div><div style="font-size:11px;color:var(--text-2)">a pagar</div></div>' +
-      '<i class="ti '+(abierto?'ti-chevron-up':'ti-chevron-down')+'" style="font-size:16px;color:var(--text-3)"></i>' +
-      '</div></div>' +
-      (abierto ? renderComDetalle(c.chica) : '') +
+      const abierto=comExpandida===c.chica;
+      return '<div class="chica-com-row" style="flex-direction:column;align-items:stretch;border-bottom:'+(abierto?'none':'1px solid var(--gray-border)')+'">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;gap:8px">'+
+      '<div style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer" onclick="toggleComChica(\''+c.chica.replace(/'/g,"\\'")+'\')">'+
+      '<div class="avatar" style="width:36px;height:36px;font-size:13px">'+c.chica.substring(0,2).toUpperCase()+'</div>'+
+      '<div><div style="font-weight:600;font-size:14px">'+c.chica+'</div>'+
+      '<div style="font-size:12px;color:var(--text-2)">'+c.turnos+' turno'+(c.turnos!==1?'s':'')+' · cobrado '+fmt(c.cobrado)+'</div></div></div>'+
+      '<div style="display:flex;align-items:center;gap:8px">'+
+      '<button class="btn-teal-sm" onclick="exportComChica(\''+c.chica.replace(/'/g,"\\'")+'\',\''+tituloPeriodo+'\')" style="font-size:11px;padding:4px 8px"><i class="ti ti-download" style="font-size:12px"></i> CSV</button>'+
+      '<div style="text-align:right;cursor:pointer" onclick="toggleComChica(\''+c.chica.replace(/'/g,"\\'")+'\')">'+
+      '<div style="font-size:20px;font-weight:700;color:var(--purple)">'+fmt(c.comision)+'</div>'+
+      '<div style="font-size:11px;color:var(--text-2)">a pagar</div></div>'+
+      '<i class="ti '+(abierto?'ti-chevron-up':'ti-chevron-down')+'" style="font-size:16px;color:var(--text-3);cursor:pointer" onclick="toggleComChica(\''+c.chica.replace(/'/g,"\\'")+'\')"></i>'+
+      '</div></div>'+
+      (abierto?renderComDetalle(c.chica):'')+
       '</div>';
-    }).join('') +
+    }).join('')+
     '<div class="total-com-row"><span>Total a pagar</span><span style="font-size:18px;color:var(--purple)">'+fmt(res.comisiones)+'</span></div>';
 }
 
 function toggleComChica(chica) {
-  comExpandida = comExpandida===chica ? null : chica;
+  comExpandida=comExpandida===chica?null:chica;
   renderCom();
 }
 
 function renderComDetalle(chica) {
-  const turnosChica = comTurnosCache.filter(t=>t.chica===chica).sort((a,b)=>a.fecha.localeCompare(b.fecha));
-  if (!turnosChica.length) return '<div class="empty" style="padding:12px">Sin turnos</div>';
-  const porDia = {};
-  turnosChica.forEach(t => {
-    if (!porDia[t.fecha]) porDia[t.fecha]={items:[],totalDia:0};
-    (t.servicios||[]).forEach(s => {
-      const com = Math.round((s.precio_ef||0)*COM);
-      porDia[t.fecha].items.push({nombre:s.servicio||s.nombre, com});
-      porDia[t.fecha].totalDia += com;
+  const turnosChica=comTurnosCache.filter(t=>t.chica===chica).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  if(!turnosChica.length) return '<div class="empty" style="padding:12px">Sin turnos</div>';
+  const porDia={};
+  turnosChica.forEach(t=>{
+    if(!porDia[t.fecha])porDia[t.fecha]={items:[],totalDia:0};
+    (t.servicios||[]).forEach(s=>{
+      const com=Math.round((s.precio_ef||0)*COM);
+      porDia[t.fecha].items.push({nombre:s.servicio||s.nombre,clienta:t.clienta,precio_ef:s.precio_ef||0,com});
+      porDia[t.fecha].totalDia+=com;
     });
   });
-  const fechas = Object.keys(porDia).sort();
-  const totalGeneral = turnosChica.reduce((s,t)=>s+Math.round(t.base_comision*COM),0);
-  return '<div style="background:var(--purple-light);border-radius:var(--r);padding:12px;margin-bottom:10px">' +
+  const fechas=Object.keys(porDia).sort();
+  const totalGeneral=turnosChica.reduce((s,t)=>s+Math.round(t.base_comision*COM),0);
+  return '<div style="background:var(--purple-light);border-radius:var(--r);padding:12px;margin-bottom:10px">'+
     fechas.map(f=>
-      '<div style="margin-bottom:12px">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
-      '<span style="font-size:12px;font-weight:700;color:var(--purple-dark)">'+fromISO(f)+'</span>' +
-      '<span style="font-size:11px;color:var(--purple-dark);background:rgba(83,74,183,.15);padding:2px 8px;border-radius:20px">'+fmt(porDia[f].totalDia)+'</span>' +
-      '</div>' +
+      '<div style="margin-bottom:12px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+      '<span style="font-size:12px;font-weight:700;color:var(--purple-dark)">'+fromISO(f)+'</span>'+
+      '<span style="font-size:11px;color:var(--purple-dark);background:rgba(83,74,183,.15);padding:2px 8px;border-radius:20px">'+fmt(porDia[f].totalDia)+'</span>'+
+      '</div>'+
       porDia[f].items.map(s=>
-        '<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0 3px 8px;border-left:2px solid var(--purple-mid)">' +
-        '<span>'+s.nombre+'</span><span style="font-weight:600;color:var(--purple)">'+fmt(s.com)+'</span></div>').join('') +
-      '</div>').join('') +
-    '<div style="border-top:1px solid var(--purple-mid);padding-top:8px;display:flex;justify-content:space-between;font-weight:700;font-size:14px">' +
-    '<span style="color:var(--purple-dark)">Total del periodo</span>' +
-    '<span style="color:var(--purple)">'+fmt(totalGeneral)+'</span></div>' +
+        '<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0 3px 8px;border-left:2px solid var(--purple-mid);gap:6px">'+
+        '<span style="color:var(--text-2);font-size:11px;min-width:80px">'+s.clienta+'</span>'+
+        '<span style="color:var(--text);flex:1;margin-left:6px">'+s.nombre+'</span>'+
+        '<span style="font-size:12px;color:var(--text-2);white-space:nowrap">'+fmt(s.precio_ef)+'</span>'+
+        '<span style="font-weight:600;color:var(--purple);white-space:nowrap;margin-left:6px">'+fmt(s.com)+'</span></div>').join('')+
+      '</div>').join('')+
+    '<div style="border-top:1px solid var(--purple-mid);padding-top:8px;display:flex;justify-content:space-between;font-weight:700;font-size:14px">'+
+    '<span style="color:var(--purple-dark)">Total del periodo</span>'+
+    '<span style="color:var(--purple)">'+fmt(totalGeneral)+'</span></div>'+
     '</div>';
 }
 
+function exportComChica(chica, periodo) {
+  const turnosChica=comTurnosCache.filter(t=>t.chica===chica).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+  if(!turnosChica.length){alert('No hay turnos para exportar');return;}
+  const rows=[['Fecha','Clienta','Servicio','Precio efectivo','Comision 37%']];
+  let totalPrecio=0,totalCom=0;
+  turnosChica.forEach(t=>{
+    (t.servicios||[]).forEach(s=>{
+      const pef=s.precio_ef||0;
+      const com=Math.round(pef*COM);
+      totalPrecio+=pef;totalCom+=com;
+      rows.push([fromISO(t.fecha),t.clienta,'"'+(s.servicio||s.nombre)+'"',pef,com]);
+    });
+  });
+  rows.push(['TOTAL','','',totalPrecio,totalCom]);
+  const csv='\uFEFF'+rows.map(r=>r.join(',')).join('\n');
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='comisiones_'+chica.replace(/ /g,'_')+'_'+(periodo||'').replace(/ /g,'_')+'.csv';
+  a.click();URL.revokeObjectURL(url);
+}
+
 async function initLiquidaciones() {
-  const chicas = await api('GET','/api/chicas');
-  ['adel-chica','liq-chica'].forEach(id => {
-    const el=document.getElementById(id); const v=el.value;
+  const chicas=await api('GET','/api/chicas');
+  ['adel-chica','liq-chica'].forEach(id=>{
+    const el=document.getElementById(id);const v=el.value;
     el.innerHTML='<option value="">Seleccionar...</option>'+chicas.map(c=>'<option>'+c.nombre+'</option>').join('');
-    if(v) el.value=v;
+    if(v)el.value=v;
   });
   const af=document.getElementById('adel-filtro');
-  if(af) af.innerHTML='<option value="">Todas</option>'+chicas.map(c=>'<option>'+c.nombre+'</option>').join('');
-  renderHistorialLiquidaciones(); renderAdelantos();
+  if(af)af.innerHTML='<option value="">Todas</option>'+chicas.map(c=>'<option>'+c.nombre+'</option>').join('');
+  renderHistorialLiquidaciones();renderAdelantos();
 }
 
 async function registrarAdelanto() {
@@ -894,20 +948,20 @@ async function registrarAdelanto() {
   const obs=document.getElementById('adel-obs').value.trim();
   const msg=document.getElementById('adel-msg');
   if(!chica||!monto){msg.className='msg show err';msg.textContent='Completa profesional y monto.';return;}
-  const d=new Date(); const pad=n=>n.toString().padStart(2,'0');
+  const d=new Date();const pad=n=>n.toString().padStart(2,'0');
   const fecha=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   await api('POST','/api/adelantos',{chica,monto,fecha,obs});
-  document.getElementById('adel-monto').value=''; document.getElementById('adel-obs').value='';
-  msg.className='msg show ok'; msg.textContent='Adelanto de '+fmt(monto)+' registrado para '+chica;
+  document.getElementById('adel-monto').value='';document.getElementById('adel-obs').value='';
+  msg.className='msg show ok';msg.textContent='Adelanto de '+fmt(monto)+' registrado para '+chica;
   setTimeout(()=>{msg.className='msg';},3000);
-  renderAdelantos(); calcularLiquidacion();
+  renderAdelantos();calcularLiquidacion();
 }
 
 async function calcularLiquidacion() {
   const chica=document.getElementById('liq-chica').value;
   const mes=parseInt(document.getElementById('liq-mes').value);
   if(!chica||!mes){document.getElementById('liq-preview').style.display='none';return;}
-  const d=new Date(); const anio=d.getFullYear(); const pad=n=>n.toString().padStart(2,'0');
+  const d=new Date();const anio=d.getFullYear();const pad=n=>n.toString().padStart(2,'0');
   const desde=anio+'-'+pad(mes)+'-01';
   const hasta=anio+'-'+pad(mes)+'-'+new Date(anio,mes,0).getDate();
   const [res,adelantos]=await Promise.all([
@@ -933,13 +987,13 @@ async function calcularLiquidacion() {
 }
 
 async function guardarLiquidacion() {
-  if(!liqData) return;
+  if(!liqData)return;
   await api('POST','/api/liquidaciones',liqData);
   const msg=document.getElementById('liq-msg');
-  msg.className='msg show ok'; msg.textContent='Liquidacion de '+liqData.chica+' ('+MESES[liqData.mes]+') guardada · '+fmt(liqData.total)+' a pagar';
+  msg.className='msg show ok';msg.textContent='Liquidacion de '+liqData.chica+' ('+MESES[liqData.mes]+') guardada · '+fmt(liqData.total)+' a pagar';
   setTimeout(()=>{msg.className='msg';},4000);
   document.getElementById('liq-preview').style.display='none';
-  liqData=null; renderHistorialLiquidaciones(); renderAdelantos();
+  liqData=null;renderHistorialLiquidaciones();renderAdelantos();
 }
 
 async function renderHistorialLiquidaciones() {
@@ -993,9 +1047,9 @@ async function registrarGasto() {
   const msg=document.getElementById('gasto-msg');
   if(!monto){msg.className='msg show err';msg.textContent='Ingresa el monto del gasto.';return;}
   await api('POST','/api/gastos',{categoria,monto,descripcion,fecha});
-  document.getElementById('gasto-monto').value=''; document.getElementById('gasto-desc').value=''; document.getElementById('gasto-fecha').value=today();
-  msg.className='msg show ok'; msg.textContent='Gasto de '+fmt(monto)+' registrado ('+categoria+')';
-  setTimeout(()=>{msg.className='msg';},3000); renderGastos();
+  document.getElementById('gasto-monto').value='';document.getElementById('gasto-desc').value='';document.getElementById('gasto-fecha').value=today();
+  msg.className='msg show ok';msg.textContent='Gasto de '+fmt(monto)+' registrado ('+categoria+')';
+  setTimeout(()=>{msg.className='msg';},3000);renderGastos();
 }
 
 async function renderGastos() {
@@ -1062,24 +1116,24 @@ function renderCalendario() {
   const offsetLunes=primerDia===0?6:primerDia-1;
   const diasEnMes=new Date(calYear,calMonth+1,0).getDate();
   let html='';
-  for(let i=0;i<offsetLunes;i++) html+='<div class="cal-empty"></div>';
+  for(let i=0;i<offsetLunes;i++)html+='<div class="cal-empty"></div>';
   for(let d=1;d<=diasEnMes;d++){
     const isoFecha=calYear+'-'+pad(calMonth+1)+'-'+pad(d);
     const tieneData=!!porDia[isoFecha]?.length;
     const esHoy=isoFecha===hoyISO;
     const esSeleccionado=isoFecha===calDiaSeleccionado;
     let cls='cal-day';
-    if(esSeleccionado) cls+=' selected';
-    else if(tieneData) cls+=' has-data';
-    if(esHoy&&!esSeleccionado) cls+=' today';
-    html+='<div class="'+cls+'" onclick="seleccionarDia(\''+isoFecha+'\')"><span>'+d+'</span>'+(tieneData?'<div class="cal-dot"></div>':'')+'</div>';
+    if(esSeleccionado)cls+=' selected';
+    else if(tieneData)cls+=' has-data';
+    if(esHoy&&!esSeleccionado)cls+=' today';
+    html+='<div class="'+cls+'" onclick="seleccionarDia(\''+isoFecha+'\')"><span>'+d+'</span>'+(tieneData?'<div class="cal-dot"></div>':'')+' </div>';
   }
   document.getElementById('cal-grid').innerHTML=html;
 }
 
 function seleccionarDia(fecha) {
   if(calDiaSeleccionado===fecha){calDiaSeleccionado=null;renderCalendario();document.getElementById('caja-dia-detalle').style.display='none';return;}
-  calDiaSeleccionado=fecha; renderCalendario(); mostrarDetalleDia(fecha);
+  calDiaSeleccionado=fecha;renderCalendario();mostrarDetalleDia(fecha);
 }
 
 function mostrarDetalleDia(fecha) {
@@ -1195,7 +1249,7 @@ async function saveInsumo(id) {
   const proveedor=document.getElementById('insumo-prov-'+id).value;
   const precio_unitario=parseFloat(document.getElementById('insumo-val-'+id).value)||0;
   await api('PUT','/api/insumos/'+id,{nombre,proveedor,precio_unitario});
-  document.getElementById('insumo-edit-'+id).classList.remove('open'); renderInsumos();
+  document.getElementById('insumo-edit-'+id).classList.remove('open');renderInsumos();
 }
 
 async function delInsumo(id){if(!confirm('Eliminar?'))return;await api('DELETE','/api/insumos/'+id);renderInsumos();}
@@ -1205,7 +1259,7 @@ async function addInsumo() {
   const nombre=document.getElementById('ins-nom').value.trim();
   const proveedor=document.getElementById('ins-prov').value.trim();
   const precio_unitario=parseFloat(document.getElementById('ins-precio').value)||0;
-  if(!nombre) return;
+  if(!nombre)return;
   await api('POST','/api/insumos',{categoria,nombre,proveedor,precio_unitario});
   ['ins-nom','ins-prov','ins-precio'].forEach(id=>document.getElementById(id).value='');
   renderInsumos();
@@ -1215,7 +1269,7 @@ async function saveServicioCosto(id) {
   const costo_insumos=parseFloat(document.getElementById('scosto-val-'+id).value)||0;
   const srv=serviciosCache.find(s=>s.id===id);
   await api('PUT','/api/servicios/'+id,{precio_ef:srv?.precio_ef||0,precio_lista:srv?.precio_lista||0,costo_insumos});
-  document.getElementById('scosto-edit-'+id).classList.remove('open'); renderInsumos();
+  document.getElementById('scosto-edit-'+id).classList.remove('open');renderInsumos();
 }
 
 async function renderDepi() {
@@ -1231,7 +1285,7 @@ async function renderDepi() {
       '<div class="field"><label>Observacion (opcional)</label><input type="text" id="dj-obs" placeholder="Ej: jornada especial..."></div>'+
       '<button class="btn-teal" onclick="crearJornada()"><i class="ti ti-bolt"></i> Abrir jornada</button>'+
       '<div class="msg" id="dj-msg"></div></div>';
-  } else { await renderJornadaActiva(); }
+  } else {await renderJornadaActiva();}
   renderHistorialDepi(jornadas);
 }
 
@@ -1321,10 +1375,10 @@ async function renderJornadaActiva() {
 function toggleDepiSrv(el) {
   const id=parseInt(el.dataset.id);
   const idx=depiSelectedSrvs.findIndex(s=>s.id===id);
-  if(idx>=0) depiSelectedSrvs.splice(idx,1);
+  if(idx>=0)depiSelectedSrvs.splice(idx,1);
   else depiSelectedSrvs.push({id,nombre:el.dataset.nombre,precio_ef:parseFloat(el.dataset.ef),precio_lista:parseFloat(el.dataset.lista)});
   el.classList.toggle('selected',depiSelectedSrvs.some(s=>s.id===id));
-  renderDepiSelectedSrvs(); updateDepiPreview();
+  renderDepiSelectedSrvs();updateDepiPreview();
 }
 
 function renderDepiSelectedSrvs() {
@@ -1342,14 +1396,14 @@ function renderDepiSelectedSrvs() {
 function removeDepiSrv(id) {
   depiSelectedSrvs=depiSelectedSrvs.filter(s=>s.id!==id);
   document.querySelectorAll('.depi-srv-item').forEach(el=>{if(parseInt(el.dataset.id)===id)el.classList.remove('selected');});
-  renderDepiSelectedSrvs(); updateDepiPreview();
+  renderDepiSelectedSrvs();updateDepiPreview();
 }
 
 function selectDepiPago(p) {
   depiPagoActual=p;
   document.getElementById('dpago-ef').classList.toggle('active',p==='efectivo');
   document.getElementById('dpago-tr').classList.toggle('active',p==='transferencia');
-  renderDepiSelectedSrvs(); updateDepiPreview();
+  renderDepiSelectedSrvs();updateDepiPreview();
 }
 
 function updateDepiPreview() {
@@ -1367,7 +1421,7 @@ function updateDepiPreview() {
 function updateCostoOp() {
   const horas=parseFloat(document.getElementById('cj-horas')?.value)||0;
   const tarifa=parseFloat(document.getElementById('cj-tarifa')?.value)||7000;
-  const el=document.getElementById('cj-total-op'); if(el) el.value=fmt(horas*tarifa);
+  const el=document.getElementById('cj-total-op');if(el)el.value=fmt(horas*tarifa);
 }
 
 async function registrarTurnoDepi(jornada_id) {
@@ -1381,7 +1435,7 @@ async function registrarTurnoDepi(jornada_id) {
   const precio_ef=depiSelectedSrvs.reduce((s,x)=>s+x.precio_ef,0);
   const precio_lista=depiSelectedSrvs.reduce((s,x)=>s+x.precio_lista,0);
   const servicio=depiSelectedSrvs.length===1?depiSelectedSrvs[0].nombre:depiSelectedSrvs.map(s=>s.nombre).join(' + ');
-  const d=new Date(); const pad=n=>n.toString().padStart(2,'0');
+  const d=new Date();const pad=n=>n.toString().padStart(2,'0');
   const fecha=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
   await api('POST','/api/depi-turnos',{clienta,servicio,precio_ef,precio_lista,pago:depiPagoActual,sena,sena_fecha,fecha,obs,jornada_id});
   document.getElementById('dt-clienta').value='';
@@ -1392,7 +1446,7 @@ async function registrarTurnoDepi(jornada_id) {
   document.querySelectorAll('.depi-srv-item').forEach(el=>el.classList.remove('selected'));
   document.getElementById('depi-selected-srvs').style.display='none';
   document.getElementById('depi-preview').style.display='none';
-  msg.className='msg show ok'; msg.textContent='Turno de '+clienta+' registrado';
+  msg.className='msg show ok';msg.textContent='Turno de '+clienta+' registrado';
   setTimeout(()=>{msg.className='msg';},3000);
   renderDepi();
 }
@@ -1407,7 +1461,7 @@ async function cerrarJornada(id) {
   const viaticos=parseFloat(document.getElementById('cj-viaticos').value)||0;
   const comida=parseFloat(document.getElementById('cj-comida').value)||0;
   await api('PUT','/api/depi-jornadas/'+id,{abierta:false,alquiler_maquina,horas_operadora,tarifa_operadora,viaticos,comida});
-  depiSelectedSrvs=[]; renderDepi();
+  depiSelectedSrvs=[];renderDepi();
 }
 
 function renderHistorialDepi(jornadas) {
@@ -1447,7 +1501,7 @@ async function verResumenHistorial(id) {
 async function delJornada(id) {
   if(!confirm('Eliminar esta jornada y todos sus turnos?'))return;
   const turnos=await api('GET','/api/depi-turnos?jornada_id='+id);
-  for(const t of turnos) await api('DELETE','/api/depi-turnos/'+t.id);
+  for(const t of turnos)await api('DELETE','/api/depi-turnos/'+t.id);
   await api('DELETE','/api/depi-jornadas/'+id);
   renderDepi();
 }
@@ -1486,7 +1540,7 @@ async function saveEdit(id) {
   const costo=serviciosCache.find(s=>s.id===id)?.costo_insumos||0;
   await api('PUT','/api/servicios/'+id,{precio_ef:ef,precio_lista:lista,costo_insumos:costo});
   document.getElementById('precio-lbl-'+id).textContent='Ef: '+fmt(ef)+' / Lista: '+fmt(lista);
-  document.getElementById('edit-row-'+id).classList.remove('open'); loadSelects();
+  document.getElementById('edit-row-'+id).classList.remove('open');loadSelects();
 }
 
 async function addChica(){const v=document.getElementById('inp-chica').value.trim();if(!v)return;await api('POST','/api/chicas',{nombre:v});document.getElementById('inp-chica').value='';renderConfig();}
@@ -1497,10 +1551,10 @@ async function addServicio() {
   const n=document.getElementById('inp-srv-nom').value.trim();
   const ef=parseFloat(document.getElementById('inp-srv-ef').value)||0;
   const lista=parseFloat(document.getElementById('inp-srv-lista').value)||ef;
-  if(!n) return;
+  if(!n)return;
   await api('POST','/api/servicios',{categoria:cat,nombre:n,precio_ef:ef,precio_lista:lista,costo_insumos:0});
   ['inp-srv-cat','inp-srv-nom','inp-srv-ef','inp-srv-lista'].forEach(id=>document.getElementById(id).value='');
-  renderConfig(); loadSelects();
+  renderConfig();loadSelects();
 }
 
 async function delServicio(id){if(!confirm('Eliminar?'))return;await api('DELETE','/api/servicios/'+id);renderConfig();loadSelects();}
@@ -1514,7 +1568,7 @@ async function exportCSV() {
   });
   const csv='\uFEFF'+rows.map(r=>r.join(',')).join('\n');
   const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  const a=document.createElement('a'); a.href=url; a.download='zelva_beauty.csv'; a.click(); URL.revokeObjectURL(url);
+  const a=document.createElement('a');a.href=url;a.download='zelva_beauty_completo.csv';a.click();URL.revokeObjectURL(url);
 }
 
 loadSelects();
