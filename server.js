@@ -20,64 +20,74 @@ const defaultData = {
     {id:8,nombre:'Noe'},{id:9,nombre:'Sabri'}
   ],
   servicios: [
-    {id:1,categoria:'Manos',nombre:'Manicura sin esmaltar',precio_ef:18000,precio_lista:21600,costo_insumos:977},
-    {id:2,categoria:'Manos',nombre:'Esmaltado tradicional',precio_ef:20000,precio_lista:24000,costo_insumos:1163},
-    {id:3,categoria:'Manos',nombre:'Esmaltado semipermanente',precio_ef:27000,precio_lista:32400,costo_insumos:1905},
-    {id:4,categoria:'Manos',nombre:'Nivelacion en gel',precio_ef:35000,precio_lista:42000,costo_insumos:3277},
-    {id:5,categoria:'Manos',nombre:'Capping dipping',precio_ef:30000,precio_lista:36000,costo_insumos:3268},
-    {id:6,categoria:'Manos',nombre:'Capping en perla',precio_ef:39000,precio_lista:46800,costo_insumos:2444},
-    {id:7,categoria:'Manos',nombre:'Capping en polygel',precio_ef:38000,precio_lista:45600,costo_insumos:2444},
-    {id:8,categoria:'Manos',nombre:'Esculpidas en poly',precio_ef:42000,precio_lista:50400,costo_insumos:2858},
-    {id:9,categoria:'Manos',nombre:'Esculpidas acrilicas',precio_ef:44000,precio_lista:52800,costo_insumos:6887},
-    {id:10,categoria:'Manos',nombre:'Soft gel',precio_ef:37000,precio_lista:44400,costo_insumos:1911},
-    {id:11,categoria:'Manos',nombre:'Service esculpidas en poly',precio_ef:40000,precio_lista:48000,costo_insumos:755},
-    {id:58,categoria:'Manos',nombre:'Service esculpidas acrilico',precio_ef:42000,precio_lista:50400,costo_insumos:755},
+    // MANOS
+    {id:1,categoria:'Manos',nombre:'Manicura sin esmaltar',precio_ef:19000,precio_lista:22800,costo_insumos:977},
+    {id:2,categoria:'Manos',nombre:'Esmaltado tradicional',precio_ef:22000,precio_lista:26400,costo_insumos:1163},
+    {id:3,categoria:'Manos',nombre:'Esmaltado semipermanente',precio_ef:30000,precio_lista:36000,costo_insumos:1905},
+    {id:4,categoria:'Manos',nombre:'Nivelacion en gel',precio_ef:40000,precio_lista:48000,costo_insumos:3277},
+    {id:5,categoria:'Manos',nombre:'Capping dipping',precio_ef:33000,precio_lista:39600,costo_insumos:3268},
+    {id:6,categoria:'Manos',nombre:'Capping en perla',precio_ef:43000,precio_lista:51600,costo_insumos:2444},
+    {id:7,categoria:'Manos',nombre:'Capping en polygel',precio_ef:42000,precio_lista:50400,costo_insumos:2444},
+    {id:8,categoria:'Manos',nombre:'Esculpidas en poly',precio_ef:49000,precio_lista:58800,costo_insumos:2858},
+    {id:9,categoria:'Manos',nombre:'Esculpidas acrilicas',precio_ef:52000,precio_lista:62400,costo_insumos:6887},
+    {id:10,categoria:'Manos',nombre:'Soft gel',precio_ef:42000,precio_lista:50400,costo_insumos:1911},
+    {id:11,categoria:'Manos',nombre:'Service esculpidas en poly',precio_ef:44000,precio_lista:52800,costo_insumos:755},
+    {id:58,categoria:'Manos',nombre:'Service esculpidas acrilico',precio_ef:47000,precio_lista:56400,costo_insumos:755},
     {id:12,categoria:'Manos',nombre:'Service esculpida x uña',precio_ef:4500,precio_lista:5400,costo_insumos:0},
     {id:13,categoria:'Manos',nombre:'Service capping x uña',precio_ef:4000,precio_lista:4800,costo_insumos:0},
-    {id:14,categoria:'Manos',nombre:'Cambio de esmalte',precio_ef:20000,precio_lista:24000,costo_insumos:1163},
+    {id:14,categoria:'Manos',nombre:'Cambio de esmalte',precio_ef:22000,precio_lista:26400,costo_insumos:1163},
     {id:15,categoria:'Manos',nombre:'Manicura para niñas',precio_ef:15000,precio_lista:18000,costo_insumos:977},
-    {id:16,categoria:'Manos',nombre:'Manicura para hombres',precio_ef:22000,precio_lista:26400,costo_insumos:977},
-    {id:17,categoria:'Pies',nombre:'Belleza de pies sin esmaltar',precio_ef:23000,precio_lista:27600,costo_insumos:1242},
-    {id:18,categoria:'Pies',nombre:'Belleza con esmalte tradicional',precio_ef:25000,precio_lista:30000,costo_insumos:2549},
-    {id:19,categoria:'Pies',nombre:'Belleza con esmalte semipermanente',precio_ef:29000,precio_lista:34800,costo_insumos:2881},
-    {id:20,categoria:'Pies',nombre:'Pedicuria sin esmaltar',precio_ef:28000,precio_lista:33600,costo_insumos:1896},
-    {id:21,categoria:'Pies',nombre:'Pedicuria con esmalte tradicional',precio_ef:34000,precio_lista:40800,costo_insumos:3085},
-    {id:22,categoria:'Pies',nombre:'Pedicuria con esmalte semipermanente',precio_ef:38000,precio_lista:45600,costo_insumos:4470},
+    {id:16,categoria:'Manos',nombre:'Manicura para hombres',precio_ef:23000,precio_lista:27600,costo_insumos:977},
+    // PIES
+    {id:17,categoria:'Pies',nombre:'Belleza de pies sin esmaltar',precio_ef:24000,precio_lista:28800,costo_insumos:1242},
+    {id:18,categoria:'Pies',nombre:'Belleza con esmalte tradicional',precio_ef:28000,precio_lista:33600,costo_insumos:2549},
+    {id:19,categoria:'Pies',nombre:'Belleza con esmalte semipermanente',precio_ef:32000,precio_lista:38400,costo_insumos:2881},
+    {id:20,categoria:'Pies',nombre:'Pedicuria sin esmaltar',precio_ef:31000,precio_lista:37200,costo_insumos:1896},
+    {id:21,categoria:'Pies',nombre:'Pedicuria con esmalte tradicional',precio_ef:37000,precio_lista:44400,costo_insumos:3085},
+    {id:22,categoria:'Pies',nombre:'Pedicuria con esmalte semipermanente',precio_ef:42000,precio_lista:50400,costo_insumos:4470},
     {id:23,categoria:'Pies',nombre:'Reconstruccion por uña (pie)',precio_ef:5000,precio_lista:6000,costo_insumos:0},
-    {id:24,categoria:'Retiros',nombre:'Retiro de semipermanente',precio_ef:8000,precio_lista:9600,costo_insumos:742},
-    {id:25,categoria:'Retiros',nombre:'Retiro de capping',precio_ef:10000,precio_lista:12000,costo_insumos:742},
-    {id:26,categoria:'Retiros',nombre:'Retiro de esculpidas',precio_ef:14000,precio_lista:16800,costo_insumos:755},
-    {id:27,categoria:'Retiros',nombre:'Retiro total de semi',precio_ef:10000,precio_lista:12000,costo_insumos:742},
-    {id:28,categoria:'Cejas y Pestañas',nombre:'Lifting de pestañas + botox',precio_ef:32000,precio_lista:38400,costo_insumos:5992},
-    {id:29,categoria:'Cejas y Pestañas',nombre:'Perfilado de cejas',precio_ef:16000,precio_lista:19200,costo_insumos:946},
-    {id:30,categoria:'Cejas y Pestañas',nombre:'Perfilado de cejas + Henna',precio_ef:24000,precio_lista:28800,costo_insumos:1824},
-    {id:31,categoria:'Cejas y Pestañas',nombre:'Laminado de cejas + botox',precio_ef:32000,precio_lista:38400,costo_insumos:5261},
-    {id:32,categoria:'Cejas y Pestañas',nombre:'Tinte de pestañas',precio_ef:5000,precio_lista:6000,costo_insumos:91},
-    {id:33,categoria:'Cejas y Pestañas',nombre:'Retiro de pestañas',precio_ef:10000,precio_lista:12000,costo_insumos:0},
-    {id:34,categoria:'Combos',nombre:'Lifting + Perfilado',precio_ef:43000,precio_lista:51600,costo_insumos:6938},
-    {id:35,categoria:'Combos',nombre:'Laminado + Perfilado',precio_ef:39000,precio_lista:46800,costo_insumos:6207},
-    {id:36,categoria:'Combos',nombre:'Lifting + Laminado',precio_ef:58000,precio_lista:69600,costo_insumos:11253},
-    {id:37,categoria:'Combos',nombre:'Lifting + Laminado + Perfilado',precio_ef:72000,precio_lista:86400,costo_insumos:12199},
-    {id:38,categoria:'Pestañas tecnologicas',nombre:'3D - Volumen light',precio_ef:35000,precio_lista:42000,costo_insumos:9585},
-    {id:39,categoria:'Pestañas tecnologicas',nombre:'4D - Volumen medio',precio_ef:39000,precio_lista:46800,costo_insumos:9585},
-    {id:40,categoria:'Pestañas tecnologicas',nombre:'5D - Mega volumen',precio_ef:44000,precio_lista:52800,costo_insumos:9585},
-    {id:41,categoria:'Pestañas clasicas',nombre:'Clasicas PXP',precio_ef:36000,precio_lista:43200,costo_insumos:6345},
-    {id:42,categoria:'Pestañas clasicas',nombre:'Volumen Brasilero',precio_ef:40000,precio_lista:48000,costo_insumos:6491},
-    {id:43,categoria:'Pestañas clasicas',nombre:'Volumen ruso',precio_ef:45000,precio_lista:54000,costo_insumos:6491},
-    {id:44,categoria:'Service Pestañas clasicas',nombre:'Service Clasicas PXP',precio_ef:32400,precio_lista:38880,costo_insumos:6345},
-    {id:45,categoria:'Service Pestañas clasicas',nombre:'Service Volumen Brasilero',precio_ef:37000,precio_lista:44400,costo_insumos:6491},
-    {id:46,categoria:'Service Pestañas clasicas',nombre:'Service Volumen Ruso',precio_ef:40500,precio_lista:48600,costo_insumos:6491},
-    {id:47,categoria:'Service Pestañas tecnologicas',nombre:'Service 3D - Volumen light',precio_ef:31500,precio_lista:37800,costo_insumos:9585},
-    {id:48,categoria:'Service Pestañas tecnologicas',nombre:'Service 4D - Volumen medio',precio_ef:35100,precio_lista:42120,costo_insumos:9585},
-    {id:49,categoria:'Service Pestañas tecnologicas',nombre:'Service 5D - Mega volumen',precio_ef:39600,precio_lista:47520,costo_insumos:9585},
-    {id:50,categoria:'Cejas y Pestañas',nombre:'Nutricion de pestañas o cejas',precio_ef:20000,precio_lista:24000,costo_insumos:0},
-    {id:51,categoria:'Deco',nombre:'French',precio_ef:4000,precio_lista:4800,costo_insumos:0},
-    {id:52,categoria:'Deco',nombre:'Doble french',precio_ef:6000,precio_lista:7200,costo_insumos:0},
-    {id:53,categoria:'Deco',nombre:'Baby boomer (acrilico)',precio_ef:9000,precio_lista:10800,costo_insumos:0},
-    {id:54,categoria:'Deco',nombre:'Baby boomer (color)',precio_ef:7000,precio_lista:8400,costo_insumos:0},
-    {id:55,categoria:'Deco',nombre:'Full deco / Extra alto',precio_ef:14000,precio_lista:16800,costo_insumos:0},
-    {id:56,categoria:'Deco',nombre:'Cromado',precio_ef:5000,precio_lista:6000,costo_insumos:0},
-    {id:57,categoria:'Deco',nombre:'Ojo de gato',precio_ef:5000,precio_lista:6000,costo_insumos:0},
+    // RETIROS
+    {id:24,categoria:'Retiros',nombre:'Retiro de semipermanente',precio_ef:9000,precio_lista:10800,costo_insumos:742},
+    {id:25,categoria:'Retiros',nombre:'Retiro de capping',precio_ef:11000,precio_lista:13200,costo_insumos:742},
+    {id:26,categoria:'Retiros',nombre:'Retiro de esculpidas',precio_ef:15000,precio_lista:18000,costo_insumos:755},
+    {id:27,categoria:'Retiros',nombre:'Retiro total de semi',precio_ef:11000,precio_lista:13200,costo_insumos:742},
+    // CEJAS Y PESTAÑAS
+    {id:28,categoria:'Cejas y Pestañas',nombre:'Lifting de pestañas + botox',precio_ef:36000,precio_lista:43200,costo_insumos:5992},
+    {id:29,categoria:'Cejas y Pestañas',nombre:'Perfilado de cejas',precio_ef:18000,precio_lista:21600,costo_insumos:946},
+    {id:30,categoria:'Cejas y Pestañas',nombre:'Perfilado de cejas + Henna',precio_ef:27000,precio_lista:32400,costo_insumos:1824},
+    {id:31,categoria:'Cejas y Pestañas',nombre:'Laminado de cejas + botox',precio_ef:36000,precio_lista:43200,costo_insumos:5261},
+    {id:32,categoria:'Cejas y Pestañas',nombre:'Tinte de pestañas',precio_ef:6000,precio_lista:7200,costo_insumos:91},
+    {id:33,categoria:'Cejas y Pestañas',nombre:'Retiro de pestañas',precio_ef:11000,precio_lista:13200,costo_insumos:0},
+    {id:50,categoria:'Cejas y Pestañas',nombre:'Nutricion de pestañas o cejas',precio_ef:25000,precio_lista:30000,costo_insumos:0},
+    // COMBOS
+    {id:34,categoria:'Combos',nombre:'Lifting + Perfilado',precio_ef:48000,precio_lista:57600,costo_insumos:6938},
+    {id:35,categoria:'Combos',nombre:'Laminado + Perfilado',precio_ef:43000,precio_lista:51600,costo_insumos:6207},
+    {id:36,categoria:'Combos',nombre:'Lifting + Laminado',precio_ef:64000,precio_lista:76800,costo_insumos:11253},
+    {id:37,categoria:'Combos',nombre:'Lifting + Laminado + Perfilado',precio_ef:78000,precio_lista:93600,costo_insumos:12199},
+    // PESTAÑAS TECNOLOGICAS
+    {id:38,categoria:'Pestañas tecnologicas',nombre:'3D - Volumen light',precio_ef:40000,precio_lista:48000,costo_insumos:9585},
+    {id:39,categoria:'Pestañas tecnologicas',nombre:'4D - Volumen medio',precio_ef:44000,precio_lista:52800,costo_insumos:9585},
+    {id:40,categoria:'Pestañas tecnologicas',nombre:'5D - Mega volumen',precio_ef:50000,precio_lista:60000,costo_insumos:9585},
+    // PESTAÑAS CLASICAS
+    {id:41,categoria:'Pestañas clasicas',nombre:'Clasicas PXP',precio_ef:40000,precio_lista:48000,costo_insumos:6345},
+    {id:42,categoria:'Pestañas clasicas',nombre:'Volumen Brasilero',precio_ef:44000,precio_lista:52800,costo_insumos:6491},
+    {id:43,categoria:'Pestañas clasicas',nombre:'Volumen ruso',precio_ef:49000,precio_lista:58800,costo_insumos:6491},
+    // SERVICE PESTAÑAS CLASICAS
+    {id:44,categoria:'Service Pestañas clasicas',nombre:'Service Clasicas PXP',precio_ef:36000,precio_lista:43200,costo_insumos:6345},
+    {id:45,categoria:'Service Pestañas clasicas',nombre:'Service Volumen Brasilero',precio_ef:40000,precio_lista:48000,costo_insumos:6491},
+    {id:46,categoria:'Service Pestañas clasicas',nombre:'Service Volumen Ruso',precio_ef:44000,precio_lista:52800,costo_insumos:6491},
+    // SERVICE PESTAÑAS TECNOLOGICAS
+    {id:47,categoria:'Service Pestañas tecnologicas',nombre:'Service 3D - Volumen light',precio_ef:36000,precio_lista:43200,costo_insumos:9585},
+    {id:48,categoria:'Service Pestañas tecnologicas',nombre:'Service 4D - Volumen medio',precio_ef:40000,precio_lista:48000,costo_insumos:9585},
+    {id:49,categoria:'Service Pestañas tecnologicas',nombre:'Service 5D - Mega volumen',precio_ef:45000,precio_lista:54000,costo_insumos:9585},
+    // DECO
+    {id:51,categoria:'Deco',nombre:'French',precio_ef:5000,precio_lista:6000,costo_insumos:0},
+    {id:52,categoria:'Deco',nombre:'Doble french',precio_ef:7000,precio_lista:8400,costo_insumos:0},
+    {id:53,categoria:'Deco',nombre:'Baby boomer (acrilico)',precio_ef:10000,precio_lista:12000,costo_insumos:0},
+    {id:54,categoria:'Deco',nombre:'Baby boomer (color)',precio_ef:8000,precio_lista:9600,costo_insumos:0},
+    {id:55,categoria:'Deco',nombre:'Full deco / Extra alto',precio_ef:16000,precio_lista:19200,costo_insumos:0},
+    {id:56,categoria:'Deco',nombre:'Cromado',precio_ef:6000,precio_lista:7200,costo_insumos:0},
+    {id:57,categoria:'Deco',nombre:'Ojo de gato',precio_ef:6000,precio_lista:7200,costo_insumos:0},
   ],
   insumos: [
     {id:1,categoria:'Unas',nombre:'Ablandador Las Varano 1L',proveedor:'La Manola',precio_unitario:13.9},
@@ -221,20 +231,81 @@ if (!db.data.chicas.find(c=>c.nombre==='Noe')) db.data.chicas.push({id:8,nombre:
 if (!db.data.chicas.find(c=>c.nombre==='Sabri')) db.data.chicas.push({id:9,nombre:'Sabri'});
 db.data.chicas = db.data.chicas.filter(c=>c.nombre!=='Giuli');
 
-// Agregar servicios nuevos si no existen
-const serviciosNuevosIds = [50,51,52,53,54,55,56,57,58];
-serviciosNuevosIds.forEach(idNuevo => {
-  const nuevo = defaultData.servicios.find(d => d.id === idNuevo);
-  if (nuevo && !db.data.servicios.find(s => s.id === nuevo.id)) {
-    db.data.servicios.push(nuevo);
+// MIGRACION DE PRECIOS — actualiza todos los servicios existentes a los nuevos precios
+const preciosNuevos = {
+  1:  {precio_ef:19000, precio_lista:22800},
+  2:  {precio_ef:22000, precio_lista:26400},
+  3:  {precio_ef:30000, precio_lista:36000},
+  4:  {precio_ef:40000, precio_lista:48000},
+  5:  {precio_ef:33000, precio_lista:39600},
+  6:  {precio_ef:43000, precio_lista:51600},
+  7:  {precio_ef:42000, precio_lista:50400},
+  8:  {precio_ef:49000, precio_lista:58800},
+  9:  {precio_ef:52000, precio_lista:62400},
+  10: {precio_ef:42000, precio_lista:50400},
+  11: {precio_ef:44000, precio_lista:52800},
+  12: {precio_ef:4500,  precio_lista:5400},
+  13: {precio_ef:4000,  precio_lista:4800},
+  14: {precio_ef:22000, precio_lista:26400},
+  15: {precio_ef:15000, precio_lista:18000},
+  16: {precio_ef:23000, precio_lista:27600},
+  17: {precio_ef:24000, precio_lista:28800},
+  18: {precio_ef:28000, precio_lista:33600},
+  19: {precio_ef:32000, precio_lista:38400},
+  20: {precio_ef:31000, precio_lista:37200},
+  21: {precio_ef:37000, precio_lista:44400},
+  22: {precio_ef:42000, precio_lista:50400},
+  23: {precio_ef:5000,  precio_lista:6000},
+  24: {precio_ef:9000,  precio_lista:10800},
+  25: {precio_ef:11000, precio_lista:13200},
+  26: {precio_ef:15000, precio_lista:18000},
+  27: {precio_ef:11000, precio_lista:13200},
+  28: {precio_ef:36000, precio_lista:43200},
+  29: {precio_ef:18000, precio_lista:21600},
+  30: {precio_ef:27000, precio_lista:32400},
+  31: {precio_ef:36000, precio_lista:43200},
+  32: {precio_ef:6000,  precio_lista:7200},
+  33: {precio_ef:11000, precio_lista:13200},
+  34: {precio_ef:48000, precio_lista:57600},
+  35: {precio_ef:43000, precio_lista:51600},
+  36: {precio_ef:64000, precio_lista:76800},
+  37: {precio_ef:78000, precio_lista:93600},
+  38: {precio_ef:40000, precio_lista:48000},
+  39: {precio_ef:44000, precio_lista:52800},
+  40: {precio_ef:50000, precio_lista:60000},
+  41: {precio_ef:40000, precio_lista:48000},
+  42: {precio_ef:44000, precio_lista:52800},
+  43: {precio_ef:49000, precio_lista:58800},
+  44: {precio_ef:36000, precio_lista:43200},
+  45: {precio_ef:40000, precio_lista:48000},
+  46: {precio_ef:44000, precio_lista:52800},
+  47: {precio_ef:36000, precio_lista:43200},
+  48: {precio_ef:40000, precio_lista:48000},
+  49: {precio_ef:45000, precio_lista:54000},
+  50: {precio_ef:25000, precio_lista:30000},
+  51: {precio_ef:5000,  precio_lista:6000},
+  52: {precio_ef:7000,  precio_lista:8400},
+  53: {precio_ef:10000, precio_lista:12000},
+  54: {precio_ef:8000,  precio_lista:9600},
+  55: {precio_ef:16000, precio_lista:19200},
+  56: {precio_ef:6000,  precio_lista:7200},
+  57: {precio_ef:6000,  precio_lista:7200},
+  58: {precio_ef:47000, precio_lista:56400},
+};
+
+db.data.servicios.forEach(s => {
+  if (preciosNuevos[s.id]) {
+    s.precio_ef = preciosNuevos[s.id].precio_ef;
+    s.precio_lista = preciosNuevos[s.id].precio_lista;
   }
 });
 
-// Actualizar precios si quedaron en valor viejo
-const escPoly = db.data.servicios.find(s => s.id === 8);
-if (escPoly && escPoly.precio_ef === 40000) { escPoly.precio_ef = 42000; escPoly.precio_lista = 50400; }
-const escAcr = db.data.servicios.find(s => s.id === 9);
-if (escAcr && escAcr.precio_ef === 42000) { escAcr.precio_ef = 44000; escAcr.precio_lista = 52800; }
+// Agregar servicios nuevos si no existen
+defaultData.servicios.forEach(def => {
+  if (!db.data.servicios.find(s => s.id === def.id)) {
+    db.data.servicios.push(def);
+  }
+});
 
 db.data.servicios.forEach(s => {
   const def = defaultData.servicios.find(d => d.id === s.id);
