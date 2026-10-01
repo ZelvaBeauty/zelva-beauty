@@ -219,6 +219,7 @@ if (!db.data.turnos) db.data.turnos = [];
 if (!db.data.adelantos) db.data.adelantos = [];
 if (!db.data.liquidaciones) db.data.liquidaciones = [];
 if (!db.data.gastos) db.data.gastos = [];
+if (!db.data.caja_shan) db.data.caja_shan = [];
 if (!db.data.nextId.adelantos) db.data.nextId.adelantos = 1;
 if (!db.data.nextId.liquidaciones) db.data.nextId.liquidaciones = 1;
 if (!db.data.nextId.gastos) db.data.nextId.gastos = 1;
@@ -564,8 +565,9 @@ app.get('/api/resumen', (req, res) => {
   const totalGastos = gastos.reduce((s,g)=>s+g.monto,0);
   const salon = cobrado - base_ef*COM;
   const ganancia_real = salon - costo_insumos - totalGastos;
+  const senas = sum(t=>t.sena_monto||0);
   res.json({
-    turnos: turnos.length, cobrado, comisiones: base_ef*COM, salon,
+    turnos: turnos.length, cobrado, comisiones: base_ef*COM, salon, senas,
     costo_insumos, gastos: totalGastos, ganancia_real,
     efectivo: sum(t=>t.pago==='efectivo'?(t.monto_pago1||t.cobrado):0),
     transferencia: sum(t=>(t.pago==='transferencia'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='transferencia'?(t.monto_pago2||0):0)),
@@ -577,6 +579,41 @@ app.get('/api/resumen', (req, res) => {
     porChica: Object.values(byChica).map(c=>({...c,comision:c.base_ef*COM})).sort((a,b)=>a.chica.localeCompare(b.chica)),
     rankingServicios: Object.values(srvCount).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10)
   });
+});
+
+// ── CAJA SHAN ──────────────────────────────────────────────────────────────
+// GET cierre de un día específico
+app.get('/api/caja-shan/:fecha', (req, res) => {
+  const { fecha } = req.params;
+  const cierres = db.data.caja_shan || [];
+  const cierre = cierres.find(c => c.fecha === fecha);
+  // Calcular totales automáticos desde turnos del día
+  const turnos = (db.data.turnos || []).filter(t => t.fecha === fecha);
+  const total = turnos.reduce((s,t) => s+(t.cobrado||0), 0);
+  const cash = turnos.filter(t=>t.pago==='efectivo').reduce((s,t) => s+(t.monto_pago1||t.cobrado||0), 0)
+             + turnos.filter(t=>t.pago2==='efectivo').reduce((s,t) => s+(t.monto_pago2||0), 0);
+  const tarjeta = total - cash;
+  res.json({ fecha, total, cash, tarjeta, ...(cierre || {}) });
+});
+
+// GET último cierre (para encadenar inicio)
+app.get('/api/caja-shan-ultimo', (req, res) => {
+  const cierres = (db.data.caja_shan || []).sort((a,b) => a.fecha < b.fecha ? 1 : -1);
+  res.json(cierres[0] || null);
+});
+
+// POST guardar/actualizar cierre del día
+app.post('/api/caja-shan', async (req, res) => {
+  const { fecha, inicio, sobre, gastos } = req.body;
+  if (!db.data.caja_shan) db.data.caja_shan = [];
+  const idx = db.data.caja_shan.findIndex(c => c.fecha === fecha);
+  if (idx >= 0) {
+    db.data.caja_shan[idx] = { ...db.data.caja_shan[idx], fecha, inicio, sobre, gastos };
+  } else {
+    db.data.caja_shan.push({ fecha, inicio, sobre, gastos });
+  }
+  await db.write();
+  res.json({ ok: true });
 });
 
 app.listen(PORT, () => console.log(`Zelva Beauty en puerto ${PORT}`));
