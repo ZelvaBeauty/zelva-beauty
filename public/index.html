@@ -660,6 +660,7 @@ function showTab(name, el) {
   if (name==='insumos') renderInsumos();
   if (name==='depi') renderDepi();
   if (name==='config') renderConfig();
+  if (name==='cajashan') initCajaShan();
 }
 
 function setPeriod(tab, p, el) {
@@ -1025,8 +1026,7 @@ function exportTurnosMes() {
     });
     const totalCobrado = turnos.reduce((s,t)=>s+t.cobrado,0);
     rows.push(['TOTAL','','','',totalCobrado,'','','']);
-    const csv = '﻿' + rows.map(r=>r.join(',')).join('
-');
+    const csv = '﻿' + rows.map(r=>r.join(',')).join('\n');
     const url = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
     const a = document.createElement('a');
     a.href = url; a.download = 'turnos_'+periodo+'.csv';
