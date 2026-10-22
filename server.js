@@ -433,15 +433,22 @@ app.get('/api/depi-resumen/:jornada_id', (req, res) => {
   const jid = parseInt(req.params.jornada_id);
   const jornada = db.data.depi_jornadas.find(j=>j.id===jid);
   if (!jornada) return res.status(404).json({ error: 'No encontrada' });
-  const turnos = db.data.depi_turnos.filter(t=>t.jornada_id===jid);
-  const total_senas = turnos.reduce((s,t)=>s+(t.sena||0),0);
-  const total_ef = turnos.filter(t=>t.pago==='efectivo').reduce((s,t)=>s+(t.precio_ef-(t.sena||0)),0);
-  const total_transf = turnos.filter(t=>t.pago==='transferencia').reduce((s,t)=>s+(t.precio_ef-(t.sena||0)),0) + total_senas;
-  const total_cobrado = turnos.reduce((s,t)=>s+t.precio_ef,0);
+  // Precio segun medio de pago (transferencia = precio lista) y saldo = precio - sena.
+  // Se calcula al vuelo: no modifica los turnos guardados.
+  const turnos = db.data.depi_turnos.filter(t=>t.jornada_id===jid).map(t=>{
+    const precio = t.pago==='transferencia' ? (t.precio_lista||t.precio_ef||0) : (t.precio_ef||0);
+    const sena = Math.min(t.sena||0, precio);
+    return { ...t, precio_cobrado: precio, saldo: precio - sena };
+  });
+  const total_senas = turnos.reduce((s,t)=>s+Math.min(t.sena||0, t.precio_cobrado),0);
+  const total_ef = turnos.filter(t=>t.pago!=='transferencia').reduce((s,t)=>s+t.saldo,0);
+  const total_transf_dia = turnos.filter(t=>t.pago==='transferencia').reduce((s,t)=>s+t.saldo,0);
+  const total_transf = total_transf_dia + total_senas; // se mantiene por compatibilidad con el frontend
+  const total_cobrado = total_senas + total_ef + total_transf_dia;
   const costo_operadora = jornada.horas_operadora * jornada.tarifa_operadora;
   const total_costos = jornada.alquiler_maquina + costo_operadora + jornada.viaticos + jornada.comida;
   const ganancia = total_cobrado - total_costos;
-  res.json({ jornada, turnos, total_senas, total_ef, total_transf, total_cobrado, costo_operadora, total_costos, ganancia });
+  res.json({ jornada, turnos, total_senas, total_ef, total_transf, total_transf_dia, total_cobrado, costo_operadora, total_costos, ganancia });
 });
 
 // ==================== TURNOS ====================

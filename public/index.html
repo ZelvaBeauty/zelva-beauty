@@ -1476,7 +1476,7 @@ async function renderJornadaActiva() {
     '<div class="resumen-box">'+
     '<div class="resumen-row"><span>Senas cobradas (transferencia anticipada)</span><span style="color:var(--teal);font-weight:600">'+fmt(resumen.total_senas)+'</span></div>'+
     '<div class="resumen-row"><span>Efectivo del dia</span><span style="color:var(--teal);font-weight:600">'+fmt(resumen.total_ef)+'</span></div>'+
-    '<div class="resumen-row"><span>Transferencia del dia</span><span style="color:var(--teal);font-weight:600">'+fmt(Math.max(0, resumen.total_transf - resumen.total_senas))+'</span></div>'+
+    '<div class="resumen-row"><span>Transferencia del dia</span><span style="color:var(--teal);font-weight:600">'+fmt(resumen.total_transf_dia)+'</span></div>'+
     '<div class="resumen-row total"><span>Total ingresado</span><span>'+fmt(resumen.total_cobrado)+'</span></div>'+
     '</div>'+
 
@@ -1524,7 +1524,8 @@ async function renderJornadaActiva() {
         (t.sena?'<div style="font-size:11px;color:var(--teal)">Sena: '+fmt(t.sena)+(t.sena_fecha?' ('+fromISO(t.sena_fecha)+')':'')+'</div>':'')+
         '</div>'+
         '<div style="text-align:right;margin-right:8px">'+
-        '<div style="font-weight:700;color:var(--teal)">'+fmt(t.precio_ef)+'</div>'+
+        '<div style="font-weight:700;color:var(--teal)">'+fmt(t.saldo!==undefined?t.saldo:t.precio_ef)+'</div>'+
+        (t.sena?'<div style="font-size:10px;color:var(--text-2)">de '+fmt(t.precio_cobrado)+'</div>':'')+
         '<span class="badge '+(t.pago==='efectivo'?'b-ef':'b-tr')+'" style="font-size:10px">'+(t.pago==='efectivo'?'Efectivo':'Transf')+'</span></div>'+
         '<button class="btn-sm btn-danger" onclick="delTurnoDepi('+t.id+')" style="padding:4px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>'+
         '</div>').join(''))+
@@ -1662,7 +1663,7 @@ async function verResumenHistorial(id) {
     '<div class="resumen-box" style="margin-top:8px">'+
     '<div class="resumen-row"><span>Senas</span><span style="color:var(--teal)">'+fmt(res.total_senas)+'</span></div>'+
     '<div class="resumen-row"><span>Efectivo dia</span><span style="color:var(--teal)">'+fmt(res.total_ef)+'</span></div>'+
-    '<div class="resumen-row"><span>Transferencia dia</span><span style="color:var(--teal)">'+fmt(Math.max(0,res.total_transf-res.total_senas))+'</span></div>'+
+    '<div class="resumen-row"><span>Transferencia dia</span><span style="color:var(--teal)">'+fmt(res.total_transf_dia)+'</span></div>'+
     '<div class="resumen-row total"><span>Total cobrado</span><span>'+fmt(res.total_cobrado)+'</span></div>'+
     '<div style="height:4px"></div>'+
     '<div class="resumen-row costo"><span>Maquina</span><span>-'+fmt(j.alquiler_maquina)+'</span></div>'+
