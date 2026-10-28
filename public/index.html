@@ -449,6 +449,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <button class="btn-sm" onclick="csDia(1)">Día siguiente <i class="ti ti-chevron-right"></i></button>
     </div>
 
+    <div id="cs-aviso" style="display:none;background:#FFF4E5;border:1px solid #E2B96B;color:#8A5A00;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600;margin-bottom:12px;line-height:1.4"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
       <!-- Inicio -->
       <div style="background:#fff;border-radius:10px;padding:12px;border:1px solid var(--gray-border)">
@@ -1882,8 +1883,41 @@ async function csCargar() {
   csSetVal('cs-inicio', data.inicio != null ? data.inicio : null);
   csSetVal('cs-sobre', data.sobre != null ? data.sobre : null);
   csSetVal('cs-gastos', data.gastos != null ? data.gastos : null);
+  await csAvisoYSugerencia(fecha, data);
   csCalcular();
   await csTurnosDia(fecha);
+}
+
+// Fecha del día anterior en formato AAAA-MM-DD (sin problemas de zona horaria)
+function csFechaAnterior(fecha) {
+  const [y,m,d] = fecha.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d));
+  dt.setUTCDate(dt.getUTCDate() - 1);
+  return dt.toISOString().slice(0,10);
+}
+
+function csTieneCierre(d) {
+  return d && (d.inicio != null || d.sobre != null || d.gastos != null);
+}
+
+// Si el día no tiene cierre guardado: muestra aviso y completa el Inicio
+// con lo que quedó en caja el día anterior (solo como sugerencia, no guarda nada).
+async function csAvisoYSugerencia(fecha, data) {
+  const aviso = document.getElementById('cs-aviso');
+  if (csTieneCierre(data)) { aviso.style.display = 'none'; return; }
+  let texto = '⚠️ Este día todavía no tiene cierre guardado. Completá Sobre y Gastos y tocá "Guardar cierre del día".';
+  try {
+    const ant = await api('GET', `/api/caja-shan/${csFechaAnterior(fecha)}`);
+    if (csTieneCierre(ant)) {
+      const cajaAnt = (ant.inicio||0) + (ant.cash||0) - (ant.sobre||0) - (ant.gastos||0);
+      csSetVal('cs-inicio', cajaAnt);
+      texto += ` El Inicio se completó con ${fmt(cajaAnt)}, lo que quedó en caja el día anterior.`;
+    } else {
+      texto += ' El día anterior tampoco tiene cierre, así que cargá el Inicio a mano.';
+    }
+  } catch(e) {}
+  aviso.textContent = texto;
+  aviso.style.display = 'block';
 }
 
 function csCalcular() {
@@ -1912,6 +1946,7 @@ async function csGuardar() {
   const msg = document.getElementById('cs-msg');
   msg.style.display = 'block';
   setTimeout(()=>{ msg.style.display='none'; }, 2500);
+  document.getElementById('cs-aviso').style.display = 'none';
   await csHistorial();
 }
 
