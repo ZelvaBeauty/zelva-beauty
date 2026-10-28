@@ -467,7 +467,7 @@ app.post('/api/turnos', async (req, res) => {
     return sum + (srv?.costo_insumos || s.costo_insumos || 0);
   }, 0);
   const id = nextId('turnos');
-  db.data.turnos.push({ id, chica, clienta, servicios, pago, pago2:pago2||null, monto_pago1:monto_pago1||null, monto_pago2:monto_pago2||null, cobrado, base_comision, costo_insumos, fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_monto:descuento_monto||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
+  db.data.turnos.push({ id, chica, clienta, servicios, pago, pago2:pago2||null, monto_pago1:pago2?(Number(monto_pago1)||0):null, monto_pago2:pago2?(Number(monto_pago2)||0):null, cobrado, base_comision, costo_insumos, fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_monto:descuento_monto||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
 app.delete('/api/turnos/:id', async (req, res) => {
@@ -545,6 +545,15 @@ app.delete('/api/gastos/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
+// Monto de un turno cobrado con un medio de pago dado.
+// En pagos mixtos usa los montos cargados (aunque sean $0); en pago simple usa el total cobrado.
+function montoMedio(t, medio) {
+  if (t.pago2) {
+    return (t.pago === medio ? (t.monto_pago1 || 0) : 0) + (t.pago2 === medio ? (t.monto_pago2 || 0) : 0);
+  }
+  return t.pago === medio ? (t.cobrado || 0) : 0;
+}
+
 // ==================== RESUMEN ====================
 app.get('/api/resumen', (req, res) => {
   const { desde, hasta } = req.query;
@@ -576,12 +585,12 @@ app.get('/api/resumen', (req, res) => {
   res.json({
     turnos: turnos.length, cobrado, comisiones: base_ef*COM, salon, senas,
     costo_insumos, gastos: totalGastos, ganancia_real,
-    efectivo: sum(t=>t.pago==='efectivo'?(t.monto_pago1||t.cobrado):0),
-    transferencia: sum(t=>(t.pago==='transferencia'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='transferencia'?(t.monto_pago2||0):0)),
-    qr: sum(t=>(t.pago==='qr'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='qr'?(t.monto_pago2||0):0)),
-    debito: sum(t=>(t.pago==='debito'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='debito'?(t.monto_pago2||0):0)),
-    credito: sum(t=>(t.pago==='credito'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='credito'?(t.monto_pago2||0):0)),
-    openpay: sum(t=>(t.pago==='openpay'?(t.monto_pago1||t.cobrado):0)+(t.pago2==='openpay'?(t.monto_pago2||0):0)),
+    efectivo: sum(t=>montoMedio(t,'efectivo')),
+    transferencia: sum(t=>montoMedio(t,'transferencia')),
+    qr: sum(t=>montoMedio(t,'qr')),
+    debito: sum(t=>montoMedio(t,'debito')),
+    credito: sum(t=>montoMedio(t,'credito')),
+    openpay: sum(t=>montoMedio(t,'openpay')),
     online: turnos.filter(t=>t.origen==='online').length,
     porChica: Object.values(byChica).map(c=>({...c,comision:c.base_ef*COM})).sort((a,b)=>a.chica.localeCompare(b.chica)),
     rankingServicios: Object.values(srvCount).sort((a,b)=>b.cantidad-a.cantidad).slice(0,10)
@@ -597,8 +606,7 @@ app.get('/api/caja-shan/:fecha', (req, res) => {
   // Calcular totales automáticos desde turnos del día
   const turnos = (db.data.turnos || []).filter(t => t.fecha === fecha);
   const total = turnos.reduce((s,t) => s+(t.cobrado||0), 0);
-  const cash = turnos.filter(t=>t.pago==='efectivo').reduce((s,t) => s+(t.monto_pago1||t.cobrado||0), 0)
-             + turnos.filter(t=>t.pago2==='efectivo').reduce((s,t) => s+(t.monto_pago2||0), 0);
+  const cash = turnos.reduce((s,t) => s+montoMedio(t,'efectivo'), 0);
   const tarjeta = total - cash;
   res.json({ fecha, total, cash, tarjeta, ...(cierre || {}) });
 });
