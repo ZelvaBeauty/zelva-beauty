@@ -381,7 +381,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
         <select id="gasto-cat">
           <option value="Alquiler">Alquiler</option><option value="Insumos">Insumos</option>
           <option value="Impuestos">Impuestos</option><option value="Servicios">Servicios (luz, agua, internet)</option>
-          <option value="Sueldos">Sueldos fijos</option><option value="Otros">Otros</option>
+          <option value="Sueldos">Sueldos fijos</option><option value="Depi">Depi (máquina / operadora)</option>
+          <option value="Limpieza">Limpieza / sodero</option><option value="Comida">Comida</option><option value="Otros">Otros</option>
         </select>
       </div>
       <div class="field"><label>Monto ($)</label><input type="number" id="gasto-monto" placeholder="0"></div>
@@ -390,6 +391,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div class="field"><label>Descripcion</label><input type="text" id="gasto-desc" placeholder="Ej: alquiler mayo..."></div>
       <div class="field"><label>Fecha</label><input type="text" id="gasto-fecha"></div>
     </div>
+    <div class="field"><label>¿De dónde salió?</label><select id="gasto-medio"><option value="transferencia">Transferencia / otro (no sale de la caja)</option><option value="efectivo">Efectivo de la caja del salón</option></select></div>
+    <div style="font-size:11px;color:var(--text-3);margin:-4px 0 10px">Los gastos en efectivo del día los carga la encargada desde Caja Shan.</div>
     <button class="btn-sm btn-purple" onclick="registrarGasto()" style="width:100%;justify-content:center;padding:10px"><i class="ti ti-plus"></i> Registrar gasto</button>
     <div class="msg" id="gasto-msg"></div>
   </div>
@@ -481,31 +484,34 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       </div>
     </div>
 
-    <div id="cs-adel-box" style="display:none;background:#FDECEC;border-radius:10px;padding:12px;border:1px solid #F0A8A8;margin-bottom:14px">
-      <div style="font-size:10px;font-weight:700;color:var(--coral);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Adelantos en efectivo</div>
-      <div id="cs-adelantos" style="font-size:20px;font-weight:700;color:var(--coral)">$0</div>
-      <div id="cs-adel-detalle" style="font-size:10px;color:var(--coral);margin-top:4px"></div>
+    <div style="border-top:1px dashed var(--gray-border);padding-top:14px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Lo que salió de la caja</div>
+      <div id="cs-salidas" style="margin-bottom:10px"></div>
+      <div style="background:#fff;border:1px solid var(--gray-border);border-radius:10px;padding:12px">
+        <div class="g2">
+          <div class="field"><label>Tipo</label><select id="cs-sal-tipo" onchange="csTipoSalida()"><option value="gasto">Gasto</option><option value="adelanto">Adelanto a una profesional</option></select></div>
+          <div class="field" id="cs-sal-cat-wrap"><label>Categoría</label><select id="cs-sal-cat"><option value="Insumos">Insumos</option><option value="Depi">Depi (máquina / operadora)</option><option value="Limpieza">Limpieza / sodero</option><option value="Comida">Comida</option><option value="Servicios">Servicios (luz, agua, internet)</option><option value="Otros">Otros</option></select></div>
+          <div class="field" id="cs-sal-chica-wrap" style="display:none"><label>Profesional</label><select id="cs-sal-chica"><option value="">Seleccionar...</option></select></div>
+        </div>
+        <div class="g2">
+          <div class="field"><label>Descripción</label><input type="text" id="cs-sal-desc" placeholder="Ej: sodero, alquiler máquina..."></div>
+          <div class="field"><label>Monto</label><input type="text" id="cs-sal-monto" placeholder="$0" oninput="csFmtInput(this)" onfocus="csFocusInput(this)" onblur="csBlurInput(this)"></div>
+        </div>
+        <button class="btn-sm btn-purple" onclick="csAgregarSalida()" style="width:100%;justify-content:center;padding:9px"><i class="ti ti-plus"></i> Agregar</button>
+        <div style="font-size:10px;color:var(--text-3);margin-top:6px">Los gastos se guardan también en la pestaña Gastos y los adelantos en Liquidar.</div>
+      </div>
     </div>
 
-    <div style="border-top:1px dashed var(--gray-border);padding-top:14px;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Cargá a mano</div>
-      <div class="g2">
-        <div class="field">
-          <label>Sobre para Angie</label>
-          <input type="text" id="cs-sobre" placeholder="$0" oninput="csFmtInput(this);csCalcular()" onfocus="csFocusInput(this)" onblur="csBlurInput(this)">
-        </div>
-        <div class="field">
-          <label>Gastos del día</label>
-          <input type="text" id="cs-gastos" placeholder="$0" oninput="csFmtInput(this);csCalcular()" onfocus="csFocusInput(this)" onblur="csBlurInput(this)">
-        </div>
-      </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>Sobre para Angie</label>
+      <input type="text" id="cs-sobre" placeholder="$0" oninput="csFmtInput(this);csCalcular()" onfocus="csFocusInput(this)" onblur="csBlurInput(this)">
     </div>
 
     <div style="background:var(--purple);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
       <div>
         <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Queda en caja</div>
         <div id="cs-caja" style="font-size:28px;font-weight:800;color:#fff">$0</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px">Inicio + Cash − Sobre − Gastos − Adelantos</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px">Inicio + Cash − Salidas − Sobre</div>
       </div>
       <i class="ti ti-cash-register" style="font-size:40px;color:rgba(255,255,255,.25)"></i>
     </div>
@@ -1163,7 +1169,8 @@ async function registrarGasto() {
   const fecha = toISO(document.getElementById('gasto-fecha').value||today());
   const msg = document.getElementById('gasto-msg');
   if (!monto) { msg.className='msg show err'; msg.textContent='Ingresa el monto del gasto.'; return; }
-  await api('POST','/api/gastos',{categoria, monto, descripcion, fecha});
+  const medio = document.getElementById('gasto-medio').value || 'transferencia';
+  await api('POST','/api/gastos',{categoria, monto, descripcion, fecha, medio});
   document.getElementById('gasto-monto').value=''; document.getElementById('gasto-desc').value=''; document.getElementById('gasto-fecha').value=today();
   msg.className='msg show ok'; msg.textContent='Gasto de '+fmt(monto)+' registrado ('+categoria+')';
   setTimeout(()=>{msg.className='msg';},3000); renderGastos();
@@ -1182,7 +1189,7 @@ async function renderGastos() {
     '<div class="gasto-item"><div style="flex:1">'+
     '<span class="cat-badge '+(CAT_BADGE[g.categoria]||'cat-otros')+'">'+g.categoria+'</span>'+
     (g.descripcion?'<span style="font-size:13px;color:var(--text-2);margin-left:8px">'+g.descripcion+'</span>':'')+
-    '<div style="font-size:12px;color:var(--text-3);margin-top:2px">'+fromISO(g.fecha)+'</div></div>'+
+    '<div style="font-size:12px;color:var(--text-3);margin-top:2px">'+fromISO(g.fecha)+(g.medio==='efectivo'?' · Efectivo caja':g.medio==='transferencia'?' · Transf.':'')+'</div></div>'+
     '<div style="display:flex;align-items:center;gap:8px">'+
     '<span style="font-weight:700;color:var(--coral);font-size:15px">'+fmt(g.monto)+'</span>'+
     '<button class="btn-sm btn-danger" onclick="delGasto('+g.id+')" style="padding:3px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>'+
@@ -1891,16 +1898,10 @@ async function csCargar() {
   document.getElementById('cs-total').textContent = fmt(data.total||0);
   document.getElementById('cs-cash').textContent = fmt(data.cash||0);
   document.getElementById('cs-tarjeta').textContent = fmt(data.tarjeta||0);
-  const adelBox = document.getElementById('cs-adel-box');
-  if (data.adelantos > 0) {
-    adelBox.style.display = 'block';
-    document.getElementById('cs-adelantos').textContent = '−' + fmt(data.adelantos);
-    document.getElementById('cs-adel-detalle').textContent = (data.adelantos_detalle||[]).map(a=>a.chica+' '+fmt(a.monto)).join(' · ') + ' (de la pestaña Adelantos)';
-  } else { adelBox.style.display = 'none'; }
+  csRenderSalidas(data);
   // Campos manuales con formato
   csSetVal('cs-inicio', data.inicio != null ? data.inicio : null);
   csSetVal('cs-sobre', data.sobre != null ? data.sobre : null);
-  csSetVal('cs-gastos', data.gastos != null ? data.gastos : null);
   await csAvisoYSugerencia(fecha, data);
   csCalcular();
   await csTurnosDia(fecha);
@@ -1923,11 +1924,11 @@ function csTieneCierre(d) {
 async function csAvisoYSugerencia(fecha, data) {
   const aviso = document.getElementById('cs-aviso');
   if (csTieneCierre(data)) { aviso.style.display = 'none'; return; }
-  let texto = '⚠️ Este día todavía no tiene cierre guardado. Completá Sobre y Gastos y tocá "Guardar cierre del día".';
+  let texto = '⚠️ Este día todavía no tiene cierre guardado. Cargá lo que salió de la caja, el Sobre y tocá "Guardar cierre del día".';
   try {
     const ant = await api('GET', `/api/caja-shan/${csFechaAnterior(fecha)}`);
     if (csTieneCierre(ant)) {
-      const cajaAnt = (ant.inicio||0) + (ant.cash||0) - (ant.sobre||0) - (ant.gastos||0) - (ant.adelantos||0);
+      const cajaAnt = (ant.inicio||0) + (ant.cash||0) - (ant.sobre||0) - csSalidasTotal(ant);
       csSetVal('cs-inicio', cajaAnt);
       texto += ` El Inicio se completó con ${fmt(cajaAnt)}, lo que quedó en caja el día anterior.`;
     } else {
@@ -1938,12 +1939,87 @@ async function csAvisoYSugerencia(fecha, data) {
   aviso.style.display = 'block';
 }
 
+// Total que salió de la caja: gastos viejos a mano + gastos en efectivo + adelantos en efectivo
+function csSalidasTotal(d) {
+  return (d.gastos||0) + (d.gastos_caja||0) + (d.adelantos||0);
+}
+
+function csRenderSalidas(d) {
+  const el = document.getElementById('cs-salidas');
+  const filas = [];
+  const fila = (icono, texto, monto, borrar) => `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--gray-border);font-size:13px;gap:8px">
+      <span style="flex:1;color:var(--text)"><i class="ti ${icono}" style="color:var(--coral)"></i> ${texto}</span>
+      <span style="font-weight:700;color:var(--coral)">−${fmt(monto)}</span>${borrar||''}</div>`;
+  const btn = (fn,id) => `<button class="btn-sm btn-danger" onclick="${fn}(${id})" style="padding:3px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>`;
+  if (d.gastos) filas.push(fila('ti-pencil', 'Gastos cargados a mano (antes del cambio)', d.gastos));
+  (d.gastos_detalle||[]).forEach(g => filas.push(fila('ti-receipt', `<b>${g.categoria}</b>${g.descripcion?' · '+g.descripcion:''}`, g.monto, btn('csBorrarGasto', g.id))));
+  (d.adelantos_detalle||[]).forEach(a => filas.push(fila('ti-user', `<b>Adelanto ${a.chica}</b>${a.obs?' · '+a.obs:''}`, a.monto, btn('csBorrarAdelanto', a.id))));
+  const total = csSalidasTotal(d);
+  el.innerHTML = filas.length
+    ? filas.join('') + `<div style="display:flex;justify-content:space-between;padding-top:8px;font-size:13px;font-weight:700"><span>Total salidas</span><span style="color:var(--coral)">−${fmt(total)}</span></div>`
+    : '<div style="font-size:12px;color:var(--text-3);text-align:center;padding:6px 0">Todavía no se cargó nada que haya salido de la caja</div>';
+}
+
+function csTipoSalida() {
+  const adel = document.getElementById('cs-sal-tipo').value === 'adelanto';
+  document.getElementById('cs-sal-cat-wrap').style.display = adel ? 'none' : '';
+  document.getElementById('cs-sal-chica-wrap').style.display = adel ? '' : 'none';
+  if (adel) {
+    const sel = document.getElementById('cs-sal-chica');
+    if (sel.options.length <= 1) api('GET','/api/chicas').then(ch => {
+      sel.innerHTML = '<option value="">Seleccionar...</option>' + ch.map(c=>'<option>'+c.nombre+'</option>').join('');
+    });
+  }
+}
+
+async function csAgregarSalida() {
+  const fecha = document.getElementById('cs-fecha').value;
+  const tipo = document.getElementById('cs-sal-tipo').value;
+  const monto = csRawVal('cs-sal-monto');
+  const desc = document.getElementById('cs-sal-desc').value.trim();
+  if (!monto) { alertaCs('Poné el monto.'); return; }
+  if (tipo === 'adelanto') {
+    const chica = document.getElementById('cs-sal-chica').value;
+    if (!chica) { alertaCs('Elegí la profesional.'); return; }
+    await api('POST','/api/adelantos',{ chica, monto, fecha, obs: desc, medio:'efectivo' });
+  } else {
+    const categoria = document.getElementById('cs-sal-cat').value;
+    await api('POST','/api/gastos',{ categoria, descripcion: desc, monto, fecha, medio:'efectivo' });
+  }
+  document.getElementById('cs-sal-monto').value = ''; document.getElementById('cs-sal-desc').value = '';
+  const sobreActual = document.getElementById('cs-sobre').value, inicioActual = document.getElementById('cs-inicio').value;
+  await csRecargarSalidas();
+  document.getElementById('cs-sobre').value = sobreActual; document.getElementById('cs-inicio').value = inicioActual;
+  csCalcular(); csHistorial();
+}
+
+function alertaCs(t) {
+  const msg = document.getElementById('cs-msg');
+  msg.style.color = 'var(--coral)'; msg.textContent = t; msg.style.display = 'block';
+  setTimeout(()=>{ msg.style.display='none'; msg.style.color='var(--teal)'; msg.innerHTML='<i class="ti ti-check"></i> Guardado correctamente'; }, 2500);
+}
+
+async function csRecargarSalidas() {
+  const fecha = document.getElementById('cs-fecha').value;
+  const d = await api('GET', `/api/caja-shan/${fecha}`);
+  ['adelantos','adelantos_detalle','gastos_caja','gastos_detalle'].forEach(k => csData[k] = d[k]);
+  csRenderSalidas(csData);
+}
+
+async function csBorrarGasto(id) {
+  if (!confirm('¿Borrar este gasto? También se borra de la pestaña Gastos.')) return;
+  await api('DELETE','/api/gastos/'+id); await csRecargarSalidas(); csCalcular(); csHistorial();
+}
+async function csBorrarAdelanto(id) {
+  if (!confirm('¿Borrar este adelanto? También se borra de Liquidar.')) return;
+  await api('DELETE','/api/adelantos/'+id); await csRecargarSalidas(); csCalcular(); csHistorial();
+}
+
 function csCalcular() {
   const inicio = csRawVal('cs-inicio');
   const cash = csData.cash||0;
   const sobre = csRawVal('cs-sobre');
-  const gastos = csRawVal('cs-gastos');
-  const caja = inicio + cash - sobre - gastos - (csData.adelantos||0);
+  const caja = inicio + cash - sobre - csSalidasTotal(csData);
   document.getElementById('cs-caja').textContent = fmt(caja);
 }
 
@@ -1959,8 +2035,9 @@ async function csGuardar() {
   const fecha = document.getElementById('cs-fecha').value;
   const inicio = csRawVal('cs-inicio');
   const sobre = csRawVal('cs-sobre');
-  const gastos = csRawVal('cs-gastos');
+  const gastos = csData.gastos != null ? csData.gastos : null; // gastos viejos cargados a mano (se conservan)
   await api('POST', '/api/caja-shan', { fecha, inicio, sobre, gastos });
+  csData.inicio = inicio; csData.sobre = sobre;
   const msg = document.getElementById('cs-msg');
   msg.style.display = 'block';
   setTimeout(()=>{ msg.style.display='none'; }, 2500);
@@ -1990,7 +2067,7 @@ async function csHistorial() {
       const cash = data.cash||0;
       const sobre = data.sobre||0;
       const gastos = data.gastos||0;
-      const caja = inicio+cash-sobre-gastos-(data.adelantos||0);
+      const caja = inicio+cash-sobre-csSalidasTotal(data);
       filas.push(`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-border)">
         <div style="font-size:13px;font-weight:600;color:var(--text)">${fechaLinda(fecha)}</div>
         <div style="display:flex;gap:14px;text-align:right">

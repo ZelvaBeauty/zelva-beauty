@@ -534,10 +534,12 @@ app.get('/api/gastos', (req, res) => {
   res.json([...gastos].sort((a,b)=>b.fecha.localeCompare(a.fecha)));
 });
 app.post('/api/gastos', async (req, res) => {
-  const { categoria, descripcion, monto, fecha } = req.body;
+  const { categoria, descripcion, monto, fecha, medio } = req.body;
   if (!categoria||!monto) return res.status(400).json({ error: 'Faltan campos' });
   const id = nextId('gastos');
-  db.data.gastos.push({ id, categoria, descripcion:descripcion||'', monto, fecha: fecha||new Date().toISOString().slice(0,10), creado_at: new Date().toISOString() });
+  const g = { id, categoria, descripcion:descripcion||'', monto, fecha: fecha||new Date().toISOString().slice(0,10), creado_at: new Date().toISOString() };
+  if (medio === 'efectivo' || medio === 'transferencia') g.medio = medio;
+  db.data.gastos.push(g);
   await db.write(); res.json({ id });
 });
 app.delete('/api/gastos/:id', async (req, res) => {
@@ -611,8 +613,12 @@ app.get('/api/caja-shan/:fecha', (req, res) => {
   // Adelantos dados en efectivo de la caja ese día (los viejos sin "medio" no se cuentan)
   const adelantosDia = (db.data.adelantos || []).filter(a => a.fecha === fecha && a.medio === 'efectivo');
   const adelantos = adelantosDia.reduce((s,a) => s+(Number(a.monto)||0), 0);
-  const adelantos_detalle = adelantosDia.map(a => ({ chica: a.chica, monto: a.monto }));
-  res.json({ fecha, total, cash, tarjeta, adelantos, adelantos_detalle, ...(cierre || {}) });
+  const adelantos_detalle = adelantosDia.map(a => ({ id: a.id, chica: a.chica, monto: a.monto, obs: a.obs||'' }));
+  // Gastos pagados en efectivo de la caja ese día (los viejos sin "medio" no se cuentan)
+  const gastosDia = (db.data.gastos || []).filter(g => g.fecha === fecha && g.medio === 'efectivo');
+  const gastos_caja = gastosDia.reduce((s,g) => s+(Number(g.monto)||0), 0);
+  const gastos_detalle = gastosDia.map(g => ({ id: g.id, categoria: g.categoria, descripcion: g.descripcion||'', monto: g.monto }));
+  res.json({ fecha, total, cash, tarjeta, adelantos, adelantos_detalle, gastos_caja, gastos_detalle, ...(cierre || {}) });
 });
 
 // GET último cierre (para encadenar inicio)
