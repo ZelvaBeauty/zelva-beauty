@@ -323,6 +323,10 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div class="field"><label>Profesional</label><select id="adel-chica"><option value="">Seleccionar...</option></select></div>
       <div class="field"><label>Monto del adelanto ($)</label><input type="number" id="adel-monto" placeholder="0"></div>
     </div>
+    <div class="g2">
+      <div class="field"><label>Fecha</label><input type="date" id="adel-fecha"></div>
+      <div class="field"><label>¿De dónde salió?</label><select id="adel-medio"><option value="efectivo">Efectivo de la caja</option><option value="transferencia">Transferencia</option></select></div>
+    </div>
     <div class="field"><label>Observacion (opcional)</label><input type="text" id="adel-obs" placeholder="Ej: adelanto pedido por WhatsApp"></div>
     <button class="btn-sm btn-purple" onclick="registrarAdelanto()" style="width:100%;justify-content:center;padding:10px"><i class="ti ti-plus"></i> Registrar adelanto</button>
     <div class="msg" id="adel-msg"></div>
@@ -477,6 +481,12 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       </div>
     </div>
 
+    <div id="cs-adel-box" style="display:none;background:#FDECEC;border-radius:10px;padding:12px;border:1px solid #F0A8A8;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:var(--coral);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Adelantos en efectivo</div>
+      <div id="cs-adelantos" style="font-size:20px;font-weight:700;color:var(--coral)">$0</div>
+      <div id="cs-adel-detalle" style="font-size:10px;color:var(--coral);margin-top:4px"></div>
+    </div>
+
     <div style="border-top:1px dashed var(--gray-border);padding-top:14px;margin-bottom:14px">
       <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Cargá a mano</div>
       <div class="g2">
@@ -495,7 +505,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div>
         <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Queda en caja</div>
         <div id="cs-caja" style="font-size:28px;font-weight:800;color:#fff">$0</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px">Inicio + Cash − Sobre − Gastos</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px">Inicio + Cash − Sobre − Gastos − Adelantos</div>
       </div>
       <i class="ti ti-cash-register" style="font-size:40px;color:rgba(255,255,255,.25)"></i>
     </div>
@@ -1054,9 +1064,11 @@ async function registrarAdelanto() {
   const msg = document.getElementById('adel-msg');
   if (!chica||!monto) { msg.className='msg show err'; msg.textContent='Completa profesional y monto.'; return; }
   const d = new Date(); const pad = n=>n.toString().padStart(2,'0');
-  const fecha = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-  await api('POST','/api/adelantos',{chica, monto, fecha, obs});
-  document.getElementById('adel-monto').value=''; document.getElementById('adel-obs').value='';
+  const hoy = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const fecha = document.getElementById('adel-fecha').value || hoy;
+  const medio = document.getElementById('adel-medio').value || 'efectivo';
+  await api('POST','/api/adelantos',{chica, monto, fecha, obs, medio});
+  document.getElementById('adel-monto').value=''; document.getElementById('adel-obs').value=''; document.getElementById('adel-fecha').value='';
   msg.className='msg show ok'; msg.textContent='Adelanto de '+fmt(monto)+' registrado para '+chica;
   setTimeout(()=>{msg.className='msg';},3000);
   renderAdelantos(); calcularLiquidacion();
@@ -1134,7 +1146,7 @@ async function renderAdelantos() {
   el.innerHTML = filtrados.map(a=>
     '<div class="adelanto-row"><div style="flex:1">'+
     '<span style="font-weight:600">'+a.chica+'</span>'+
-    '<span style="color:var(--text-2);margin-left:8px">'+fromISO(a.fecha)+(a.obs?' - '+a.obs:'')+'</span>'+
+    '<span style="color:var(--text-2);margin-left:8px">'+fromISO(a.fecha)+(a.medio?' · '+(a.medio==='efectivo'?'Efectivo caja':'Transf.'):'')+(a.obs?' - '+a.obs:'')+'</span>'+
     (a.descontado?'<span class="badge b-pagada" style="margin-left:6px">Descontado</span>':'<span class="badge b-pendiente" style="margin-left:6px">Pendiente</span>')+
     '</div><div style="display:flex;align-items:center;gap:8px">'+
     '<span style="font-weight:700;color:var(--coral)">'+fmt(a.monto)+'</span>'+
@@ -1879,6 +1891,12 @@ async function csCargar() {
   document.getElementById('cs-total').textContent = fmt(data.total||0);
   document.getElementById('cs-cash').textContent = fmt(data.cash||0);
   document.getElementById('cs-tarjeta').textContent = fmt(data.tarjeta||0);
+  const adelBox = document.getElementById('cs-adel-box');
+  if (data.adelantos > 0) {
+    adelBox.style.display = 'block';
+    document.getElementById('cs-adelantos').textContent = '−' + fmt(data.adelantos);
+    document.getElementById('cs-adel-detalle').textContent = (data.adelantos_detalle||[]).map(a=>a.chica+' '+fmt(a.monto)).join(' · ') + ' (de la pestaña Adelantos)';
+  } else { adelBox.style.display = 'none'; }
   // Campos manuales con formato
   csSetVal('cs-inicio', data.inicio != null ? data.inicio : null);
   csSetVal('cs-sobre', data.sobre != null ? data.sobre : null);
@@ -1909,7 +1927,7 @@ async function csAvisoYSugerencia(fecha, data) {
   try {
     const ant = await api('GET', `/api/caja-shan/${csFechaAnterior(fecha)}`);
     if (csTieneCierre(ant)) {
-      const cajaAnt = (ant.inicio||0) + (ant.cash||0) - (ant.sobre||0) - (ant.gastos||0);
+      const cajaAnt = (ant.inicio||0) + (ant.cash||0) - (ant.sobre||0) - (ant.gastos||0) - (ant.adelantos||0);
       csSetVal('cs-inicio', cajaAnt);
       texto += ` El Inicio se completó con ${fmt(cajaAnt)}, lo que quedó en caja el día anterior.`;
     } else {
@@ -1925,7 +1943,7 @@ function csCalcular() {
   const cash = csData.cash||0;
   const sobre = csRawVal('cs-sobre');
   const gastos = csRawVal('cs-gastos');
-  const caja = inicio + cash - sobre - gastos;
+  const caja = inicio + cash - sobre - gastos - (csData.adelantos||0);
   document.getElementById('cs-caja').textContent = fmt(caja);
 }
 
@@ -1972,7 +1990,7 @@ async function csHistorial() {
       const cash = data.cash||0;
       const sobre = data.sobre||0;
       const gastos = data.gastos||0;
-      const caja = inicio+cash-sobre-gastos;
+      const caja = inicio+cash-sobre-gastos-(data.adelantos||0);
       filas.push(`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-border)">
         <div style="font-size:13px;font-weight:600;color:var(--text)">${fechaLinda(fecha)}</div>
         <div style="display:flex;gap:14px;text-align:right">

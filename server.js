@@ -483,10 +483,10 @@ app.get('/api/adelantos', (req, res) => {
   res.json([...a].sort((a,b)=>b.fecha.localeCompare(a.fecha)));
 });
 app.post('/api/adelantos', async (req, res) => {
-  const { chica, monto, fecha, obs } = req.body;
+  const { chica, monto, fecha, obs, medio } = req.body;
   if (!chica||!monto) return res.status(400).json({ error: 'Faltan campos' });
   const id = nextId('adelantos');
-  db.data.adelantos.push({ id, chica, monto, fecha: fecha||new Date().toISOString().slice(0,10), obs:obs||'', descontado:false, creado_at: new Date().toISOString() });
+  db.data.adelantos.push({ id, chica, monto, fecha: fecha||new Date().toISOString().slice(0,10), obs:obs||'', medio: medio==='transferencia'?'transferencia':'efectivo', descontado:false, creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
 app.put('/api/adelantos/:id', async (req, res) => {
@@ -608,7 +608,11 @@ app.get('/api/caja-shan/:fecha', (req, res) => {
   const total = turnos.reduce((s,t) => s+(t.cobrado||0), 0);
   const cash = turnos.reduce((s,t) => s+montoMedio(t,'efectivo'), 0);
   const tarjeta = total - cash;
-  res.json({ fecha, total, cash, tarjeta, ...(cierre || {}) });
+  // Adelantos dados en efectivo de la caja ese día (los viejos sin "medio" no se cuentan)
+  const adelantosDia = (db.data.adelantos || []).filter(a => a.fecha === fecha && a.medio === 'efectivo');
+  const adelantos = adelantosDia.reduce((s,a) => s+(Number(a.monto)||0), 0);
+  const adelantos_detalle = adelantosDia.map(a => ({ chica: a.chica, monto: a.monto }));
+  res.json({ fecha, total, cash, tarjeta, adelantos, adelantos_detalle, ...(cierre || {}) });
 });
 
 // GET último cierre (para encadenar inicio)
