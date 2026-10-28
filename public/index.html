@@ -489,7 +489,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div id="cs-salidas" style="margin-bottom:10px"></div>
       <div style="background:#fff;border:1px solid var(--gray-border);border-radius:10px;padding:12px">
         <div class="g2">
-          <div class="field"><label>Tipo</label><select id="cs-sal-tipo" onchange="csTipoSalida()"><option value="gasto">Gasto</option><option value="adelanto">Adelanto a una profesional</option></select></div>
+          <div class="field"><label>Tipo</label><select id="cs-sal-tipo" onchange="csTipoSalida()"><option value="gasto">Gasto del salón</option><option value="adelanto">Adelanto a una profesional</option><option value="depi">Pago de depi (máquina / operadora)</option></select></div>
           <div class="field" id="cs-sal-cat-wrap"><label>Categoría</label><select id="cs-sal-cat"><option value="Insumos">Insumos</option><option value="Limpieza">Limpieza</option><option value="Sodero">Sodero</option><option value="Otros">Otros</option></select></div>
           <div class="field" id="cs-sal-chica-wrap" style="display:none"><label>Profesional</label><select id="cs-sal-chica"><option value="">Seleccionar...</option></select></div>
         </div>
@@ -1941,7 +1941,8 @@ async function csAvisoYSugerencia(fecha, data) {
 
 // Total que salió de la caja: gastos viejos a mano + gastos en efectivo + adelantos en efectivo
 function csSalidasTotal(d) {
-  return (d.gastos||0) + (d.gastos_caja||0) + (d.adelantos||0);
+  const depi = (d.pagos_depi||[]).reduce((s,p)=>s+(p.monto||0),0);
+  return (d.gastos||0) + (d.gastos_caja||0) + (d.adelantos||0) + depi;
 }
 
 function csRenderSalidas(d) {
@@ -1953,6 +1954,7 @@ function csRenderSalidas(d) {
   const btn = (fn,id) => `<button class="btn-sm btn-danger" onclick="${fn}(${id})" style="padding:3px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>`;
   if (d.gastos) filas.push(fila('ti-pencil', 'Gastos cargados a mano (antes del cambio)', d.gastos));
   (d.gastos_detalle||[]).forEach(g => filas.push(fila('ti-receipt', `<b>${g.categoria}</b>${g.descripcion?' · '+g.descripcion:''}`, g.monto, btn('csBorrarGasto', g.id))));
+  (d.pagos_depi||[]).forEach(p => filas.push(fila('ti-bolt', `<b>Pago depi</b>${p.descripcion?' · '+p.descripcion:''} <span style="font-size:10px;color:var(--text-3)">(no suma a gastos del salón)</span>`, p.monto, btn('csBorrarPagoDepi', p.id))));
   (d.adelantos_detalle||[]).forEach(a => filas.push(fila('ti-user', `<b>Adelanto ${a.chica}</b>${a.obs?' · '+a.obs:''}`, a.monto, btn('csBorrarAdelanto', a.id))));
   const total = csSalidasTotal(d);
   el.innerHTML = filas.length
@@ -1961,8 +1963,10 @@ function csRenderSalidas(d) {
 }
 
 function csTipoSalida() {
-  const adel = document.getElementById('cs-sal-tipo').value === 'adelanto';
-  document.getElementById('cs-sal-cat-wrap').style.display = adel ? 'none' : '';
+  const tipo = document.getElementById('cs-sal-tipo').value;
+  const adel = tipo === 'adelanto';
+  document.getElementById('cs-sal-cat-wrap').style.display = tipo === 'gasto' ? '' : 'none';
+  document.getElementById('cs-sal-desc').placeholder = tipo === 'depi' ? 'Ej: alquiler máquina, horas operadora...' : 'Ej: Neoclean, bidón de agua...';
   document.getElementById('cs-sal-chica-wrap').style.display = adel ? '' : 'none';
   if (adel) {
     const sel = document.getElementById('cs-sal-chica');
@@ -1978,7 +1982,9 @@ async function csAgregarSalida() {
   const monto = csRawVal('cs-sal-monto');
   const desc = document.getElementById('cs-sal-desc').value.trim();
   if (!monto) { alertaCs('Poné el monto.'); return; }
-  if (tipo === 'adelanto') {
+  if (tipo === 'depi') {
+    await api('POST', `/api/caja-shan/${fecha}/pago-depi`, { descripcion: desc, monto });
+  } else if (tipo === 'adelanto') {
     const chica = document.getElementById('cs-sal-chica').value;
     if (!chica) { alertaCs('Elegí la profesional.'); return; }
     await api('POST','/api/adelantos',{ chica, monto, fecha, obs: desc, medio:'efectivo' });
@@ -2002,13 +2008,18 @@ function alertaCs(t) {
 async function csRecargarSalidas() {
   const fecha = document.getElementById('cs-fecha').value;
   const d = await api('GET', `/api/caja-shan/${fecha}`);
-  ['adelantos','adelantos_detalle','gastos_caja','gastos_detalle'].forEach(k => csData[k] = d[k]);
+  ['adelantos','adelantos_detalle','gastos_caja','gastos_detalle','pagos_depi'].forEach(k => csData[k] = d[k]);
   csRenderSalidas(csData);
 }
 
 async function csBorrarGasto(id) {
   if (!confirm('¿Borrar este gasto? También se borra de la pestaña Gastos.')) return;
   await api('DELETE','/api/gastos/'+id); await csRecargarSalidas(); csCalcular(); csHistorial();
+}
+async function csBorrarPagoDepi(id) {
+  if (!confirm('¿Borrar este pago de depi?')) return;
+  const fecha = document.getElementById('cs-fecha').value;
+  await api('DELETE', `/api/caja-shan/${fecha}/pago-depi/${id}`); await csRecargarSalidas(); csCalcular(); csHistorial();
 }
 async function csBorrarAdelanto(id) {
   if (!confirm('¿Borrar este adelanto? También se borra de Liquidar.')) return;

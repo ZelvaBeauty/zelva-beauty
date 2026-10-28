@@ -627,6 +627,25 @@ app.get('/api/caja-shan-ultimo', (req, res) => {
   res.json(cierres[0] || null);
 });
 
+// Pagos de depi hechos con efectivo de la caja del salón (no son gasto del salón)
+app.post('/api/caja-shan/:fecha/pago-depi', async (req, res) => {
+  const { fecha } = req.params;
+  const { descripcion, monto } = req.body;
+  if (!monto) return res.status(400).json({ error: 'Falta el monto' });
+  if (!db.data.caja_shan) db.data.caja_shan = [];
+  let c = db.data.caja_shan.find(x => x.fecha === fecha);
+  if (!c) { c = { fecha }; db.data.caja_shan.push(c); }
+  if (!c.pagos_depi) c.pagos_depi = [];
+  const id = Date.now();
+  c.pagos_depi.push({ id, descripcion: descripcion||'', monto: Number(monto)||0 });
+  await db.write(); res.json({ id });
+});
+app.delete('/api/caja-shan/:fecha/pago-depi/:id', async (req, res) => {
+  const c = (db.data.caja_shan||[]).find(x => x.fecha === req.params.fecha);
+  if (c && c.pagos_depi) c.pagos_depi = c.pagos_depi.filter(p => p.id !== Number(req.params.id));
+  await db.write(); res.json({ ok: true });
+});
+
 // POST guardar/actualizar cierre del día
 app.post('/api/caja-shan', async (req, res) => {
   const { fecha, inicio, sobre, gastos } = req.body;
