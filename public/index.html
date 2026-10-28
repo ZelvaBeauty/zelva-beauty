@@ -2045,6 +2045,15 @@ async function csTurnosDia(fecha) {
     </div>`;
   }).join('');
 }
+
+// Evita que los campos de montos cambien solos de a $1 con la ruedita del mouse
+// o con las flechas del teclado (causaba señas de $9.999 y cobros de $20.001).
+document.addEventListener('wheel', e => {
+  if (e.target && e.target.type === 'number' && document.activeElement === e.target) e.target.blur();
+}, { passive: true });
+document.addEventListener('keydown', e => {
+  if (e.target && e.target.type === 'number' && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) e.preventDefault();
+});
 </script>
 </body>
 </html>
