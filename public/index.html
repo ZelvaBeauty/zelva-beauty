@@ -381,8 +381,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
         <select id="gasto-cat">
           <option value="Alquiler">Alquiler</option><option value="Insumos">Insumos</option>
           <option value="Impuestos">Impuestos</option><option value="Servicios">Servicios (luz, agua, internet)</option>
-          <option value="Sueldos">Sueldos fijos</option><option value="Depi">Depi (máquina / operadora)</option>
-          <option value="Limpieza">Limpieza / sodero</option><option value="Comida">Comida</option><option value="Otros">Otros</option>
+          <option value="Sueldos">Sueldos fijos</option><option value="Limpieza">Limpieza</option>
+          <option value="Sodero">Sodero</option><option value="Otros">Otros</option>
         </select>
       </div>
       <div class="field"><label>Monto ($)</label><input type="number" id="gasto-monto" placeholder="0"></div>
@@ -490,11 +490,11 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div style="background:#fff;border:1px solid var(--gray-border);border-radius:10px;padding:12px">
         <div class="g2">
           <div class="field"><label>Tipo</label><select id="cs-sal-tipo" onchange="csTipoSalida()"><option value="gasto">Gasto</option><option value="adelanto">Adelanto a una profesional</option></select></div>
-          <div class="field" id="cs-sal-cat-wrap"><label>Categoría</label><select id="cs-sal-cat"><option value="Insumos">Insumos</option><option value="Depi">Depi (máquina / operadora)</option><option value="Limpieza">Limpieza / sodero</option><option value="Comida">Comida</option><option value="Servicios">Servicios (luz, agua, internet)</option><option value="Otros">Otros</option></select></div>
+          <div class="field" id="cs-sal-cat-wrap"><label>Categoría</label><select id="cs-sal-cat"><option value="Insumos">Insumos</option><option value="Limpieza">Limpieza</option><option value="Sodero">Sodero</option><option value="Otros">Otros</option></select></div>
           <div class="field" id="cs-sal-chica-wrap" style="display:none"><label>Profesional</label><select id="cs-sal-chica"><option value="">Seleccionar...</option></select></div>
         </div>
         <div class="g2">
-          <div class="field"><label>Descripción</label><input type="text" id="cs-sal-desc" placeholder="Ej: sodero, alquiler máquina..."></div>
+          <div class="field"><label>Descripción</label><input type="text" id="cs-sal-desc" placeholder="Ej: Neoclean, bidón de agua..."></div>
           <div class="field"><label>Monto</label><input type="text" id="cs-sal-monto" placeholder="$0" oninput="csFmtInput(this)" onfocus="csFocusInput(this)" onblur="csBlurInput(this)"></div>
         </div>
         <button class="btn-sm btn-purple" onclick="csAgregarSalida()" style="width:100%;justify-content:center;padding:9px"><i class="ti ti-plus"></i> Agregar</button>
