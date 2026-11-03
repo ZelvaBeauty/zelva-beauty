@@ -2339,7 +2339,8 @@ iniciarAuth().then(ok => { if (ok) loadSelects(); });
 let csData = {}; // datos del día cargado
 
 function todayStr() {
-  return new Date().toISOString().slice(0,10);
+  // fecha LOCAL (antes usaba la hora de Londres: despues de las 21 hs abria el dia siguiente)
+  return toISO(today());
 }
 
 async function initCajaShan() {
@@ -2523,9 +2524,9 @@ function csCalcular() {
 
 function csDia(delta) {
   const inp = document.getElementById('cs-fecha');
-  const d = new Date(inp.value + 'T00:00:00');
+  const d = new Date(inp.value + 'T12:00:00');
   d.setDate(d.getDate() + delta);
-  inp.value = d.toISOString().slice(0,10);
+  inp.value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   csCargar();
 }
 
@@ -2558,7 +2559,7 @@ async function csHistorial() {
   for (let i=0; i<14; i++) {
     const d = new Date(hoy);
     d.setDate(hoy.getDate()-i);
-    const fecha = d.toISOString().slice(0,10);
+    const fecha = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     const data = await api('GET',`/api/caja-shan/${fecha}`);
     if (data.inicio != null || data.sobre != null || data.gastos != null) {
       const inicio = data.inicio||0;
