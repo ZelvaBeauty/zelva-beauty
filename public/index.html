@@ -604,6 +604,15 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 </div>
 
 <div id="panel-config" class="panel">
+  <div class="card" id="cfg-fechas-card">
+    <div class="card-title"><i class="ti ti-calendar-exclamation"></i> Fechas mal escritas</div>
+    <div style="font-size:12px;color:var(--text-2);margin-bottom:8px">Busca turnos, gastos y adelantos guardados con la fecha en un formato incorrecto (ej: 2026-11-3). Esos no aparecen en "Hoy" ni en Caja May. Corregir solo arregla el formato de la fecha; se guarda una copia de seguridad antes.</div>
+    <div id="cfg-fechas"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-sm" onclick="revisarFechas()"><i class="ti ti-search"></i> Revisar</button>
+      <button class="btn-sm btn-purple" id="btn-corregir-fechas" style="display:none" onclick="corregirFechas()"><i class="ti ti-check"></i> Corregir fechas</button>
+    </div>
+  </div>
   <div class="card">
     <div class="card-title"><i class="ti ti-users"></i> Profesionales</div>
     <div id="cfg-chicas"></div>
@@ -636,7 +645,13 @@ const fmt = n => '$' + Math.round(n).toLocaleString('es-AR');
 const jsq = v => "'"+String(v).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;')+"'";
 const fmtDec = n => '$' + (Math.round(n*100)/100).toLocaleString('es-AR');
 const today = () => { const d = new Date(); return [d.getDate().toString().padStart(2,'0'),(d.getMonth()+1).toString().padStart(2,'0'),d.getFullYear()].join('/'); };
-const toISO = s => { const p = s.split('/'); return p[2]+'-'+p[1]+'-'+p[0]; };
+const toISO = s => {
+  const str = String(s||'').trim(); const pad = n => String(n).padStart(2,'0');
+  let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if (m) return m[1]+'-'+pad(m[2])+'-'+pad(m[3]);
+  m = str.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})$/);
+  if (m) { const y = m[3].length===2 ? '20'+m[3] : m[3]; return y+'-'+pad(m[2])+'-'+pad(m[1]); }
+  return null;
+};
 const fromISO = s => { if (!s) return ''; const p = s.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
 const MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const CAT_BADGE = {Alquiler:'cat-alquiler',Insumos:'cat-insumos',Impuestos:'cat-impuestos',Servicios:'cat-servicios',Sueldos:'cat-sueldos',Otros:'cat-otros'};
@@ -919,6 +934,24 @@ function renderSelectedSrvs() {
     '</div>').join('');
 }
 
+async function revisarFechas() {
+  const l = await api('GET','/api/fechas-mal');
+  const el = document.getElementById('cfg-fechas'); const btn = document.getElementById('btn-corregir-fechas');
+  const esc = v => String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  if (!l.length) { el.innerHTML='<div style="font-size:13px;color:var(--success-text)">Todo bien: no hay fechas mal escritas.</div>'; btn.style.display='none'; return; }
+  el.innerHTML = '<div style="font-size:13px;font-weight:600;margin-bottom:4px">'+l.length+' registro(s) con fecha mal escrita:</div>'+
+    '<div style="max-height:220px;overflow:auto;font-size:12px">'+l.map(x=>
+      '<div style="padding:3px 0;border-bottom:1px solid var(--gray-border)">'+esc(x.coleccion)+' · '+esc(x.chica)+' · '+esc(x.clienta)+' · '+fmt(x.monto||0)+
+      ' — <span style="color:var(--danger-text)">'+esc(x.fecha)+'</span> → <b>'+(x.corregida?fromISO(x.corregida):'no se puede')+'</b></div>').join('')+'</div>';
+  btn.style.display = l.some(x=>x.corregida) ? 'inline-flex' : 'none';
+}
+async function corregirFechas() {
+  if (!confirm('Se van a corregir las fechas de la lista (solo el formato). ¿Seguimos?')) return;
+  const r = await api('POST','/api/fechas-mal/corregir');
+  alert('Listo: '+r.corregidas+' fecha(s) corregida(s).');
+  revisarFechas();
+}
+
 function mostrarResumenTurno(r) {
   const el = document.getElementById('reg-resumen');
   const esc = v => String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;');
@@ -941,6 +974,7 @@ async function registrar() {
   const chica = document.getElementById('reg-chica').value;
   const clienta = document.getElementById('reg-clienta').value.trim();
   const fecha = toISO(document.getElementById('reg-fecha').value||today());
+  if (!fecha) { const mm=document.getElementById('reg-msg'); mm.className='msg show err'; mm.textContent='La fecha no es valida. Escribila asi: 03/11/2026'; return; }
   const origen = document.getElementById('reg-origen').value;
   const obs = document.getElementById('reg-obs').value.trim();
   const sena = parseFloat(document.getElementById('sena-monto').value)||0;
@@ -1277,7 +1311,7 @@ async function registrarGasto() {
   const categoria = document.getElementById('gasto-cat').value;
   const monto = parseFloat(document.getElementById('gasto-monto').value)||0;
   const descripcion = document.getElementById('gasto-desc').value.trim();
-  const fecha = toISO(document.getElementById('gasto-fecha').value||today());
+  const fecha = toISO(document.getElementById('gasto-fecha').value||today())||toISO(today());
   const msg = document.getElementById('gasto-msg');
   if (!monto) { msg.className='msg show err'; msg.textContent='Ingresa el monto del gasto.'; return; }
   const medio = document.getElementById('gasto-medio').value || 'transferencia';
@@ -1576,7 +1610,7 @@ async function renderDepi() {
 }
 
 async function crearJornada() {
-  const fecha = toISO(document.getElementById('dj-fecha').value||today());
+  const fecha = toISO(document.getElementById('dj-fecha').value||today())||toISO(today());
   const obs = document.getElementById('dj-obs').value.trim();
   const msg = document.getElementById('dj-msg');
   const res = await api('POST','/api/depi-jornadas',{fecha, obs, alquiler_maquina:0, horas_operadora:0, tarifa_operadora:7000, viaticos:0, comida:0});

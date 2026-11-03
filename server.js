@@ -11,6 +11,19 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(join(__dirname, 'public')));
 
+// Normaliza fechas a AAAA-MM-DD. Devuelve null si no la puede interpretar.
+function normFecha(f) {
+  if (f == null) return null;
+  const str = String(f).trim();
+  const pad = n => String(n).padStart(2,'0');
+  let m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (m) return m[1]+'-'+pad(m[2])+'-'+pad(m[3]);
+  m = str.match(/(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+  if (m) return m[3]+'-'+pad(m[2])+'-'+pad(m[1]);
+  return null;
+}
+const fechaOk = f => typeof f === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(f);
+
 const DATA_PATH = process.env.RENDER ? '/var/data/zelva.json' : join(__dirname, 'zelva.json');
 const adapter = new JSONFile(DATA_PATH);
 const defaultData = {
@@ -467,7 +480,7 @@ app.post('/api/turnos', async (req, res) => {
     return sum + (srv?.costo_insumos || s.costo_insumos || 0);
   }, 0);
   const id = nextId('turnos');
-  db.data.turnos.push({ id, chica, clienta, servicios, pago, pago2:pago2||null, monto_pago1:pago2?(Number(monto_pago1)||0):null, monto_pago2:pago2?(Number(monto_pago2)||0):null, cobrado, base_comision, costo_insumos, fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_monto:descuento_monto||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
+  db.data.turnos.push({ id, chica, clienta, servicios, pago, pago2:pago2||null, monto_pago1:pago2?(Number(monto_pago1)||0):null, monto_pago2:pago2?(Number(monto_pago2)||0):null, cobrado, base_comision, costo_insumos, fecha: normFecha(fecha)||fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_monto:descuento_monto||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
 app.delete('/api/turnos/:id', async (req, res) => {
@@ -486,7 +499,7 @@ app.post('/api/adelantos', async (req, res) => {
   const { chica, monto, fecha, obs, medio } = req.body;
   if (!chica||!monto) return res.status(400).json({ error: 'Faltan campos' });
   const id = nextId('adelantos');
-  db.data.adelantos.push({ id, chica, monto, fecha: fecha||new Date().toISOString().slice(0,10), obs:obs||'', medio: medio==='transferencia'?'transferencia':'efectivo', descontado:false, creado_at: new Date().toISOString() });
+  db.data.adelantos.push({ id, chica, monto, fecha: normFecha(fecha)||new Date().toISOString().slice(0,10), obs:obs||'', medio: medio==='transferencia'?'transferencia':'efectivo', descontado:false, creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
 app.put('/api/adelantos/:id', async (req, res) => {
@@ -537,7 +550,7 @@ app.post('/api/gastos', async (req, res) => {
   const { categoria, descripcion, monto, fecha, medio } = req.body;
   if (!categoria||!monto) return res.status(400).json({ error: 'Faltan campos' });
   const id = nextId('gastos');
-  const g = { id, categoria, descripcion:descripcion||'', monto, fecha: fecha||new Date().toISOString().slice(0,10), creado_at: new Date().toISOString() };
+  const g = { id, categoria, descripcion:descripcion||'', monto, fecha: normFecha(fecha)||new Date().toISOString().slice(0,10), creado_at: new Date().toISOString() };
   if (medio === 'efectivo' || medio === 'transferencia') g.medio = medio;
   db.data.gastos.push(g);
   await db.write(); res.json({ id });
@@ -658,6 +671,33 @@ app.post('/api/caja-shan', async (req, res) => {
   }
   await db.write();
   res.json({ ok: true });
+});
+
+// ---- Revisión de fechas mal escritas (solo corrige el formato al apretar el botón) ----
+const COLECCIONES_FECHA = ['turnos','gastos','adelantos','depi_turnos'];
+function buscarFechasMal() {
+  const out = [];
+  COLECCIONES_FECHA.forEach(col => (db.data[col]||[]).forEach(x => {
+    if (x.fecha != null && !fechaOk(x.fecha)) {
+      out.push({ coleccion: col, id: x.id, fecha: x.fecha, corregida: normFecha(x.fecha), chica: x.chica||'', clienta: x.clienta||x.descripcion||'', monto: x.cobrado??x.monto??x.precio_ef??0 });
+    }
+  }));
+  return out;
+}
+app.get('/api/fechas-mal', (req, res) => res.json(buscarFechasMal()));
+app.post('/api/fechas-mal/corregir', async (req, res) => {
+  const lista = buscarFechasMal().filter(x => x.corregida);
+  if (!lista.length) return res.json({ corregidas: 0 });
+  // copia de seguridad antes de tocar nada
+  const fs = await import('fs');
+  const backup = DATA_PATH + '.backup-' + new Date().toISOString().replace(/[:.]/g,'-') + '.json';
+  fs.writeFileSync(backup, JSON.stringify(db.data));
+  lista.forEach(x => {
+    const item = (db.data[x.coleccion]||[]).find(y => y.id === x.id);
+    if (item && item.fecha === x.fecha) { item.fecha_original = x.fecha; item.fecha = x.corregida; }
+  });
+  await db.write();
+  res.json({ corregidas: lista.length, backup });
 });
 
 app.listen(PORT, () => console.log(`Zelva Beauty en puerto ${PORT}`));
