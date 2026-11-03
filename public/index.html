@@ -192,12 +192,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div class="field"><label>Profesional</label><select id="reg-chica"><option value="">Seleccionar...</option></select></div>
       <div class="field"><label>Clienta</label><input type="text" id="reg-clienta" placeholder="Nombre de la clienta"></div>
     </div>
-    <div class="g2">
-      <div class="field"><label>Fecha</label><input type="date" id="reg-fecha"></div>
-      <div class="field"><label>Origen</label>
-        <select id="reg-origen"><option value="presencial">Presencial</option><option value="online">Online / AgendaPro</option></select>
-      </div>
-    </div>
+    <div class="field"><label>Fecha</label><input type="date" id="reg-fecha"></div>
   </div>
   <div class="card">
     <div class="card-title"><i class="ti ti-scissors"></i> Servicios</div>
@@ -1086,7 +1081,6 @@ async function editarTurno(id) {
   }
   setVal('reg-clienta', t.clienta);
   setVal('reg-fecha', toISO(t.fecha) || t.fecha);
-  setVal('reg-origen', t.origen || 'presencial');
   setVal('reg-obs', t.obs || '');
   // servicios: se mantienen los precios con los que se cargo el turno
   let extra = 0;
@@ -1121,7 +1115,6 @@ function limpiarFormulario() {
   ['sena','desc','mixto'].forEach(k=>setCheck(k+'-check',k+'-body',false));
   pagoActual='efectivo';
   document.querySelectorAll('#panel-registro .pago-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
-  setVal('reg-origen','presencial');
   updateTotal();
 }
 function salirModoEdicion() {
@@ -1156,7 +1149,7 @@ async function registrar() {
   const clienta = document.getElementById('reg-clienta').value.trim();
   const fecha = toISO(document.getElementById('reg-fecha').value||today());
   if (!fecha) { const mm=document.getElementById('reg-msg'); mm.className='msg show err'; mm.textContent='La fecha no es valida. Escribila asi: 03/11/2026'; return; }
-  const origen = document.getElementById('reg-origen').value;
+  const origen = editandoId ? ((turnosListaCache.find(x=>x.id===editandoId)||{}).origen || 'presencial') : 'presencial';
   const obs = document.getElementById('reg-obs').value.trim();
   const sena = parseFloat(document.getElementById('sena-monto').value)||0;
   const descMonto = parseFloat(document.getElementById('desc-monto').value)||0;
