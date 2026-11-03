@@ -392,10 +392,11 @@ const PERMISOS_CHICAS = [
   ['DELETE', /^\/api\/(turnos|adelantos|gastos|depi-turnos)\/[^/]+$/],
   ['DELETE', /^\/api\/caja-shan\/[^/]+\/pago-depi\/[^/]+$/],
 ];
-// Las chicas solo pueden borrar cosas cargadas en las ultimas 24 hs
-const COL_BORRAR = { turnos:'turnos', adelantos:'adelantos', gastos:'gastos', 'depi-turnos':'depi_turnos' };
+// Las chicas solo pueden borrar gastos, adelantos y turnos de depi cargados en las ultimas 24 hs.
+// Los turnos (pestaña Turnos) los pueden borrar aunque sean viejos.
+const COL_BORRAR = { adelantos:'adelantos', gastos:'gastos', 'depi-turnos':'depi_turnos' };
 function puedeBorrarChicas(path) {
-  const m = path.match(/^\/api\/(turnos|adelantos|gastos|depi-turnos)\/([^/]+)$/);
+  const m = path.match(/^\/api\/(adelantos|gastos|depi-turnos)\/([^/]+)$/);
   if (!m) return true;
   const item = (db.data[COL_BORRAR[m[1]]] || []).find(x => x.id === parseInt(m[2]));
   if (!item) return true;
