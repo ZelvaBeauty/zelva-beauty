@@ -64,6 +64,11 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .info-amber{background:var(--amber-light);color:var(--amber)}.info-purple{background:var(--purple-light);color:var(--purple-dark)}
 .info-teal{background:var(--teal-light);color:var(--teal)}
 .msg{font-size:13px;text-align:center;margin-top:8px;padding:7px;border-radius:var(--r);display:none}
+.reg-resumen{display:none;position:relative;margin-top:10px;padding:10px 12px;border-radius:var(--r);background:var(--purple-light);border:1px solid var(--purple-mid);font-size:12px;line-height:1.5;color:var(--text)}
+.reg-resumen.show{display:block}
+.reg-resumen .rr-tit{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--purple-dark);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.reg-resumen .rr-x{position:absolute;top:6px;right:8px;border:none;background:none;cursor:pointer;color:var(--text-3);font-size:14px;padding:2px}
+.reg-resumen b{font-weight:600}
 .msg.show{display:block}.msg.ok{background:var(--success-bg);color:var(--success-text)}.msg.err{background:var(--danger-bg);color:var(--danger-text)}
 .srv-picker{border:1px solid var(--gray-border);border-radius:var(--r);overflow:hidden;margin-bottom:10px;max-height:340px;overflow-y:auto}
 .cat-header{padding:8px 12px;background:var(--gray-surface);font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
@@ -249,6 +254,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     <div class="field"><label>Observacion (opcional)</label><input type="text" id="reg-obs" placeholder="Ej: combo, relleno..."></div>
     <button class="btn" onclick="registrar()"><i class="ti ti-check"></i> Registrar turno</button>
     <div class="msg" id="reg-msg"></div>
+    <div class="reg-resumen" id="reg-resumen"></div>
   </div>
 </div>
 
@@ -260,6 +266,13 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     <button class="pbtn" onclick="setPeriod('turnos','mes',this)">Este mes</button>
     <button class="pbtn" onclick="setPeriod('turnos','todos',this)">Todos</button>
     <button class="pbtn" onclick="setPeriod('turnos','mesElegido',this)">Mes especifico</button>
+    <button class="pbtn" onclick="setPeriod('turnos','diaElegido',this)">Dia especifico</button>
+  </div>
+  <div id="turnos-dia-selector" style="display:none;margin-bottom:12px">
+    <div class="field" style="margin:0;max-width:220px">
+      <label>Dia</label>
+      <input type="date" id="turnos-dia" onchange="renderTurnos()">
+    </div>
   </div>
   <div id="turnos-mes-selector" style="display:none;margin-bottom:12px">
     <div class="g2">
@@ -411,6 +424,26 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     <button class="pbtn" onclick="setPeriod('caja','semana',this)">Esta semana</button>
     <button class="pbtn active" onclick="setPeriod('caja','hoy',this)">Hoy</button>
     <button class="pbtn" onclick="setPeriod('caja','todos',this)">Todos</button>
+    <button class="pbtn" onclick="setPeriod('caja','mesElegido',this)">Mes especifico</button>
+  </div>
+  <div id="caja-mes-selector" style="display:none;margin-bottom:12px">
+    <div class="g2">
+      <div class="field" style="margin:0">
+        <label>Mes</label>
+        <select id="caja-mes-num" onchange="renderCaja()">
+          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+      </div>
+      <div class="field" style="margin:0">
+        <label>Año</label>
+        <select id="caja-mes-anio" onchange="renderCaja()">
+          <option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+        </select>
+      </div>
+    </div>
   </div>
   <div class="metrics-7" id="caja-top"></div>
   <div class="card">
@@ -598,6 +631,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 <script>
 const COM = 0.37;
 const fmt = n => '$' + Math.round(n).toLocaleString('es-AR');
+// string seguro para usar dentro de onclick="..."
+const jsq = v => "'"+String(v).replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;').replace(/</g,'&lt;')+"'";
 const fmtDec = n => '$' + (Math.round(n*100)/100).toLocaleString('es-AR');
 const today = () => { const d = new Date(); return [d.getDate().toString().padStart(2,'0'),(d.getMonth()+1).toString().padStart(2,'0'),d.getFullYear()].join('/'); };
 const toISO = s => { const p = s.split('/'); return p[2]+'-'+p[1]+'-'+p[0]; };
@@ -652,8 +687,12 @@ function getRange(p, tab) {
   if (p==='hoy') { const s=f(d); return {desde:s,hasta:s}; }
   if (p==='semana') { const m=new Date(d); m.setHours(0,0,0,0); const day=m.getDay(); m.setDate(m.getDate()-(day===0?6:day-1)); return {desde:f(m),hasta:f(d)}; }
   if (p==='mes') { return {desde:d.getFullYear()+'-'+pad(d.getMonth()+1)+'-01',hasta:f(d)}; }
+  if (p==='diaElegido') {
+    const v = document.getElementById((tab||'turnos')+'-dia')?.value || f(d);
+    return {desde:v, hasta:v};
+  }
   if (p==='mesElegido') {
-    const prefix = tab==='com' ? 'com' : 'turnos';
+    const prefix = tab==='com' ? 'com' : (tab==='caja' ? 'caja' : 'turnos');
     const mes = parseInt(document.getElementById(prefix+'-mes-num')?.value || (d.getMonth()+1));
     const anio = parseInt(document.getElementById(prefix+'-mes-anio')?.value || d.getFullYear());
     const ultimoDia = new Date(anio, mes, 0).getDate();
@@ -701,6 +740,24 @@ function setPeriod(tab, p, el) {
     if (p==='mesElegido') {
       const mn = document.getElementById('turnos-mes-num');
       if (mn && !mn.value) mn.value = new Date().getMonth()+1;
+    }
+  }
+  if (tab==='turnos') {
+    const ds = document.getElementById('turnos-dia-selector');
+    if (ds) ds.style.display = p==='diaElegido' ? 'block' : 'none';
+    if (p==='diaElegido') {
+      const di = document.getElementById('turnos-dia');
+      if (di && !di.value) di.value = toISO(today());
+    }
+  }
+  if (tab==='caja') {
+    const sel = document.getElementById('caja-mes-selector');
+    if (sel) sel.style.display = p==='mesElegido' ? 'block' : 'none';
+    if (p==='mesElegido') {
+      const mn = document.getElementById('caja-mes-num');
+      if (mn && !mn.dataset.init) { mn.value = new Date().getMonth()+1; mn.dataset.init='1'; }
+      const ay = document.getElementById('caja-mes-anio');
+      if (ay && !ay.dataset.init) { ay.value = new Date().getFullYear(); ay.dataset.init='1'; }
     }
   }
   if (tab==='turnos') renderTurnos();
@@ -834,6 +891,24 @@ function renderSelectedSrvs() {
     '</div>').join('');
 }
 
+function mostrarResumenTurno(r) {
+  const el = document.getElementById('reg-resumen');
+  const esc = v => String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const medio = r.pago2
+    ? (PAGO_LABEL[r.pago]||r.pago)+' '+fmt(r.monto_pago1||0)+' + '+(PAGO_LABEL[r.pago2]||r.pago2)+' '+fmt(r.monto_pago2||0)
+    : (PAGO_LABEL[r.pago]||r.pago);
+  const srvs = (r.servicios||[]).map(x=>esc(x.nombre)).join(' + ');
+  el.innerHTML =
+    '<button class="rr-x" onclick="document.getElementById(\'reg-resumen\').classList.remove(\'show\')" title="Cerrar"><i class="ti ti-x"></i></button>'+
+    '<div class="rr-tit"><i class="ti ti-circle-check"></i> TURNO AGENDADO</div>'+
+    '<div><b>'+fromISO(r.fecha)+'</b> · '+esc(r.chica)+' · Clienta: <b>'+esc(r.clienta)+'</b></div>'+
+    '<div>'+srvs+'</div>'+
+    '<div>Pagó <b>'+fmt(r.cobrado)+'</b> en '+medio+
+      (r.sena?' · seña '+fmt(r.sena):'')+(r.descMonto?' · desc. '+fmt(r.descMonto):'')+
+      (r.origen==='online'?' · Online':'')+'</div>';
+  el.classList.add('show');
+}
+
 async function registrar() {
   const chica = document.getElementById('reg-chica').value;
   const clienta = document.getElementById('reg-clienta').value.trim();
@@ -874,6 +949,7 @@ async function registrar() {
   ['sena-body','desc-body','mixto-body'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('open');});
   pagoActual='efectivo';
   document.querySelectorAll('.pago-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  mostrarResumenTurno({fecha, chica, clienta, servicios, cobrado, pago, pago2, monto_pago1, monto_pago2, sena, descMonto, origen});
   msg.className='msg show ok';
   msg.textContent='Turno de '+chica+' registrado - cobrado '+fmt(cobrado)+(sena?' · sena '+fmt(sena):'')+(descMonto?' · desc. '+fmt(descMonto):'');
   setTimeout(()=>{msg.className='msg'; msg.textContent='';},4000);
@@ -937,16 +1013,16 @@ async function renderCom() {
       const abierto = comExpandida === c.chica;
       return '<div class="chica-com-row" style="flex-direction:column;align-items:stretch;border-bottom:'+(abierto?'none':'1px solid var(--gray-border)')+'">'+
       '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;gap:8px">'+
-      '<div style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer" onclick="toggleComChica('+JSON.stringify(c.chica)+')" >'+
+      '<div style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer" onclick="toggleComChica('+jsq(c.chica)+')" >'+
       '<div class="avatar" style="width:36px;height:36px;font-size:13px">'+c.chica.substring(0,2).toUpperCase()+'</div>'+
       '<div><div style="font-weight:600;font-size:14px">'+c.chica+'</div>'+
       '<div style="font-size:12px;color:var(--text-2)">'+c.turnos+' turno'+(c.turnos!==1?'s':'')+' · cobrado '+fmt(c.cobrado)+'</div></div></div>'+
       '<div style="display:flex;align-items:center;gap:8px">'+
-      '<button class="btn-teal-sm" onclick="exportComChica('+JSON.stringify(c.chica)+')" style="font-size:11px;padding:4px 8px"><i class="ti ti-download" style="font-size:12px"></i> CSV</button>'+
-      '<div style="text-align:right;cursor:pointer" onclick="toggleComChica('+JSON.stringify(c.chica)+')">'+
+      '<button class="btn-teal-sm" onclick="event.stopPropagation();exportComChica('+jsq(c.chica)+')" style="font-size:11px;padding:4px 8px"><i class="ti ti-download" style="font-size:12px"></i> CSV</button>'+
+      '<div style="text-align:right;cursor:pointer" onclick="toggleComChica('+jsq(c.chica)+')">'+
       '<div style="font-size:20px;font-weight:700;color:var(--purple)">'+fmt(c.comision)+'</div>'+
       '<div style="font-size:11px;color:var(--text-2)">a pagar</div></div>'+
-      '<i class="ti '+(abierto?'ti-chevron-up':'ti-chevron-down')+'" style="font-size:16px;color:var(--text-3);cursor:pointer" onclick="toggleComChica('+JSON.stringify(c.chica)+')"></i>'+
+      '<i class="ti '+(abierto?'ti-chevron-up':'ti-chevron-down')+'" style="font-size:16px;color:var(--text-3);cursor:pointer" onclick="toggleComChica('+jsq(c.chica)+')"></i>'+
       '</div></div>'+
       (abierto ? renderComDetalle(c.chica) : '')+
       '</div>';
@@ -1003,6 +1079,8 @@ function exportComChica(chica) {
     periodo = MESES[mn]+'_'+ay;
   } else if (periodos.com === 'mes') { periodo = MESES[new Date().getMonth()+1]+'_'+new Date().getFullYear(); }
   else if (periodos.com === 'hoy') { periodo = 'hoy'; }
+  else if (periodos.com === 'semana') { periodo = 'semana'; }
+  else if (periodos.com === 'todos') { periodo = 'todos'; }
   const rows = [['Fecha','Clienta','Servicio','Precio efectivo','Comision 37%']];
   let totalPrecio = 0, totalCom = 0;
   turnosChica.forEach(t => {
@@ -1010,7 +1088,7 @@ function exportComChica(chica) {
       const pef = s.precio_ef||0;
       const com = Math.round(pef * COM);
       totalPrecio += pef; totalCom += com;
-      rows.push([fromISO(t.fecha), t.clienta, '"'+(s.servicio||s.nombre)+'"', pef, com]);
+      rows.push([fromISO(t.fecha), '"'+String(t.clienta||'').replace(/"/g,'""')+'"', '"'+String(s.servicio||s.nombre||'').replace(/"/g,'""')+'"', pef, com]);
     });
   });
   rows.push(['TOTAL','','',totalPrecio,totalCom]);
@@ -1032,6 +1110,7 @@ function exportTurnosMes() {
   } else if (periodos.turnos === 'mes') { periodo = MESES[new Date().getMonth()+1]+'_'+new Date().getFullYear(); }
   else if (periodos.turnos === 'hoy') { periodo = 'hoy'; }
   else if (periodos.turnos === 'semana') { periodo = 'semana'; }
+  else if (periodos.turnos === 'diaElegido') { periodo = fromISO(range.desde).replace(/\//g,'-'); }
   else { periodo = 'todos'; }
   api('GET','/api/turnos?'+new URLSearchParams(range)).then(turnos => {
     if (!turnos.length) { alert('No hay turnos en este periodo'); return; }
@@ -1199,7 +1278,11 @@ async function renderGastos() {
 async function delGasto(id) { if (!confirm('Eliminar?')) return; await api('DELETE','/api/gastos/'+id); renderGastos(); }
 
 async function renderCaja() {
-  const range = getRange(periodos.caja);
+  const range = getRange(periodos.caja, 'caja');
+  if (periodos.caja === 'mesElegido') {
+    calMonth = parseInt(document.getElementById('caja-mes-num').value) - 1;
+    calYear = parseInt(document.getElementById('caja-mes-anio').value);
+  }
   const res = await api('GET','/api/resumen?'+new URLSearchParams(range));
   document.getElementById('caja-top').innerHTML=
     '<div class="metric"><div class="metric-label">Total cobrado</div><div class="metric-value mv-purple">'+fmt(res.cobrado)+'</div></div>'+
