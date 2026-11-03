@@ -213,7 +213,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
               <option value="credito">Credito</option><option value="openpay">OpenPay</option>
             </select>
           </div>
-          <div class="field" style="margin:0"><label>Monto ($)</label><input type="number" id="pago2-monto1" placeholder="0" oninput="updateTotal()"></div>
+          <div class="field" style="margin:0"><label>Monto ($)</label><input type="number" id="pago2-monto1" placeholder="0" oninput="autoMonto2();updateTotal()"></div>
         </div>
         <div class="g2" style="margin-top:8px">
           <div class="field" style="margin:0"><label>Segundo medio</label>
@@ -249,6 +249,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div class="total-row" id="row-sena" style="display:none"><span style="color:var(--text-2)"><i class="ti ti-info-circle" style="font-size:11px"></i> Sena cobrada antes</span><span id="preview-sena" style="color:var(--text-2)">-$0</span></div>
       <div class="total-row" id="row-desc" style="display:none"><span style="color:var(--coral)"><i class="ti ti-minus" style="font-size:11px"></i> Descuento</span><span id="preview-desc" style="color:var(--coral)">-$0</span></div>
       <div class="total-row final"><span>Total a cobrar hoy</span><span id="preview-total" class="mv-purple">$0</span></div>
+      <div id="mixto-aviso" style="display:none;font-size:12px;color:var(--danger-text);background:var(--danger-bg);border-radius:var(--r);padding:6px 8px;margin-top:6px"></div>
       <div style="font-size:11px;color:var(--text-3);margin-top:6px" id="preview-com"></div>
     </div>
     <div class="field"><label>Observacion (opcional)</label><input type="text" id="reg-obs" placeholder="Ej: combo, relleno..."></div>
@@ -789,6 +790,23 @@ function toggleBox(checkId, bodyId) {
   updateTotal();
 }
 
+function saldoACobrar() {
+  const isEf = pagoActual === 'efectivo';
+  const srvTotal = selectedSrvs.reduce((s,x) => s+(isEf?x.precio_ef:x.precio_lista), 0);
+  const adicional = parseFloat(document.getElementById('adicional-monto')?.value)||0;
+  const sena = parseFloat(document.getElementById('sena-monto').value)||0;
+  const desc = parseFloat(document.getElementById('desc-monto').value)||0;
+  return Math.max(0, srvTotal + adicional - sena - desc);
+}
+
+function autoMonto2() {
+  const m1 = parseFloat(document.getElementById('pago2-monto1')?.value)||0;
+  const el2 = document.getElementById('pago2-monto2');
+  if (!el2) return;
+  const resto = saldoACobrar() - m1;
+  el2.value = resto > 0 ? resto : '';
+}
+
 function updateTotal() {
   const isEf = pagoActual === 'efectivo';
   const srvTotal = selectedSrvs.reduce((s,x) => s+(isEf?x.precio_ef:x.precio_lista), 0);
@@ -802,7 +820,16 @@ function updateTotal() {
   if (mixto) {
     const m1 = parseFloat(document.getElementById('pago2-monto1')?.value)||0;
     const m2 = parseFloat(document.getElementById('pago2-monto2')?.value)||0;
-    totalMostrar = m1 + m2;
+    totalMostrar = Math.max(0, subtotal - sena - desc);
+    const av = document.getElementById('mixto-aviso');
+    const suma = m1 + m2;
+    if (av) {
+      if ((m1>0||m2>0) && Math.round(suma) !== Math.round(totalMostrar)) {
+        const dif = suma - totalMostrar;
+        av.style.display = 'block';
+        av.textContent = 'Ojo: los dos montos suman '+fmt(suma)+' pero el saldo a cobrar es '+fmt(totalMostrar)+' ('+(dif>0?'sobran ':'faltan ')+fmt(Math.abs(dif))+').';
+      } else av.style.display = 'none';
+    }
     const med1 = document.getElementById('pago2-medio1')?.value;
     const med2 = document.getElementById('pago2-medio2')?.value;
     const rp1=document.getElementById('row-pago1'); const rp2=document.getElementById('row-pago2');
@@ -810,6 +837,7 @@ function updateTotal() {
     if(rp2){rp2.style.display=m2>0?'flex':'none';document.getElementById('preview-pago2-label').textContent=PAGO_LABEL[med2]||med2;document.getElementById('preview-pago2').textContent=fmt(m2);}
   } else {
     totalMostrar = Math.max(0, subtotal - sena - desc);
+    const av = document.getElementById('mixto-aviso'); if (av) av.style.display = 'none';
     const rp1=document.getElementById('row-pago1'); const rp2=document.getElementById('row-pago2');
     if(rp1) rp1.style.display='none'; if(rp2) rp2.style.display='none';
   }
@@ -938,6 +966,10 @@ async function registrar() {
     pago = document.getElementById('pago2-medio1').value;
     pago2 = document.getElementById('pago2-medio2').value;
     cobrado = monto_pago1 + monto_pago2;
+    const saldo = Math.max(0, subtotal - sena - descMonto);
+    if (Math.round(cobrado) !== Math.round(saldo)) {
+      if (!confirm('Los dos montos suman '+fmt(cobrado)+' pero el saldo a cobrar es '+fmt(saldo)+'.\n\n¿Registrar igual con '+fmt(cobrado)+'?')) return;
+    }
   } else {
     pago = pagoActual;
     cobrado = Math.max(0, subtotal - sena - descMonto);
