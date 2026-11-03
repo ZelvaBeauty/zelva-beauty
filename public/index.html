@@ -30,7 +30,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--rlg);padding:14px;margin-bottom:12px}
 .card-title{font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 label{font-size:12px;color:var(--text-2);display:block;margin-bottom:4px}
-input[type=text],input[type=number],select{width:100%;padding:9px 11px;border:1px solid var(--gray-border);border-radius:var(--r);font-size:14px;background:#fff;color:var(--text);outline:none;-webkit-appearance:none}
+input[type=text],input[type=number],input[type=password],select{width:100%;padding:9px 11px;border:1px solid var(--gray-border);border-radius:var(--r);font-size:14px;background:#fff;color:var(--text);outline:none;-webkit-appearance:none}
 input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83,74,183,.1)}
 .field{margin-bottom:10px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -149,13 +149,26 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 .cal-empty{aspect-ratio:1}
 .dia-detalle-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--gray-border);font-size:13px}
 .dia-detalle-row:last-child{border-bottom:none}
+#login-overlay{position:fixed;inset:0;background:var(--bg,#F7F6F3);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px}
+#login-overlay.show{display:flex}
+#login-overlay .login-box{background:#fff;border:1px solid var(--gray-border);border-radius:14px;padding:24px;width:100%;max-width:340px;text-align:center}
+#login-overlay input{width:100%;margin:14px 0 10px;text-align:center;font-size:16px}
+.aviso-claves{background:var(--danger-bg);color:var(--danger-text);font-size:12px;padding:8px 12px;text-align:center;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="header">
   <div class="logo"><i class="ti ti-sparkles"></i> Zelva Beauty</div>
-  <div style="font-size:12px;color:var(--text-3)"><span class="dot"></span>En linea</div>
+  <div style="font-size:12px;color:var(--text-3);display:flex;align-items:center;gap:10px"><span><span class="dot"></span>En linea</span><span id="rol-label"></span><button id="btn-salir" class="btn-sm" style="display:none;padding:3px 8px;font-size:11px" onclick="salir()"><i class="ti ti-logout"></i> Salir</button></div>
 </div>
+<div id="aviso-claves" class="aviso-claves" style="display:none" onclick="irAConfigClaves()"><i class="ti ti-lock-open"></i> El sistema todavia no tiene clave: cualquiera con el link puede entrar. Toca aca para crear las claves.</div>
+<div id="login-overlay"><div class="login-box">
+  <div class="logo" style="justify-content:center"><i class="ti ti-sparkles"></i> Zelva Beauty</div>
+  <div style="font-size:13px;color:var(--text-2);margin-top:6px">Ingresa la clave para entrar</div>
+  <input type="password" id="login-clave" placeholder="Clave" onkeydown="if(event.key==='Enter')login()">
+  <button class="btn" onclick="login()"><i class="ti ti-lock"></i> Entrar</button>
+  <div class="msg" id="login-msg"></div>
+</div></div>
 <div class="tabs">
   <button class="tab active" onclick="showTab('registro',this)"><i class="ti ti-plus"></i> Registrar</button>
   <button class="tab" onclick="showTab('turnos',this)"><i class="ti ti-list"></i> Turnos</button>
@@ -604,6 +617,23 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 </div>
 
 <div id="panel-config" class="panel">
+  <div class="card" id="cfg-claves-card">
+    <div class="card-title"><i class="ti ti-lock"></i> Claves de acceso</div>
+    <div id="cfg-claves-estado" style="font-size:12px;color:var(--text-2);margin-bottom:8px"></div>
+    <div class="g2">
+      <div class="field" style="margin:0"><label>Clave de Angie (todo)</label><input type="password" id="clave-admin" placeholder="Minimo 6 caracteres"></div>
+      <div class="field" style="margin:0"><label>Clave de las chicas</label><input type="password" id="clave-chicas" placeholder="Minimo 4 caracteres"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text-3);margin:6px 0 8px">Las chicas ven Registrar, Turnos, Caja May y Depi, y solo pueden borrar lo cargado en las ultimas 24 hs. Si cambias las claves, todos tienen que volver a entrar.</div>
+    <button class="btn-sm btn-purple" onclick="guardarClaves()"><i class="ti ti-device-floppy"></i> Guardar claves</button>
+    <div class="msg" id="claves-msg"></div>
+  </div>
+  <div class="card" id="cfg-backup-card">
+    <div class="card-title"><i class="ti ti-database"></i> Copias de seguridad</div>
+    <div style="font-size:12px;color:var(--text-2);margin-bottom:8px">Todos los dias se guarda una copia automatica (se guardan las ultimas 30). Igual conviene descargar una copia a tu compu una vez por semana, por si falla el servidor.</div>
+    <div id="cfg-backups" style="font-size:12px;margin-bottom:8px"></div>
+    <button class="btn-sm btn-purple" onclick="descargarBackup()"><i class="ti ti-download"></i> Descargar copia ahora</button>
+  </div>
   <div class="card" id="cfg-fechas-card">
     <div class="card-title"><i class="ti ti-calendar-exclamation"></i> Fechas mal escritas</div>
     <div style="font-size:12px;color:var(--text-2);margin-bottom:8px">Busca turnos, gastos y adelantos guardados con la fecha en un formato incorrecto (ej: 2026-11-3). Esos no aparecen en "Hoy" ni en Caja May. Corregir solo arregla el formato de la fecha; se guarda una copia de seguridad antes.</div>
@@ -687,8 +717,13 @@ document.getElementById('gasto-fecha').value = today();
 
 async function api(method, url, body) {
   const opts = { method, headers:{'Content-Type':'application/json'} };
+  const tok = getToken(); if (tok) opts.headers['x-zelva-token'] = tok;
   if (body) opts.body = JSON.stringify(body);
-  return (await fetch(url, opts)).json();
+  const r = await fetch(url, opts);
+  const data = await r.json();
+  if (r.status === 401 && data && data.login) { mostrarLogin(); throw new Error('login'); }
+  if (r.status === 403) { alert(data.error || 'No tenes permiso para esto'); throw new Error('permiso'); }
+  return data;
 }
 
 function badgePago(p, p2, m1, m2) {
@@ -731,7 +766,7 @@ function showTab(name, el) {
   if (name==='gastos') renderGastos();
   if (name==='insumos') renderInsumos();
   if (name==='depi') renderDepi();
-  if (name==='config') renderConfig();
+  if (name==='config') { renderConfig(); renderClavesBackups(); }
   if (name==='cajashan') initCajaShan();
 }
 
@@ -932,6 +967,81 @@ function renderSelectedSrvs() {
     '<span class="selected-srv-price">'+fmt(s.isAdicional?s.precio_ef:(isEf?s.precio_ef:s.precio_lista))+'</span>'+
     (!s.isAdicional?'<button class="btn-sm" onclick="removeSrv('+s.id+')" style="padding:3px 6px"><i class="ti ti-x" style="font-size:13px"></i></button>':'')+
     '</div>').join('');
+}
+
+// ---------- Claves de acceso ----------
+let ROL = 'admin';
+const TABS_CHICAS = ['registro','turnos','cajashan','depi'];
+function getToken() { try { return localStorage.getItem('zelva_token'); } catch(e) { return window._zt || null; } }
+function setToken(t) { try { t ? localStorage.setItem('zelva_token', t) : localStorage.removeItem('zelva_token'); } catch(e) { window._zt = t; } }
+function mostrarLogin() { document.getElementById('login-overlay').classList.add('show'); setTimeout(()=>document.getElementById('login-clave').focus(),50); }
+async function login() {
+  const clave = document.getElementById('login-clave').value;
+  const msg = document.getElementById('login-msg');
+  const r = await fetch('/api/auth/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({clave})});
+  const d = await r.json();
+  if (!r.ok) { msg.className='msg show err'; msg.textContent = d.error || 'Clave incorrecta'; return; }
+  setToken(d.token); document.getElementById('login-clave').value=''; msg.className='msg';
+  document.getElementById('login-overlay').classList.remove('show');
+  aplicarRol(d.rol, true);
+  loadSelects();
+}
+function salir() { setToken(null); location.reload(); }
+function aplicarRol(rol, configurado) {
+  ROL = rol || 'admin';
+  document.getElementById('aviso-claves').style.display = configurado ? 'none' : 'block';
+  document.getElementById('btn-salir').style.display = configurado ? 'inline-flex' : 'none';
+  document.getElementById('rol-label').textContent = configurado ? (ROL==='admin' ? 'Angie' : 'Equipo') : '';
+  document.querySelectorAll('.tabs .tab').forEach(t => {
+    const m = (t.getAttribute('onclick')||'').match(/showTab\('([a-z]+)'/);
+    t.style.display = (ROL==='admin' || (m && TABS_CHICAS.includes(m[1]))) ? '' : 'none';
+  });
+  const activo = document.querySelector('.panel.active');
+  if (ROL!=='admin' && activo && !TABS_CHICAS.includes(activo.id.replace('panel-',''))) {
+    showTab('registro', document.querySelector(".tabs .tab"));
+  }
+}
+async function iniciarAuth() {
+  const r = await fetch('/api/auth/estado', {headers: getToken()?{'x-zelva-token':getToken()}:{}});
+  const d = await r.json();
+  if (d.configurado && !d.rol) { mostrarLogin(); aplicarRol('chicas', true); return false; }
+  aplicarRol(d.rol, d.configurado);
+  return true;
+}
+function irAConfigClaves() {
+  const t = [...document.querySelectorAll('.tabs .tab')].find(x => (x.getAttribute('onclick')||'').includes("'config'"));
+  if (t) showTab('config', t);
+  setTimeout(()=>document.getElementById('cfg-claves-card').scrollIntoView({behavior:'smooth'}),100);
+}
+async function renderClavesBackups() {
+  const est = await (await fetch('/api/auth/estado', {headers: getToken()?{'x-zelva-token':getToken()}:{}})).json();
+  document.getElementById('cfg-claves-estado').innerHTML = est.configurado
+    ? '<span style="color:var(--success-text)"><i class="ti ti-lock"></i> Las claves estan activas.</span> Podes cambiarlas aca.'
+    : '<span style="color:var(--danger-text)"><i class="ti ti-lock-open"></i> Todavia no hay claves: el sistema esta abierto.</span>';
+  try {
+    const l = await api('GET','/api/backups');
+    document.getElementById('cfg-backups').innerHTML = l.length
+      ? 'Ultima copia automatica: <b>'+l[0].nombre.replace('zelva-','').replace('.json','').split('-').reverse().join('/')+'</b> · '+l.length+' copias guardadas'
+      : 'Todavia no hay copias automaticas.';
+  } catch(e) {}
+}
+async function guardarClaves() {
+  const admin = document.getElementById('clave-admin').value, chicas = document.getElementById('clave-chicas').value;
+  const msg = document.getElementById('claves-msg');
+  const r = await fetch('/api/auth/claves', {method:'POST', headers:{'Content-Type':'application/json', ...(getToken()?{'x-zelva-token':getToken()}:{})}, body: JSON.stringify({admin, chicas})});
+  const d = await r.json();
+  if (!r.ok) { msg.className='msg show err'; msg.textContent = d.error || 'No se pudo guardar'; return; }
+  setToken(d.token);
+  document.getElementById('clave-admin').value=''; document.getElementById('clave-chicas').value='';
+  msg.className='msg show ok'; msg.textContent='Claves guardadas. Anotalas en un lugar seguro.';
+  aplicarRol('admin', true); renderClavesBackups();
+}
+async function descargarBackup() {
+  const r = await fetch('/api/backup-descargar', {headers: getToken()?{'x-zelva-token':getToken()}:{}});
+  if (!r.ok) { alert('No se pudo descargar la copia'); return; }
+  const blob = await r.blob(); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'zelva-copia-'+toISO(today())+'.json'; a.click(); URL.revokeObjectURL(url);
+  renderClavesBackups();
 }
 
 async function revisarFechas() {
@@ -1995,7 +2105,7 @@ async function exportComisiones() {
   URL.revokeObjectURL(url);
 }
 
-loadSelects();
+iniciarAuth().then(ok => { if (ok) loadSelects(); });
 
 // ── CAJA SHAN ─────────────────────────────────────────────────────────────
 let csData = {}; // datos del día cargado

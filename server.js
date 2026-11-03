@@ -1,6 +1,8 @@
 import express from 'express';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import crypto from 'crypto';
+import fs from 'fs';
 import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
 
@@ -332,6 +334,138 @@ const nextId = (key) => { const id = db.data.nextId[key]++; db.write(); return i
 const COM = 0.37;
 
 // ==================== CHICAS ====================
+// =====================================================================
+// COPIAS DE SEGURIDAD AUTOMATICAS (una por dia, se guardan las ultimas 30)
+// =====================================================================
+const BACKUP_DIR = join(dirname(DATA_PATH), 'backups');
+const BACKUP_KEEP = 30;
+function hacerBackup(forzar = false) {
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) fs.mkdirSync(BACKUP_DIR, { recursive: true });
+    const hoy = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' });
+    const file = join(BACKUP_DIR, 'zelva-' + hoy + '.json');
+    if (fs.existsSync(file) && !forzar) return null;
+    fs.writeFileSync(file, JSON.stringify(db.data));
+    const viejos = fs.readdirSync(BACKUP_DIR).filter(f => /^zelva-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort();
+    viejos.slice(0, Math.max(0, viejos.length - BACKUP_KEEP)).forEach(f => fs.unlinkSync(join(BACKUP_DIR, f)));
+    return file;
+  } catch (e) { console.error('Error haciendo backup:', e.message); return null; }
+}
+hacerBackup();
+setInterval(() => hacerBackup(), 60 * 60 * 1000); // revisa cada hora si ya se hizo la de hoy
+
+// =====================================================================
+// CLAVES DE ACCESO
+//   admin  -> todo
+//   chicas -> Registrar, Turnos, Caja May, Depi
+// Mientras no se creen las claves, el sistema funciona abierto como antes.
+// =====================================================================
+const hashClave = (clave, salt) => crypto.scryptSync(String(clave), salt, 32).toString('hex');
+function authCfg() { return db.data.auth || null; }
+function claveOk(clave, h) {
+  if (!h) return false;
+  const a = Buffer.from(hashClave(clave, h.salt), 'hex'), b = Buffer.from(h.hash, 'hex');
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+function firmar(rol) {
+  const exp = Date.now() + 30 * 24 * 60 * 60 * 1000;
+  const base = rol + '.' + exp + '.' + (authCfg().version || 1);
+  return base + '.' + crypto.createHmac('sha256', authCfg().secret).update(base).digest('hex');
+}
+function leerToken(tok) {
+  const cfg = authCfg(); if (!cfg || !tok) return null;
+  const parts = String(tok).split('.'); if (parts.length !== 4) return null;
+  const [rol, exp, ver, sig] = parts; const base = rol + '.' + exp + '.' + ver;
+  const ok = crypto.createHmac('sha256', cfg.secret).update(base).digest('hex');
+  if (sig.length !== ok.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(ok))) return null;
+  if (Date.now() > Number(exp) || Number(ver) !== (cfg.version || 1)) return null;
+  return (rol === 'admin' || rol === 'chicas') ? rol : null;
+}
+// Lo que pueden hacer las chicas (metodo + ruta)
+const PERMISOS_CHICAS = [
+  ['GET', /^\/api\/(chicas|servicios|turnos|resumen|depi-servicios|depi-turnos|depi-jornadas|caja-shan-ultimo)$/],
+  ['GET', /^\/api\/(depi-resumen|caja-shan)\/[^/]+$/],
+  ['GET', /^\/api\/(adelantos|gastos)$/],
+  ['POST', /^\/api\/(turnos|adelantos|gastos|depi-turnos|depi-jornadas|caja-shan)$/],
+  ['POST', /^\/api\/caja-shan\/[^/]+\/pago-depi$/],
+  ['PUT', /^\/api\/depi-jornadas\/[^/]+$/],
+  ['DELETE', /^\/api\/(turnos|adelantos|gastos|depi-turnos)\/[^/]+$/],
+  ['DELETE', /^\/api\/caja-shan\/[^/]+\/pago-depi\/[^/]+$/],
+];
+// Las chicas solo pueden borrar cosas cargadas en las ultimas 24 hs
+const COL_BORRAR = { turnos:'turnos', adelantos:'adelantos', gastos:'gastos', 'depi-turnos':'depi_turnos' };
+function puedeBorrarChicas(path) {
+  const m = path.match(/^\/api\/(turnos|adelantos|gastos|depi-turnos)\/([^/]+)$/);
+  if (!m) return true;
+  const item = (db.data[COL_BORRAR[m[1]]] || []).find(x => x.id === parseInt(m[2]));
+  if (!item) return true;
+  const t = Date.parse(item.creado_at || '');
+  return !isNaN(t) && (Date.now() - t) < 24 * 60 * 60 * 1000;
+}
+
+app.get('/api/auth/estado', (req, res) => {
+  const cfg = authCfg();
+  res.json({ configurado: !!(cfg && cfg.admin), rol: cfg && cfg.admin ? leerToken(req.headers['x-zelva-token']) : 'admin' });
+});
+app.post('/api/auth/login', (req, res) => {
+  const cfg = authCfg(); const { clave } = req.body || {};
+  if (!cfg || !cfg.admin) return res.json({ token: null, rol: 'admin' });
+  if (claveOk(clave, cfg.admin)) return res.json({ token: firmar('admin'), rol: 'admin' });
+  if (claveOk(clave, cfg.chicas)) return res.json({ token: firmar('chicas'), rol: 'chicas' });
+  res.status(401).json({ error: 'Clave incorrecta' });
+});
+
+// Control de acceso para todo /api
+app.use((req, res, next) => {
+  if (!req.path.startsWith('/api/') || req.path.startsWith('/api/auth/')) return next();
+  const cfg = authCfg();
+  if (!cfg || !cfg.admin) { req.rol = 'admin'; return next(); } // todavia sin claves: abierto
+  const rol = leerToken(req.headers['x-zelva-token']);
+  if (!rol) return res.status(401).json({ error: 'Necesitas ingresar la clave', login: true });
+  req.rol = rol;
+  if (rol === 'admin') return next();
+  const ok = PERMISOS_CHICAS.some(([m, re]) => m === req.method && re.test(req.path));
+  if (!ok) return res.status(403).json({ error: 'Esta seccion es solo para la administradora' });
+  if (req.path === '/api/resumen') {
+    const orig = res.json.bind(res);
+    res.json = d => { if (d && typeof d === 'object') ['salon','gastos','ganancia_real','costo_insumos'].forEach(k => delete d[k]); return orig(d); };
+  }
+  if (req.method === 'DELETE' && !puedeBorrarChicas(req.path)) return res.status(403).json({ error: 'Solo se puede borrar lo cargado en las ultimas 24 hs. Pedile a Angie.' });
+  next();
+});
+
+// Crear o cambiar claves (solo admin, o cualquiera si todavia no hay claves)
+app.post('/api/auth/claves', async (req, res) => {
+  const { admin, chicas } = req.body || {};
+  const cfg = authCfg();
+  if (cfg && cfg.admin && leerToken(req.headers['x-zelva-token']) !== 'admin') return res.status(403).json({ error: 'Solo la administradora' });
+  if (!admin || String(admin).length < 6) return res.status(400).json({ error: 'La clave de administradora tiene que tener al menos 6 caracteres' });
+  if (!chicas || String(chicas).length < 4) return res.status(400).json({ error: 'La clave de las chicas tiene que tener al menos 4 caracteres' });
+  if (String(admin) === String(chicas)) return res.status(400).json({ error: 'Las dos claves tienen que ser distintas' });
+  const mk = c => { const salt = crypto.randomBytes(16).toString('hex'); return { salt, hash: hashClave(c, salt) }; };
+  db.data.auth = { secret: cfg?.secret || crypto.randomBytes(32).toString('hex'), version: (cfg?.version || 0) + 1, admin: mk(admin), chicas: mk(chicas) };
+  await db.write();
+  res.json({ ok: true, token: firmar('admin'), rol: 'admin' });
+});
+
+// Backups (solo admin)
+app.get('/api/backups', (req, res) => {
+  if (req.rol !== 'admin') return res.status(403).json({ error: 'Solo la administradora' });
+  try {
+    const l = fs.existsSync(BACKUP_DIR) ? fs.readdirSync(BACKUP_DIR).filter(f => f.endsWith('.json')).sort().reverse() : [];
+    res.json(l.map(f => ({ nombre: f, kb: Math.round(fs.statSync(join(BACKUP_DIR, f)).size / 1024) })));
+  } catch (e) { res.json([]); }
+});
+app.get('/api/backup-descargar', (req, res) => {
+  if (req.rol !== 'admin') return res.status(403).json({ error: 'Solo la administradora' });
+  hacerBackup(true);
+  const datos = { ...db.data }; delete datos.auth; // la copia no incluye las claves
+  const hoy = new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Argentina/Buenos_Aires' });
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', 'attachment; filename="zelva-copia-' + hoy + '.json"');
+  res.end(JSON.stringify(datos));
+});
+
 app.get('/api/chicas', (req, res) => res.json(db.data.chicas.sort((a,b)=>a.nombre.localeCompare(b.nombre))));
 app.post('/api/chicas', async (req, res) => {
   const { nombre } = req.body;
