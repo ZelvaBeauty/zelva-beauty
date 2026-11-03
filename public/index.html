@@ -1189,6 +1189,18 @@ async function registrar() {
     pago = pagoActual;
     cobrado = Math.max(0, subtotal - sena - descMonto);
   }
+  // Aviso de posible turno duplicado (misma clienta, misma profesional, mismo dia)
+  try {
+    const norm = v => String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+    const delDia = await api('GET','/api/turnos?desde='+fecha+'&hasta='+fecha);
+    const dup = delDia.filter(x => x.id !== editandoId && x.chica === chica && norm(x.clienta) === norm(clienta));
+    if (dup.length) {
+      const det = dup.map(x => '• '+(x.servicios||[]).map(sv=>sv.servicio||sv.nombre).join(' + ')+' — '+fmt(x.cobrado)).join('\n');
+      if (!confirm('Ojo: ya hay '+(dup.length===1?'un turno':dup.length+' turnos')+' de '+clienta+' con '+chica+' el '+fromISO(fecha)+':\n\n'+det+'\n\n¿Es otro turno distinto? Aceptar = guardar igual. Cancelar = no guardar.')) {
+        msg.className='msg show err'; msg.textContent='No se guardo: parecia un turno repetido.'; return;
+      }
+    }
+  } catch(e) {}
   const datosTurno = {chica, clienta, pago, pago2, monto_pago1, monto_pago2, cobrado, base_comision, fecha, origen, obs, sena_monto:sena, descuento_monto:descMonto, descuento_motivo:descMotivo, servicios};
   const eraEdicion = !!editandoId;
   const rr = eraEdicion ? await api('PUT','/api/turnos/'+editandoId, datosTurno) : await api('POST','/api/turnos', datosTurno);
