@@ -178,6 +178,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   <button class="tab" onclick="showTab('gastos',this)"><i class="ti ti-minus"></i> Gastos</button>
   <button class="tab" onclick="showTab('caja',this)"><i class="ti ti-chart-bar"></i> Caja</button>
   <button class="tab" onclick="showTab('ranking',this)"><i class="ti ti-trophy"></i> Ranking</button>
+  <button class="tab" onclick="showTab('clientas',this)"><i class="ti ti-heart"></i> Clientas</button>
   <button class="tab" onclick="showTab('insumos',this)"><i class="ti ti-box"></i> Insumos</button>
   <button class="tab" style="color:#0F6E56" onclick="showTab('depi',this)"><i class="ti ti-bolt"></i> Depi</button>
   <button class="tab" onclick="showTab('config',this)"><i class="ti ti-settings"></i> Config</button>
@@ -575,6 +576,34 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
   </div>
 </div>
 
+<div id="panel-clientas" class="panel">
+  <div class="metrics" id="cli-metricas"></div>
+  <div class="period-row">
+    <button class="pbtn active" id="cli-v-buscar" onclick="cliVista('buscar')">Buscar clienta</button>
+    <button class="pbtn" id="cli-v-recuperar" onclick="cliVista('recuperar')">Para recuperar</button>
+    <button class="pbtn" id="cli-v-top" onclick="cliVista('top')">Mejores clientas</button>
+  </div>
+  <div id="cli-buscar">
+    <input type="text" id="cli-q" placeholder="Escribi el nombre de la clienta..." oninput="cliRenderBusqueda()" style="margin-bottom:10px">
+    <div class="card" style="padding:0 14px" id="cli-resultados"></div>
+    <div id="cli-ficha"></div>
+  </div>
+  <div id="cli-recuperar" style="display:none">
+    <div class="info-box info-amber"><i class="ti ti-info-circle" style="flex-shrink:0;font-size:16px"></i>Clientas que vinieron al menos 2 veces y hace tiempo que no vuelven. Ideal para mandarles un WhatsApp con una promo.</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px">No vienen hace mas de
+      <select id="cli-dias" onchange="cliRenderRecuperar()" style="width:auto"><option value="30">30 dias</option><option value="45" selected>45 dias</option><option value="60">60 dias</option><option value="90">90 dias</option></select>
+      <button class="btn-teal-sm" onclick="cliExportRecuperar()" style="margin-left:auto"><i class="ti ti-download" style="font-size:12px"></i> CSV</button>
+    </div>
+    <div class="card" style="padding:0 14px" id="cli-lista-recuperar"></div>
+  </div>
+  <div id="cli-top" style="display:none">
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <select id="cli-top-orden" onchange="cliRenderTop()" style="width:auto"><option value="gasto">Por lo que gastaron</option><option value="visitas">Por cantidad de visitas</option></select>
+    </div>
+    <div class="card" style="padding:0 14px" id="cli-lista-top"></div>
+  </div>
+</div>
+
 <div id="panel-ranking" class="panel">
   <div class="period-row">
     <button class="pbtn active" onclick="setPeriod('ranking','mes',this)">Este mes</button>
@@ -759,6 +788,7 @@ function showTab(name, el) {
   if (name==='comisiones') renderCom();
   if (name==='caja') renderCaja();
   if (name==='ranking') renderRanking();
+  if (name==='clientas') renderClientas();
   if (name==='liquidaciones') initLiquidaciones();
   if (name==='gastos') renderGastos();
   if (name==='insumos') renderInsumos();
@@ -1125,6 +1155,121 @@ function salirModoEdicion() {
   setVal('reg-fecha', toISO(today()));
 }
 function cancelarEdicion() { salirModoEdicion(); limpiarFormulario(); }
+
+// ---------- Clientas ----------
+let CLI = [];           // una entrada por clienta
+let cliVistaActual = 'buscar';
+const cliNorm = v => String(v||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').trim();
+const cliEsc = v => String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const cliDiasDesde = iso => Math.floor((new Date(toISO(today())+'T12:00:00') - new Date(iso+'T12:00:00')) / 86400000);
+async function renderClientas() {
+  const turnos = await api('GET','/api/turnos');
+  const map = {};
+  turnos.forEach(t => {
+    const f = toISO(t.fecha); if (!f) return;
+    const k = cliNorm(t.clienta); if (!k) return;
+    if (!map[k]) map[k] = { key:k, nombres:{}, turnos:[], fechas:new Set(), gasto:0, chicas:{}, srvs:{} };
+    const c = map[k];
+    c.nombres[t.clienta.trim()] = (c.nombres[t.clienta.trim()]||0)+1;
+    c.turnos.push({...t, fecha:f});
+    c.fechas.add(f);
+    c.gasto += (t.cobrado||0) + (t.sena_monto||0);
+    c.chicas[t.chica] = (c.chicas[t.chica]||0)+1;
+    (t.servicios||[]).forEach(sv => { const n = sv.servicio||sv.nombre; c.srvs[n] = (c.srvs[n]||0)+1; });
+  });
+  const top = o => Object.entries(o).sort((a,b)=>b[1]-a[1]);
+  CLI = Object.values(map).map(c => {
+    const fechas = [...c.fechas].sort();
+    return { ...c, nombre: top(c.nombres)[0][0], visitas: fechas.length, primera: fechas[0], ultima: fechas[fechas.length-1],
+      diasSinVenir: cliDiasDesde(fechas[fechas.length-1]), chicaFav: top(c.chicas)[0][0], srvFav: top(c.srvs).slice(0,3).map(x=>x[0]),
+      turnos: c.turnos.sort((a,b)=>b.fecha.localeCompare(a.fecha)) };
+  });
+  const recurrentes = CLI.filter(c=>c.visitas>=2).length;
+  const activas = CLI.filter(c=>c.diasSinVenir<=60).length;
+  document.getElementById('cli-metricas').innerHTML =
+    '<div class="metric"><div class="metric-label">Clientas distintas</div><div class="metric-value mv-purple">'+CLI.length+'</div></div>'+
+    '<div class="metric"><div class="metric-label">Volvieron 2+ veces</div><div class="metric-value mv-teal">'+recurrentes+' <span style="font-size:13px;color:var(--text-2)">('+(CLI.length?Math.round(recurrentes/CLI.length*100):0)+'%)</span></div></div>'+
+    '<div class="metric"><div class="metric-label">Activas (ultimos 60 dias)</div><div class="metric-value">'+activas+'</div></div>'+
+    '<div class="metric"><div class="metric-label">Gasto promedio por clienta</div><div class="metric-value mv-amber">'+fmt(CLI.length?CLI.reduce((s,c)=>s+c.gasto,0)/CLI.length:0)+'</div></div>';
+  cliVista(cliVistaActual);
+}
+function cliVista(v) {
+  cliVistaActual = v;
+  ['buscar','recuperar','top'].forEach(x => {
+    document.getElementById('cli-'+x).style.display = x===v ? 'block' : 'none';
+    document.getElementById('cli-v-'+x).classList.toggle('active', x===v);
+  });
+  if (v==='buscar') cliRenderBusqueda();
+  if (v==='recuperar') cliRenderRecuperar();
+  if (v==='top') cliRenderTop();
+}
+function cliFila(c, extra) {
+  return '<div class="list-item" style="cursor:pointer" onclick="cliAbrir('+jsq(c.key)+')">'+
+    '<div style="display:flex;align-items:center;gap:8px;min-width:0"><div class="avatar">'+cliEsc(c.nombre.substring(0,2).toUpperCase())+'</div>'+
+    '<div style="min-width:0"><div style="font-weight:600">'+cliEsc(c.nombre)+'</div>'+
+    '<div style="font-size:12px;color:var(--text-2)">'+c.visitas+' visita'+(c.visitas!==1?'s':'')+' · ultima '+fromISO(c.ultima)+' ('+cliHace(c.diasSinVenir)+')</div></div></div>'+
+    '<div style="text-align:right;white-space:nowrap"><div style="font-weight:700;color:var(--purple)">'+fmt(c.gasto)+'</div>'+(extra||'<div style="font-size:11px;color:var(--text-2)">gastado</div>')+'</div></div>';
+}
+function cliHace(d) { return d<=0 ? 'hoy' : d===1 ? 'ayer' : 'hace '+d+' dias'; }
+function cliRenderBusqueda() {
+  const q = cliNorm(document.getElementById('cli-q').value);
+  const cont = document.getElementById('cli-resultados');
+  if (!q) { cont.innerHTML = '<div class="empty" style="padding:16px">Escribi al menos una parte del nombre</div>'; return; }
+  const res = CLI.filter(c => c.key.includes(q)).sort((a,b)=>b.ultima.localeCompare(a.ultima)).slice(0,30);
+  cont.innerHTML = res.length ? res.map(c=>cliFila(c)).join('') : '<div class="empty" style="padding:16px">No encontre ninguna clienta con ese nombre</div>';
+  if (res.length===1) cliAbrir(res[0].key); else document.getElementById('cli-ficha').innerHTML='';
+}
+function cliAbrir(key) {
+  const c = CLI.find(x=>x.key===key); if (!c) return;
+  if (cliVistaActual!=='buscar') { cliVista('buscar'); document.getElementById('cli-q').value = c.nombre; cliRenderBusqueda(); }
+  const ticket = c.visitas ? c.gasto/c.visitas : 0;
+  const frec = c.visitas>1 ? Math.round(cliDiasDesde(c.primera) - c.diasSinVenir) / (c.visitas-1) : null;
+  document.getElementById('cli-ficha').innerHTML =
+    '<div class="card" style="border-color:var(--purple-mid)">'+
+    '<div class="card-title" style="color:var(--purple)"><i class="ti ti-user-heart"></i> '+cliEsc(c.nombre)+'</div>'+
+    '<div class="metrics" style="margin-bottom:10px">'+
+      '<div class="metric"><div class="metric-label">Gasto total</div><div class="metric-value mv-purple">'+fmt(c.gasto)+'</div></div>'+
+      '<div class="metric"><div class="metric-label">Visitas</div><div class="metric-value">'+c.visitas+'</div></div>'+
+      '<div class="metric"><div class="metric-label">Gasta por visita</div><div class="metric-value mv-teal">'+fmt(ticket)+'</div></div>'+
+      '<div class="metric"><div class="metric-label">Ultima visita</div><div class="metric-value" style="font-size:15px">'+fromISO(c.ultima)+'<div style="font-size:11px;color:var(--text-2);font-weight:400">'+cliHace(c.diasSinVenir)+'</div></div></div>'+
+    '</div>'+
+    '<div style="font-size:13px;line-height:1.7;margin-bottom:10px">'+
+      '<div><b>Clienta desde:</b> '+fromISO(c.primera)+(frec?' · <b>viene cada</b> ~'+Math.round(frec)+' dias':'')+'</div>'+
+      '<div><b>Se atiende con:</b> '+cliEsc(c.chicaFav)+'</div>'+
+      '<div><b>Lo que mas se hace:</b> '+c.srvFav.map(cliEsc).join(', ')+'</div>'+
+    '</div>'+
+    '<div style="font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Historial</div>'+
+    c.turnos.map(t=>
+      '<div class="dia-detalle-row" style="gap:8px"><div style="min-width:0"><div style="font-weight:600;font-size:12px">'+fromISO(t.fecha)+' · '+cliEsc(t.chica)+'</div>'+
+      '<div style="font-size:12px;color:var(--text-2)">'+(t.servicios||[]).map(sv=>cliEsc(sv.servicio||sv.nombre)).join(' + ')+'</div></div>'+
+      '<div style="font-weight:600;white-space:nowrap">'+fmt((t.cobrado||0)+(t.sena_monto||0))+'</div></div>').join('')+
+    '</div>';
+  document.getElementById('cli-ficha').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function cliParaRecuperar() {
+  const dias = parseInt(document.getElementById('cli-dias').value);
+  return CLI.filter(c => c.visitas>=2 && c.diasSinVenir>dias).sort((a,b)=>b.gasto-a.gasto);
+}
+function cliRenderRecuperar() {
+  const l = cliParaRecuperar();
+  document.getElementById('cli-lista-recuperar').innerHTML = l.length
+    ? '<div style="font-size:12px;color:var(--text-2);padding:10px 0 4px">'+l.length+' clientas · ordenadas por lo que gastaron</div>'+l.map(c=>cliFila(c,'<div style="font-size:11px;color:var(--coral)">'+cliHace(c.diasSinVenir)+'</div>')).join('')
+    : '<div class="empty" style="padding:16px">No hay clientas para recuperar con ese filtro</div>';
+}
+function cliRenderTop() {
+  const orden = document.getElementById('cli-top-orden').value;
+  const l = [...CLI].sort((a,b)=> orden==='visitas' ? (b.visitas-a.visitas || b.gasto-a.gasto) : (b.gasto-a.gasto)).slice(0,30);
+  document.getElementById('cli-lista-top').innerHTML = l.map((c,i)=>cliFila(c,'<div style="font-size:11px;color:var(--text-2)">#'+(i+1)+' · '+c.visitas+' visitas</div>')).join('');
+}
+function cliExportRecuperar() {
+  const l = cliParaRecuperar(); if (!l.length) { alert('No hay clientas en la lista'); return; }
+  const q = v => '"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const rows = [['Clienta','Ultima visita','Dias sin venir','Visitas','Gasto total','Se atiende con','Servicios frecuentes']]
+    .concat(l.map(c=>[q(c.nombre), fromISO(c.ultima), c.diasSinVenir, c.visitas, Math.round(c.gasto), q(c.chicaFav), q(c.srvFav.join(' / '))]));
+  const csv = '﻿' + rows.map(r=>r.join(',')).join('\n');
+  const url = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  const a = document.createElement('a'); a.href = url; a.download = 'clientas_para_recuperar_'+document.getElementById('cli-dias').value+'dias.csv'; a.click(); URL.revokeObjectURL(url);
+}
 
 function mostrarResumenTurno(r) {
   const el = document.getElementById('reg-resumen');
