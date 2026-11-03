@@ -389,6 +389,7 @@ const PERMISOS_CHICAS = [
   ['POST', /^\/api\/(turnos|adelantos|gastos|depi-turnos|depi-jornadas|caja-shan)$/],
   ['POST', /^\/api\/caja-shan\/[^/]+\/pago-depi$/],
   ['PUT', /^\/api\/depi-jornadas\/[^/]+$/],
+  ['PUT', /^\/api\/turnos\/[^/]+$/],
   ['DELETE', /^\/api\/(turnos|adelantos|gastos|depi-turnos)\/[^/]+$/],
   ['DELETE', /^\/api\/caja-shan\/[^/]+\/pago-depi\/[^/]+$/],
 ];
@@ -618,6 +619,30 @@ app.post('/api/turnos', async (req, res) => {
   db.data.turnos.push({ id, chica, clienta, servicios, pago, pago2:pago2||null, monto_pago1:pago2?(Number(monto_pago1)||0):null, monto_pago2:pago2?(Number(monto_pago2)||0):null, cobrado, base_comision, costo_insumos, fecha: normFecha(fecha)||fecha, origen:origen||'presencial', obs:obs||'', sena_monto:sena_monto||0, descuento_monto:descuento_monto||0, descuento_motivo:descuento_motivo||'', creado_at: new Date().toISOString() });
   await db.write(); res.json({ id });
 });
+// Editar un turno: guarda la version anterior en "historial" por si hay que volver atras
+app.put('/api/turnos/:id', async (req, res) => {
+  const t = db.data.turnos.find(x => x.id === parseInt(req.params.id));
+  if (!t) return res.status(404).json({ error: 'Turno no encontrado' });
+  const { chica, clienta, servicios, pago, pago2, monto_pago1, monto_pago2, cobrado, base_comision, fecha, origen, obs, sena_monto, descuento_monto, descuento_motivo } = req.body;
+  if (!chica||!clienta||!servicios?.length||!pago) return res.status(400).json({ error: 'Faltan campos' });
+  const f = normFecha(fecha);
+  if (!f) return res.status(400).json({ error: 'Fecha invalida' });
+  const { historial, ...anterior } = t;
+  const costo_insumos = servicios.reduce((sum, s) => {
+    const srv = db.data.servicios.find(x => x.nombre === s.nombre);
+    return sum + (srv?.costo_insumos || s.costo_insumos || 0);
+  }, 0);
+  Object.assign(t, {
+    chica, clienta, servicios, pago, pago2: pago2||null,
+    monto_pago1: pago2 ? (Number(monto_pago1)||0) : null, monto_pago2: pago2 ? (Number(monto_pago2)||0) : null,
+    cobrado, base_comision, costo_insumos, fecha: f, origen: origen||'presencial', obs: obs||'',
+    sena_monto: sena_monto||0, descuento_monto: descuento_monto||0, descuento_motivo: descuento_motivo||'',
+    editado_at: new Date().toISOString(), editado_por: req.rol || 'admin',
+    historial: [...(historial||[]), { ...anterior, guardado_at: new Date().toISOString() }].slice(-5)
+  });
+  await db.write(); res.json({ ok: true, id: t.id });
+});
+
 app.delete('/api/turnos/:id', async (req, res) => {
   db.data.turnos = db.data.turnos.filter(t=>t.id!==parseInt(req.params.id));
   await db.write(); res.json({ ok: true });

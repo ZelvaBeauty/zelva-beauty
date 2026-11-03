@@ -30,7 +30,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .card{background:#fff;border:1px solid var(--gray-border);border-radius:var(--rlg);padding:14px;margin-bottom:12px}
 .card-title{font-size:11px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 label{font-size:12px;color:var(--text-2);display:block;margin-bottom:4px}
-input[type=text],input[type=number],input[type=password],select{width:100%;padding:9px 11px;border:1px solid var(--gray-border);border-radius:var(--r);font-size:14px;background:#fff;color:var(--text);outline:none;-webkit-appearance:none}
+input[type=text],input[type=number],input[type=password],input[type=date],select{width:100%;padding:9px 11px;border:1px solid var(--gray-border);border-radius:var(--r);font-size:14px;background:#fff;color:var(--text);outline:none;-webkit-appearance:none}
 input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83,74,183,.1)}
 .field{margin-bottom:10px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -184,6 +184,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
 </div>
 
 <div id="panel-registro" class="panel active">
+  <div id="edit-banner-top" style="display:none;background:#FFF6E0;border:1px solid #F5DFA0;border-radius:var(--r);padding:10px 12px;font-size:13px;margin-bottom:10px"></div>
   <div class="info-box info-amber"><i class="ti ti-info-circle" style="flex-shrink:0;font-size:16px"></i>La comision (37%) se calcula siempre sobre el precio en efectivo, sin importar descuentos ni medio de pago.</div>
   <div class="card">
     <div class="card-title"><i class="ti ti-user"></i> Profesional y clienta</div>
@@ -192,7 +193,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div class="field"><label>Clienta</label><input type="text" id="reg-clienta" placeholder="Nombre de la clienta"></div>
     </div>
     <div class="g2">
-      <div class="field"><label>Fecha</label><input type="text" id="reg-fecha"></div>
+      <div class="field"><label>Fecha</label><input type="date" id="reg-fecha"></div>
       <div class="field"><label>Origen</label>
         <select id="reg-origen"><option value="presencial">Presencial</option><option value="online">Online / AgendaPro</option></select>
       </div>
@@ -266,7 +267,8 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div style="font-size:11px;color:var(--text-3);margin-top:6px" id="preview-com"></div>
     </div>
     <div class="field"><label>Observacion (opcional)</label><input type="text" id="reg-obs" placeholder="Ej: combo, relleno..."></div>
-    <button class="btn" onclick="registrar()"><i class="ti ti-check"></i> Registrar turno</button>
+    <div id="edit-banner" style="display:none;background:#FFF6E0;border:1px solid #F5DFA0;border-radius:var(--r);padding:8px 10px;font-size:12px;margin-bottom:8px;align-items:center;justify-content:space-between;gap:8px"><span id="edit-banner-txt"></span><button class="btn-sm" onclick="cancelarEdicion()">Cancelar</button></div>
+    <button class="btn" id="btn-registrar" onclick="registrar()"><i class="ti ti-check"></i> Registrar turno</button>
     <div class="msg" id="reg-msg"></div>
     <div class="reg-resumen" id="reg-resumen"></div>
   </div>
@@ -416,7 +418,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     </div>
     <div class="g2">
       <div class="field"><label>Descripcion</label><input type="text" id="gasto-desc" placeholder="Ej: alquiler mayo..."></div>
-      <div class="field"><label>Fecha</label><input type="text" id="gasto-fecha"></div>
+      <div class="field"><label>Fecha</label><input type="date" id="gasto-fecha"></div>
     </div>
     <div class="field"><label>¿De dónde salió?</label><select id="gasto-medio"><option value="transferencia">Transferencia / otro (no sale de la caja)</option><option value="efectivo">Efectivo de la caja del salón</option></select></div>
     <div style="font-size:11px;color:var(--text-3);margin:-4px 0 10px">Los gastos en efectivo del día los carga la encargada desde Caja May.</div>
@@ -711,9 +713,9 @@ function tercerSabado() {
   }
 }
 
-document.getElementById('reg-fecha').value = today();
+document.getElementById('reg-fecha').value = toISO(today());
 document.getElementById('liq-mes').value = new Date().getMonth()+1;
-document.getElementById('gasto-fecha').value = today();
+document.getElementById('gasto-fecha').value = toISO(today());
 
 async function api(method, url, body) {
   const opts = { method, headers:{'Content-Type':'application/json'} };
@@ -1062,6 +1064,75 @@ async function corregirFechas() {
   revisarFechas();
 }
 
+// ---------- Editar turno ----------
+let editandoId = null;
+let turnosListaCache = [];
+function setVal(id, v) { const el = document.getElementById(id); if (el) el.value = (v==null ? '' : v); }
+function setCheck(checkId, bodyId, on) {
+  const c = document.getElementById(checkId); if (c) c.checked = !!on;
+  const b = document.getElementById(bodyId); if (b) b.classList.toggle('open', !!on);
+}
+async function editarTurno(id) {
+  const t = turnosListaCache.find(x => x.id === id);
+  if (!t) return;
+  const tabBtn = [...document.querySelectorAll('.tabs .tab')].find(x => (x.getAttribute('onclick')||'').includes("'registro'"));
+  showTab('registro', tabBtn);
+  await loadSelects();
+  limpiarFormulario();
+  editandoId = id;
+  setVal('reg-chica', t.chica);
+  if (document.getElementById('reg-chica').value !== t.chica) { // profesional que ya no esta en la lista
+    const o = document.createElement('option'); o.textContent = t.chica; document.getElementById('reg-chica').appendChild(o); setVal('reg-chica', t.chica);
+  }
+  setVal('reg-clienta', t.clienta);
+  setVal('reg-fecha', toISO(t.fecha) || t.fecha);
+  setVal('reg-origen', t.origen || 'presencial');
+  setVal('reg-obs', t.obs || '');
+  // servicios: se mantienen los precios con los que se cargo el turno
+  let extra = 0;
+  selectedSrvs = (t.servicios||[]).map(sv => {
+    const nombre = sv.servicio || sv.nombre;
+    const cat = serviciosCache.find(x => x.nombre === nombre);
+    return { id: cat ? cat.id : -(++extra), nombre, precio_ef: Number(sv.precio_ef)||0, precio_lista: Number(sv.precio_lista ?? sv.precio_ef)||0 };
+  });
+  // medio de pago
+  const btns = [...document.querySelectorAll('#panel-registro .pago-btn')];
+  const btn = btns.find(b => (b.getAttribute('onclick')||'').includes("'"+t.pago+"'")) || btns[0];
+  pagoActual = t.pago2 ? 'efectivo' : (t.pago || 'efectivo');
+  btns.forEach(b => b.classList.toggle('active', t.pago2 ? b===btns[0] : b===btn));
+  if (t.pago2) {
+    setCheck('mixto-check','mixto-body', true);
+    setVal('pago2-medio1', t.pago); setVal('pago2-medio2', t.pago2);
+    setVal('pago2-monto1', t.monto_pago1||''); setVal('pago2-monto2', t.monto_pago2||'');
+  }
+  if (t.sena_monto) { setCheck('sena-check','sena-body', true); setVal('sena-monto', t.sena_monto); }
+  if (t.descuento_monto) { setCheck('desc-check','desc-body', true); setVal('desc-monto', t.descuento_monto); setVal('desc-motivo', t.descuento_motivo||''); }
+  refreshPicker(); renderSelectedSrvs(); updateTotal(); setTimeout(refreshPicker, 400);
+  const txt = 'Editando el turno de <b>'+String(t.clienta).replace(/</g,'&lt;')+'</b> con '+String(t.chica).replace(/</g,'&lt;')+' del '+fromISO(toISO(t.fecha)||t.fecha)+'. Cobrado original: <b>'+fmt(t.cobrado)+'</b>';
+  const top = document.getElementById('edit-banner-top'); top.innerHTML = '<i class="ti ti-pencil"></i> '+txt+' · <a href="#" onclick="cancelarEdicion();return false">Cancelar</a>'; top.style.display='block';
+  const bn = document.getElementById('edit-banner'); document.getElementById('edit-banner-txt').innerHTML = 'Estas editando un turno'; bn.style.display='flex';
+  document.getElementById('btn-registrar').innerHTML = '<i class="ti ti-device-floppy"></i> Guardar cambios';
+  document.getElementById('reg-resumen').classList.remove('show');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function limpiarFormulario() {
+  selectedSrvs=[]; refreshPicker(); renderSelectedSrvs();
+  ['reg-clienta','reg-obs','sena-monto','desc-monto','desc-motivo','adicional-monto','adicional-desc','pago2-monto1','pago2-monto2'].forEach(id=>setVal(id,''));
+  ['sena','desc','mixto'].forEach(k=>setCheck(k+'-check',k+'-body',false));
+  pagoActual='efectivo';
+  document.querySelectorAll('#panel-registro .pago-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  setVal('reg-origen','presencial');
+  updateTotal();
+}
+function salirModoEdicion() {
+  editandoId = null;
+  document.getElementById('edit-banner-top').style.display='none';
+  document.getElementById('edit-banner').style.display='none';
+  document.getElementById('btn-registrar').innerHTML = '<i class="ti ti-check"></i> Registrar turno';
+  setVal('reg-fecha', toISO(today()));
+}
+function cancelarEdicion() { salirModoEdicion(); limpiarFormulario(); }
+
 function mostrarResumenTurno(r) {
   const el = document.getElementById('reg-resumen');
   const esc = v => String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;');
@@ -1071,7 +1142,7 @@ function mostrarResumenTurno(r) {
   const srvs = (r.servicios||[]).map(x=>esc(x.nombre)).join(' + ');
   el.innerHTML =
     '<button class="rr-x" onclick="document.getElementById(\'reg-resumen\').classList.remove(\'show\')" title="Cerrar"><i class="ti ti-x"></i></button>'+
-    '<div class="rr-tit"><i class="ti ti-circle-check"></i> TURNO AGENDADO</div>'+
+    '<div class="rr-tit"><i class="ti ti-circle-check"></i> '+(r.titulo||'TURNO AGENDADO')+'</div>'+
     '<div><b>'+fromISO(r.fecha)+'</b> · '+esc(r.chica)+' · Clienta: <b>'+esc(r.clienta)+'</b></div>'+
     '<div>'+srvs+'</div>'+
     '<div>Pagó <b>'+fmt(r.cobrado)+'</b> en '+medio+
@@ -1118,16 +1189,20 @@ async function registrar() {
     pago = pagoActual;
     cobrado = Math.max(0, subtotal - sena - descMonto);
   }
-  await api('POST','/api/turnos',{chica, clienta, pago, pago2, monto_pago1, monto_pago2, cobrado, base_comision, fecha, origen, obs, sena_monto:sena, descuento_monto:descMonto, descuento_motivo:descMotivo, servicios});
+  const datosTurno = {chica, clienta, pago, pago2, monto_pago1, monto_pago2, cobrado, base_comision, fecha, origen, obs, sena_monto:sena, descuento_monto:descMonto, descuento_motivo:descMotivo, servicios};
+  const eraEdicion = !!editandoId;
+  const rr = eraEdicion ? await api('PUT','/api/turnos/'+editandoId, datosTurno) : await api('POST','/api/turnos', datosTurno);
+  if (rr && rr.error) { msg.className='msg show err'; msg.textContent=rr.error; return; }
+  if (eraEdicion) salirModoEdicion();
   selectedSrvs=[]; refreshPicker(); renderSelectedSrvs(); updateTotal();
   ['reg-clienta','reg-obs','sena-monto','desc-monto','desc-motivo','adicional-monto','adicional-desc','pago2-monto1','pago2-monto2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['sena-check','desc-check','mixto-check'].forEach(id=>{const el=document.getElementById(id);if(el)el.checked=false;});
   ['sena-body','desc-body','mixto-body'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('open');});
   pagoActual='efectivo';
   document.querySelectorAll('.pago-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
-  mostrarResumenTurno({fecha, chica, clienta, servicios, cobrado, pago, pago2, monto_pago1, monto_pago2, sena, descMonto, origen});
+  mostrarResumenTurno({fecha, chica, clienta, servicios, cobrado, pago, pago2, monto_pago1, monto_pago2, sena, descMonto, origen, titulo: eraEdicion?'TURNO MODIFICADO':'TURNO AGENDADO'});
   msg.className='msg show ok';
-  msg.textContent='Turno de '+chica+' registrado - cobrado '+fmt(cobrado)+(sena?' · sena '+fmt(sena):'')+(descMonto?' · desc. '+fmt(descMonto):'');
+  msg.textContent='Turno de '+chica+(eraEdicion?' modificado':' registrado')+' - cobrado '+fmt(cobrado)+(sena?' · sena '+fmt(sena):'')+(descMonto?' · desc. '+fmt(descMonto):'');
   setTimeout(()=>{msg.className='msg'; msg.textContent='';},4000);
 }
 
@@ -1141,6 +1216,7 @@ async function renderTurnos() {
     '<div class="metric"><div class="metric-label">Digital</div><div class="metric-value mv-amber">'+fmt((res.transferencia||0)+(res.qr||0)+(res.debito||0)+(res.credito||0)+(res.openpay||0))+'</div></div>';
   const lista = document.getElementById('lista-turnos');
   if (!turnos.length) { lista.innerHTML='<div class="empty">No hay turnos en este periodo</div>'; return; }
+  turnosListaCache = turnos;
   lista.innerHTML = turnos.map(t=>
     '<div class="turno-card">'+
     '<div class="turno-top"><div style="display:flex;align-items:center;gap:8px;flex:1">'+
@@ -1148,6 +1224,7 @@ async function renderTurnos() {
     '<div><div style="font-weight:600">'+t.clienta+'</div><div style="font-size:12px;color:var(--text-2)">'+t.chica+' - '+t.fecha+'</div></div></div>'+
     '<div style="display:flex;align-items:center;gap:6px">'+
     (t.origen==='online'?'<span class="badge b-online">Online</span>':'')+
+    '<button class="btn-sm" onclick="editarTurno('+t.id+')" style="padding:4px 7px" title="Editar"><i class="ti ti-pencil" style="font-size:13px"></i> Editar</button>'+
     '<button class="btn-sm btn-danger" onclick="delTurno('+t.id+')" style="padding:4px 7px"><i class="ti ti-trash" style="font-size:13px"></i></button></div></div>'+
     '<div class="turno-srvs">'+(t.servicios||[]).map(s=>'<span class="srv-tag">'+(s.servicio||s.nombre)+'</span>').join('')+'</div>'+
     '<div class="turno-footer">'+badgePago(t.pago, t.pago2, t.monto_pago1, t.monto_pago2)+
@@ -1155,6 +1232,7 @@ async function renderTurnos() {
     '<div style="font-weight:700;font-size:15px">'+fmt(t.cobrado)+'</div></div>'+
     (t.descuento_monto?'<div style="font-size:12px;color:#993C1D;margin-top:4px">Desc: '+fmt(t.descuento_monto)+(t.descuento_motivo?' - '+t.descuento_motivo:'')+'</div>':'')+
     (t.obs?'<div style="font-size:12px;color:var(--text-2);margin-top:4px">'+t.obs+'</div>':'')+
+    (t.editado_at?'<div style="font-size:11px;color:var(--text-3);margin-top:4px"><i class="ti ti-pencil" style="font-size:11px"></i> Editado el '+new Date(t.editado_at).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</div>':'')+
     '</div>').join('');
 }
 
@@ -1426,7 +1504,7 @@ async function registrarGasto() {
   if (!monto) { msg.className='msg show err'; msg.textContent='Ingresa el monto del gasto.'; return; }
   const medio = document.getElementById('gasto-medio').value || 'transferencia';
   await api('POST','/api/gastos',{categoria, monto, descripcion, fecha, medio});
-  document.getElementById('gasto-monto').value=''; document.getElementById('gasto-desc').value=''; document.getElementById('gasto-fecha').value=today();
+  document.getElementById('gasto-monto').value=''; document.getElementById('gasto-desc').value=''; document.getElementById('gasto-fecha').value=toISO(today());
   msg.className='msg show ok'; msg.textContent='Gasto de '+fmt(monto)+' registrado ('+categoria+')';
   setTimeout(()=>{msg.className='msg';},3000); renderGastos();
 }
