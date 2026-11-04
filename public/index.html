@@ -2414,13 +2414,22 @@ async function csAvisoYSugerencia(fecha, data) {
   if (csTieneCierre(data)) { aviso.style.display = 'none'; return; }
   let texto = '⚠️ Este día todavía no tiene cierre guardado. Cargá lo que salió de la caja, el Sobre y tocá "Guardar cierre del día".';
   try {
-    const ant = await api('GET', `/api/caja-shan/${csFechaAnterior(fecha)}`);
-    if (csTieneCierre(ant)) {
+    // Busca hacia atras el ultimo dia con cierre guardado (saltea domingos, lunes y feriados)
+    let f = fecha, ant = null, fAnt = null;
+    for (let i = 0; i < 10; i++) {
+      f = csFechaAnterior(f);
+      const d = await api('GET', `/api/caja-shan/${f}`);
+      if (csTieneCierre(d)) { ant = d; fAnt = f; break; }
+    }
+    if (ant) {
       const cajaAnt = (ant.inicio||0) + (ant.cash||0) - (ant.sobre||0) - csSalidasTotal(ant);
       csSetVal('cs-inicio', cajaAnt);
-      texto += ` El Inicio se completó con ${fmt(cajaAnt)}, lo que quedó en caja el día anterior.`;
+      const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+      const [y,m,d] = fAnt.split('-').map(Number);
+      const nombre = dias[new Date(y, m-1, d).getDay()] + ' ' + d + '/' + m;
+      texto += ` El Inicio se completó con ${fmt(cajaAnt)}, lo que quedó en caja el ${nombre} (último cierre guardado).`;
     } else {
-      texto += ' El día anterior tampoco tiene cierre, así que cargá el Inicio a mano.';
+      texto += ' No encontré ningún cierre en los últimos 10 días, así que cargá el Inicio a mano.';
     }
   } catch(e) {}
   aviso.textContent = texto;
