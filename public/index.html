@@ -2381,6 +2381,8 @@ async function csCargar() {
   if (!fecha) return;
   document.getElementById('cs-fecha-titulo').textContent = fechaLinda(fecha);
   const data = await api('GET', `/api/caja-shan/${fecha}`);
+  // Si mientras cargaba se cambió de día, no pisar la pantalla con datos de otro día
+  if (!csEsDiaActual(fecha)) return;
   csData = data;
   // Campos automáticos
   document.getElementById('cs-total').textContent = fmt(data.total||0);
@@ -2409,8 +2411,14 @@ function csTieneCierre(d) {
 
 // Si el día no tiene cierre guardado: muestra aviso y completa el Inicio
 // con lo que quedó en caja el día anterior (solo como sugerencia, no guarda nada).
+// true si la fecha sigue siendo la que está elegida en pantalla
+function csEsDiaActual(fecha) {
+  return document.getElementById('cs-fecha').value === fecha;
+}
+
 async function csAvisoYSugerencia(fecha, data) {
   const aviso = document.getElementById('cs-aviso');
+  if (!csEsDiaActual(fecha)) return;
   if (csTieneCierre(data)) { aviso.style.display = 'none'; return; }
   let texto = '⚠️ Este día todavía no tiene cierre guardado. Cargá lo que salió de la caja, el Sobre y tocá "Guardar cierre del día".';
   try {
@@ -2421,6 +2429,7 @@ async function csAvisoYSugerencia(fecha, data) {
       const d = await api('GET', `/api/caja-shan/${f}`);
       if (csTieneCierre(d)) { ant = d; fAnt = f; break; }
     }
+    if (!csEsDiaActual(fecha)) return; // se cambió de día mientras buscaba
     if (ant) {
       const cajaAnt = (ant.inicio||0) + (ant.cash||0) - (ant.sobre||0) - csSalidasTotal(ant);
       csSetVal('cs-inicio', cajaAnt);
@@ -2432,6 +2441,7 @@ async function csAvisoYSugerencia(fecha, data) {
       texto += ' No encontré ningún cierre en los últimos 10 días, así que cargá el Inicio a mano.';
     }
   } catch(e) {}
+  if (!csEsDiaActual(fecha)) return;
   aviso.textContent = texto;
   aviso.style.display = 'block';
 }
@@ -2599,6 +2609,8 @@ async function csTurnosDia(fecha) {
     const res = await api('GET', `/api/turnos?desde=${fecha}&hasta=${fecha}`);
     turnos = Array.isArray(res) ? res : (res.turnos||[]);
   } catch(e) { turnos = []; }
+  // Si mientras cargaba se cambió de día, no mostrar los turnos de otro día
+  if (!csEsDiaActual(fecha)) return;
 
   const pagoLabel = {efectivo:'Efectivo',transferencia:'Transf.',qr:'QR',debito:'Débito',credito:'Crédito',openpay:'OpenPay'};
 
