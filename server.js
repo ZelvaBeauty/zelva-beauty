@@ -819,6 +819,25 @@ app.delete('/api/caja-shan/:fecha/pago-depi/:id', async (req, res) => {
   await db.write(); res.json({ ok: true });
 });
 
+// Efectivo que ENTRA a la caja y no sale de los turnos de uñas (efectivo de depi, señas en efectivo)
+app.post('/api/caja-shan/:fecha/ingreso', async (req, res) => {
+  const { fecha } = req.params;
+  const { tipo, descripcion, monto } = req.body;
+  if (!monto) return res.status(400).json({ error: 'Falta el monto' });
+  if (!db.data.caja_shan) db.data.caja_shan = [];
+  let c = db.data.caja_shan.find(x => x.fecha === fecha);
+  if (!c) { c = { fecha }; db.data.caja_shan.push(c); }
+  if (!c.ingresos) c.ingresos = [];
+  const id = Date.now();
+  c.ingresos.push({ id, tipo: tipo||'depi', descripcion: descripcion||'', monto: Number(monto)||0 });
+  await db.write(); res.json({ id });
+});
+app.delete('/api/caja-shan/:fecha/ingreso/:id', async (req, res) => {
+  const c = (db.data.caja_shan||[]).find(x => x.fecha === req.params.fecha);
+  if (c && c.ingresos) c.ingresos = c.ingresos.filter(p => p.id !== Number(req.params.id));
+  await db.write(); res.json({ ok: true });
+});
+
 // POST guardar/actualizar cierre del día
 app.post('/api/caja-shan', async (req, res) => {
   const { fecha, inicio, sobre, gastos } = req.body;

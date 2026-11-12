@@ -530,11 +530,11 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
     </div>
 
     <div style="border-top:1px dashed var(--gray-border);padding-top:14px;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Lo que salió de la caja</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Lo que entró y salió de la caja</div>
       <div id="cs-salidas" style="margin-bottom:10px"></div>
       <div style="background:#fff;border:1px solid var(--gray-border);border-radius:10px;padding:12px">
         <div class="g2">
-          <div class="field"><label>Tipo</label><select id="cs-sal-tipo" onchange="csTipoSalida()"><option value="gasto">Gasto del salón</option><option value="adelanto">Adelantos del personal</option><option value="depi">Pago de depi (máquina / operadora)</option></select></div>
+          <div class="field"><label>Tipo</label><select id="cs-sal-tipo" onchange="csTipoSalida()"><option value="gasto">Gasto del salón</option><option value="adelanto">Adelantos del personal</option><option value="depi">Pago de depi (máquina / operadora)</option><option value="ing_depi">➕ ENTRÓ: efectivo de depi</option><option value="ing_sena">➕ ENTRÓ: seña en efectivo</option></select></div>
           <div class="field" id="cs-sal-cat-wrap"><label>Categoría</label><select id="cs-sal-cat"><option value="Insumos">Insumos</option><option value="Limpieza">Limpieza</option><option value="Sodero">Sodero</option><option value="Otros">Otros</option></select></div>
           <div class="field" id="cs-sal-chica-wrap" style="display:none"><label>Profesional</label><select id="cs-sal-chica"><option value="">Seleccionar...</option></select></div>
         </div>
@@ -556,7 +556,7 @@ input:focus,select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(83
       <div>
         <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Queda en caja</div>
         <div id="cs-caja" style="font-size:28px;font-weight:800;color:#fff">$0</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px">Inicio + Cash − Salidas − Sobre</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px">Inicio + Cash + Entradas − Salidas − Sobre</div>
       </div>
       <i class="ti ti-cash-register" style="font-size:40px;color:rgba(255,255,255,.25)"></i>
     </div>
@@ -2431,7 +2431,7 @@ async function csAvisoYSugerencia(fecha, data) {
     }
     if (!csEsDiaActual(fecha)) return; // se cambió de día mientras buscaba
     if (ant) {
-      const cajaAnt = (ant.inicio||0) + (ant.cash||0) - (ant.sobre||0) - csSalidasTotal(ant);
+      const cajaAnt = (ant.inicio||0) + (ant.cash||0) + csIngresosTotal(ant) - (ant.sobre||0) - csSalidasTotal(ant);
       csSetVal('cs-inicio', cajaAnt);
       const dias = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
       const [y,m,d] = fAnt.split('-').map(Number);
@@ -2444,6 +2444,11 @@ async function csAvisoYSugerencia(fecha, data) {
   if (!csEsDiaActual(fecha)) return;
   aviso.textContent = texto;
   aviso.style.display = 'block';
+}
+
+// Efectivo que entró a la caja aparte de los turnos (efectivo de depi, señas en efectivo)
+function csIngresosTotal(d) {
+  return (d.ingresos||[]).reduce((s,p)=>s+(p.monto||0),0);
 }
 
 // Total que salió de la caja: gastos viejos a mano + gastos en efectivo + adelantos en efectivo
@@ -2459,13 +2464,20 @@ function csRenderSalidas(d) {
       <span style="flex:1;color:var(--text)"><i class="ti ${icono}" style="color:var(--coral)"></i> ${texto}</span>
       <span style="font-weight:700;color:var(--coral)">−${fmt(monto)}</span>${borrar||''}</div>`;
   const btn = (fn,id) => `<button class="btn-sm btn-danger" onclick="${fn}(${id})" style="padding:3px 7px"><i class="ti ti-trash" style="font-size:12px"></i></button>`;
+  const tipoIng = { depi: 'Efectivo de depi', sena: 'Seña en efectivo' };
+  (d.ingresos||[]).forEach(p => filas.push(`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--gray-border);font-size:13px;gap:8px">
+      <span style="flex:1;color:var(--text)"><i class="ti ti-arrow-down-left" style="color:var(--teal)"></i> <b>${tipoIng[p.tipo]||'Entrada'}</b>${p.descripcion?' · '+p.descripcion:''}</span>
+      <span style="font-weight:700;color:var(--teal)">+${fmt(p.monto)}</span>${btn('csBorrarIngreso', p.id)}</div>`));
   if (d.gastos) filas.push(fila('ti-pencil', 'Gastos cargados a mano (antes del cambio)', d.gastos));
   (d.gastos_detalle||[]).forEach(g => filas.push(fila('ti-receipt', `<b>${g.categoria}</b>${g.descripcion?' · '+g.descripcion:''}`, g.monto, btn('csBorrarGasto', g.id))));
   (d.pagos_depi||[]).forEach(p => filas.push(fila('ti-bolt', `<b>Pago depi</b>${p.descripcion?' · '+p.descripcion:''} <span style="font-size:10px;color:var(--text-3)">(no suma a gastos del salón)</span>`, p.monto, btn('csBorrarPagoDepi', p.id))));
   (d.adelantos_detalle||[]).forEach(a => filas.push(fila('ti-user', `<b>Adelanto ${a.chica}</b>${a.obs?' · '+a.obs:''}`, a.monto, btn('csBorrarAdelanto', a.id))));
   const total = csSalidasTotal(d);
+  const totIng = csIngresosTotal(d);
   el.innerHTML = filas.length
-    ? filas.join('') + `<div style="display:flex;justify-content:space-between;padding-top:8px;font-size:13px;font-weight:700"><span>Total salidas</span><span style="color:var(--coral)">−${fmt(total)}</span></div>`
+    ? filas.join('')
+      + (totIng ? `<div style="display:flex;justify-content:space-between;padding-top:8px;font-size:13px;font-weight:700"><span>Total entradas</span><span style="color:var(--teal)">+${fmt(totIng)}</span></div>` : '')
+      + `<div style="display:flex;justify-content:space-between;padding-top:8px;font-size:13px;font-weight:700"><span>Total salidas</span><span style="color:var(--coral)">−${fmt(total)}</span></div>`
     : '<div style="font-size:12px;color:var(--text-3);text-align:center;padding:6px 0">Todavía no se cargó nada que haya salido de la caja</div>';
 }
 
@@ -2473,7 +2485,8 @@ function csTipoSalida() {
   const tipo = document.getElementById('cs-sal-tipo').value;
   const adel = tipo === 'adelanto';
   document.getElementById('cs-sal-cat-wrap').style.display = tipo === 'gasto' ? '' : 'none';
-  document.getElementById('cs-sal-desc').placeholder = tipo === 'depi' ? 'Ej: alquiler máquina, horas operadora...' : 'Ej: Neoclean, bidón de agua...';
+  document.getElementById('cs-sal-desc').placeholder = tipo === 'depi' ? 'Ej: alquiler máquina, horas operadora...'
+    : tipo === 'ing_depi' ? 'Ej: jornada depi' : tipo === 'ing_sena' ? 'Ej: nombre de la clienta' : 'Ej: Neoclean, bidón de agua...';
   document.getElementById('cs-sal-chica-wrap').style.display = adel ? '' : 'none';
   if (adel) {
     const sel = document.getElementById('cs-sal-chica');
@@ -2489,7 +2502,9 @@ async function csAgregarSalida() {
   const monto = csRawVal('cs-sal-monto');
   const desc = document.getElementById('cs-sal-desc').value.trim();
   if (!monto) { alertaCs('Poné el monto.'); return; }
-  if (tipo === 'depi') {
+  if (tipo === 'ing_depi' || tipo === 'ing_sena') {
+    await api('POST', `/api/caja-shan/${fecha}/ingreso`, { tipo: tipo === 'ing_depi' ? 'depi' : 'sena', descripcion: desc, monto });
+  } else if (tipo === 'depi') {
     await api('POST', `/api/caja-shan/${fecha}/pago-depi`, { descripcion: desc, monto });
   } else if (tipo === 'adelanto') {
     const chica = document.getElementById('cs-sal-chica').value;
@@ -2515,13 +2530,18 @@ function alertaCs(t) {
 async function csRecargarSalidas() {
   const fecha = document.getElementById('cs-fecha').value;
   const d = await api('GET', `/api/caja-shan/${fecha}`);
-  ['adelantos','adelantos_detalle','gastos_caja','gastos_detalle','pagos_depi'].forEach(k => csData[k] = d[k]);
+  ['adelantos','adelantos_detalle','gastos_caja','gastos_detalle','pagos_depi','ingresos'].forEach(k => csData[k] = d[k]);
   csRenderSalidas(csData);
 }
 
 async function csBorrarGasto(id) {
   if (!confirm('¿Borrar este gasto? También se borra de la pestaña Gastos.')) return;
   await api('DELETE','/api/gastos/'+id); await csRecargarSalidas(); csCalcular(); csHistorial();
+}
+async function csBorrarIngreso(id) {
+  if (!confirm('¿Borrar esta entrada de efectivo?')) return;
+  const fecha = document.getElementById('cs-fecha').value;
+  await api('DELETE', `/api/caja-shan/${fecha}/ingreso/${id}`); await csRecargarSalidas(); csCalcular(); csHistorial();
 }
 async function csBorrarPagoDepi(id) {
   if (!confirm('¿Borrar este pago de depi?')) return;
@@ -2537,7 +2557,7 @@ function csCalcular() {
   const inicio = csRawVal('cs-inicio');
   const cash = csData.cash||0;
   const sobre = csRawVal('cs-sobre');
-  const caja = inicio + cash - sobre - csSalidasTotal(csData);
+  const caja = inicio + cash + csIngresosTotal(csData) - sobre - csSalidasTotal(csData);
   document.getElementById('cs-caja').textContent = fmt(caja);
 }
 
@@ -2585,7 +2605,7 @@ async function csHistorial() {
       const cash = data.cash||0;
       const sobre = data.sobre||0;
       const gastos = data.gastos||0;
-      const caja = inicio+cash-sobre-csSalidasTotal(data);
+      const caja = inicio+cash+csIngresosTotal(data)-sobre-csSalidasTotal(data);
       filas.push(`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray-border)">
         <div style="font-size:13px;font-weight:600;color:var(--text)">${fechaLinda(fecha)}</div>
         <div style="display:flex;gap:14px;text-align:right">
